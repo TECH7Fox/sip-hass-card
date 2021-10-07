@@ -3,17 +3,8 @@
 import { SimpleUser, SimpleUserDelegate, SimpleUserOptions } from "../src/platform/web";
 import { getAudio, getButton, getButtons, getInput, getSpan } from "./demo-utils";
 
-const serverSpan = getSpan("server");
-const targetSpan = getSpan("target");
-const connectButton = getButton("connect");
 const callButton = getButton("call");
 const hangupButton = getButton("hangup");
-const disconnectButton = getButton("disconnect");
-const audioElement = getAudio("remoteAudio");
-const keypad = getButtons("keypad");
-const dtmfSpan = getSpan("dtmf");
-const holdCheckbox = getInput("hold");
-const muteCheckbox = getInput("mute");
 
 // Helper function to get an HTML audio element
 function getAudioElement(id: string): HTMLAudioElement {
@@ -104,16 +95,16 @@ async function main(): Promise<void> {
   await simpleUser.connect();
 
   // Register to receive inbound calls (optional)
-  //await simpleUser.register();
+  await simpleUser.register();
 
-  // Place call to the destination
-  await simpleUser.call(destination);
+  callButton.addEventListener("click", function() {
+    simpleUser.call(destination);
+  }, false);
 
-  // Wait some number of milliseconds
-  await wait(500000);
+  hangupButton.addEventListener("click", function() {
+    simpleUser.hangup();
+  }, false);
 
-  // Hangup call
-  await simpleUser.hangup();
 }
 
 // Run it
