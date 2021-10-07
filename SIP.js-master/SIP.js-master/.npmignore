@@ -1,0 +1,11 @@
+build/
+node_modules/
+test/
+src/
+docs/
+demo/
+etc/
+dist/
+karma.conf.cjs
+.travis.yml
+tsconfig-base.json
