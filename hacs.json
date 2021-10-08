@@ -1,6 +1,6 @@
 {
     "name": "SIP-JS Client",
     "content_in_root": true,
-    "filename": "sipjsclient.js",
+    "filename": "sipjsclient-card.js",
     "render_readme": true
   }
