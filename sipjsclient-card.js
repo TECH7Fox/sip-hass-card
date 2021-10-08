@@ -19076,8 +19076,6 @@ class ContentCardExample extends HTMLElement {
   
   customElements.define('content-card-example', ContentCardExample);
 
-const callButton = (0,_demo_utils__WEBPACK_IMPORTED_MODULE_0__.getButton)("call");
-const hangupButton = (0,_demo_utils__WEBPACK_IMPORTED_MODULE_0__.getButton)("hangup");
 // Helper function to get an HTML audio element
 function getAudioElement(id) {
     const el = document.getElementById(id);
@@ -19094,6 +19092,8 @@ async function wait(ms) {
 }
 // Main function
 async function main() {
+    const callButton = (0,_demo_utils__WEBPACK_IMPORTED_MODULE_0__.getButton)("call");
+    const hangupButton = (0,_demo_utils__WEBPACK_IMPORTED_MODULE_0__.getButton)("hangup");
     // SIP over WebSocket Server URL
     // The URL of a SIP over WebSocket server which will complete the call.
     // FreeSwitch is an example of a server which supports SIP over WebSocket.
