@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable no-console */
 
-import { SimpleUser, SimpleUserDelegate, SimpleUserOptions } from "../src/platform/web";
-import { getAudio, getButton, getButtons, getInput, getSpan } from "./demo-utils";
+import { SimpleUser, SimpleUserOptions } from "../src/platform/web";
+import { getButton } from "./demo-utils";
 
 class SIPJSClient extends HTMLElement {
   content: any;
