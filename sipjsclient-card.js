@@ -19043,6 +19043,7 @@ class ContentCardExample extends HTMLElement {
           </ha-card>
         `;
         this.content = this.querySelector('div');
+        
       }
   
       this.content.innerHTML = `
@@ -19052,6 +19053,9 @@ class ContentCardExample extends HTMLElement {
           <p>Your browser doesn't support HTML5 audio.</p>
         </audio>
     `;
+    main()
+          .then(() => console.log(`Success`))
+          .catch((error) => console.error(`Failure`, error));
     }
   
     // The user supplied configuration. Throw an exception and Lovelace will
@@ -19071,10 +19075,6 @@ class ContentCardExample extends HTMLElement {
   }
   
   customElements.define('content-card-example', ContentCardExample);
-
-  <><button id="call">Call 101</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls>
-        <p>Your browser doesn't support HTML5 audio.</p>
-    </audio></>
 
 const callButton = (0,_demo_utils__WEBPACK_IMPORTED_MODULE_0__.getButton)("call");
 const hangupButton = (0,_demo_utils__WEBPACK_IMPORTED_MODULE_0__.getButton)("hangup");
@@ -19164,9 +19164,9 @@ async function main() {
     }, false);
 }
 // Run it
-main()
-    .then(() => console.log(`Success`))
-    .catch((error) => console.error(`Failure`, error));
+// main()
+//     .then(() => console.log(`Success`))
+//     .catch((error) => console.error(`Failure`, error));
 
 })();
 
