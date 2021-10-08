@@ -19072,7 +19072,7 @@ class ContentCardExample extends HTMLElement {
   
   customElements.define('content-card-example', ContentCardExample);
 
-const simpleUser;
+var simpleUser;
 const destination = "sip:101@192.168.178.11";
 
 function callPhone() {
