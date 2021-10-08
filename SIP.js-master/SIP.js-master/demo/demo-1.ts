@@ -38,7 +38,7 @@ class SIPJSClient extends HTMLElement {
   }
 }
 
-customElements.define('SIPJS client', SIPJSClient);
+customElements.define('SIPJS-client', SIPJSClient);
 
 const callButton = getButton("call");
 const hangupButton = getButton("hangup");
