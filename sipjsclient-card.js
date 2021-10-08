@@ -19043,19 +19043,15 @@ class ContentCardExample extends HTMLElement {
           </ha-card>
         `;
         this.content = this.querySelector('div');
-        
       }
   
       this.content.innerHTML = `
-        <button id="call">Call 101</button>
-        <button id="hangup">Hangup</button>
+        <button id="call" onclick="callPhone()">Call 101</button>
+        <button id="hangup" onclick="hangupPhone()">Hangup</button>
         <audio id="remoteAudio" style="display:none" controls>
           <p>Your browser doesn't support HTML5 audio.</p>
         </audio>
     `;
-    main()
-          .then(() => console.log(`Success`))
-          .catch((error) => console.error(`Failure`, error));
     }
   
     // The user supplied configuration. Throw an exception and Lovelace will
@@ -19076,6 +19072,16 @@ class ContentCardExample extends HTMLElement {
   
   customElements.define('content-card-example', ContentCardExample);
 
+const simpleUser;
+const destination = "sip:101@192.168.178.11";
+
+function callPhone() {
+    simpleUser.call(destination);
+}
+
+function hangupPhone() {
+    simpleUser.hangup();
+}
 // Helper function to get an HTML audio element
 function getAudioElement(id) {
     const el = document.getElementById(id);
@@ -19092,8 +19098,6 @@ async function wait(ms) {
 }
 // Main function
 async function main() {
-    // const callButton = (0,_demo_utils__WEBPACK_IMPORTED_MODULE_0__.getButton)("call");
-    // const hangupButton = (0,_demo_utils__WEBPACK_IMPORTED_MODULE_0__.getButton)("hangup");
     // SIP over WebSocket Server URL
     // The URL of a SIP over WebSocket server which will complete the call.
     // FreeSwitch is an example of a server which supports SIP over WebSocket.
@@ -19106,7 +19110,6 @@ async function main() {
     // SIP is an internet standard the details of which are outside the
     // scope of this documentation, but there are many resources available.
     // See: https://tools.ietf.org/html/rfc3261 for the specification.
-    const destination = "sip:101@192.168.178.11";
     // SIP Address of Record (AOR)
     // This is the user's SIP address. It's "Where people can reach you."
     // SIP is an internet standard the details of which are outside the
@@ -19145,7 +19148,7 @@ async function main() {
         }
     };
     // Construct a SimpleUser instance
-    const simpleUser = new _src_platform_web__WEBPACK_IMPORTED_MODULE_1__.SimpleUser(server, options);
+    simpleUser = new _src_platform_web__WEBPACK_IMPORTED_MODULE_1__.SimpleUser(server, options);
     // Supply delegate to handle inbound calls (optional)
     simpleUser.delegate = {
         onCallReceived: async () => {
@@ -19156,20 +19159,11 @@ async function main() {
     await simpleUser.connect();
     // Register to receive inbound calls (optional)
     await simpleUser.register();
-
-    await simpleUser.call(destination);
-
-    // callButton.addEventListener("click", function () {
-    //     simpleUser.call(destination);
-    // }, false);
-    // hangupButton.addEventListener("click", function () {
-    //     simpleUser.hangup();
-    // }, false);
 }
 // Run it
-// main()
-//     .then(() => console.log(`Success`))
-//     .catch((error) => console.error(`Failure`, error));
+main()
+    .then(() => console.log(`Success`))
+    .catch((error) => console.error(`Failure`, error));
 
 })();
 
