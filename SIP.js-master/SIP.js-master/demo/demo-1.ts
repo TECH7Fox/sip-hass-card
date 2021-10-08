@@ -1,7 +1,44 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable no-console */
+
 import { SimpleUser, SimpleUserDelegate, SimpleUserOptions } from "../src/platform/web";
 import { getAudio, getButton, getButtons, getInput, getSpan } from "./demo-utils";
+
+class SIPJSClient extends HTMLElement {
+  content: any;
+  config: { entity: any; } | undefined;
+  set hass(hass: any) {
+    if (!this.content) {
+      this.innerHTML = '<ha-card header="Example-card"><div class="card-content"></div></ha-card>';
+      this.content = this.querySelector('div');
+    }
+
+    //const entityId = this.config.entity;
+    //const state = hass.states[entityId];
+    //const stateStr = state ? state.state : 'unavailable';
+
+    this.content.innerHTML = `
+      <button id="call">Call 101</button>
+      <button id="hangup">Hangup</button>
+      <audio id="remoteAudio" style="display:none" controls>
+        <p>Your browser doesn't support HTML5 audio.</p>
+      </audio>
+    `;
+  }
+
+  setConfig(config: { entity: any; }) {
+    if (!config.entity) {
+      throw new Error('You need to define an entity');
+    }
+    this.config = config;
+  }
+
+  getCardSize() {
+    return 3;
+  }
+}
+
+customElements.define('SIPJS client', SIPJSClient);
 
 const callButton = getButton("call");
 const hangupButton = getButton("hangup");
