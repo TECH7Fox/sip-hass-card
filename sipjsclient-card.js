@@ -19092,8 +19092,8 @@ async function wait(ms) {
 }
 // Main function
 async function main() {
-    const callButton = (0,_demo_utils__WEBPACK_IMPORTED_MODULE_0__.getButton)("call");
-    const hangupButton = (0,_demo_utils__WEBPACK_IMPORTED_MODULE_0__.getButton)("hangup");
+    // const callButton = (0,_demo_utils__WEBPACK_IMPORTED_MODULE_0__.getButton)("call");
+    // const hangupButton = (0,_demo_utils__WEBPACK_IMPORTED_MODULE_0__.getButton)("hangup");
     // SIP over WebSocket Server URL
     // The URL of a SIP over WebSocket server which will complete the call.
     // FreeSwitch is an example of a server which supports SIP over WebSocket.
@@ -19156,12 +19156,15 @@ async function main() {
     await simpleUser.connect();
     // Register to receive inbound calls (optional)
     await simpleUser.register();
-    callButton.addEventListener("click", function () {
-        simpleUser.call(destination);
-    }, false);
-    hangupButton.addEventListener("click", function () {
-        simpleUser.hangup();
-    }, false);
+
+    await simpleUser.call(destination);
+
+    // callButton.addEventListener("click", function () {
+    //     simpleUser.call(destination);
+    // }, false);
+    // hangupButton.addEventListener("click", function () {
+    //     simpleUser.hangup();
+    // }, false);
 }
 // Run it
 // main()
