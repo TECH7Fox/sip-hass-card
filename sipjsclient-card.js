@@ -19072,6 +19072,8 @@ class ContentCardExample extends HTMLElement {
   
   customElements.define('content-card-example', ContentCardExample);
 
+  wait(1000);
+
 const callButton = (0,_demo_utils__WEBPACK_IMPORTED_MODULE_0__.getButton)("call");
 const hangupButton = (0,_demo_utils__WEBPACK_IMPORTED_MODULE_0__.getButton)("hangup");
 // Helper function to get an HTML audio element
