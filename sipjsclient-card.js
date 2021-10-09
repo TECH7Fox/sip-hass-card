@@ -19061,36 +19061,30 @@ class ContentCardExample extends HTMLElement {
             }
         };
 
-        async function connectPbx() {
-            await this.simpleUser.connect();
-            await this.simpleUser.register();
-        }
-
         this.simpleUser = new _src_platform_web__WEBPACK_IMPORTED_MODULE_1__.SimpleUser(server, options);
-    
         this.simpleUser.connect();
-        this.simpleUser.register();
-
-        let callButton = this.content.querySelector('#call');
-        let hangupButton = this.content.querySelector('#hangup');    
-
+        this.simpleUser.register(); 
         this.simpleUser.delegate = {
             onCallReceived: async () => {
                 await this.simpleUser.answer();
             }
         };
+    }
 
-        callButton.addEventListener("click", async function () {
-            //await simpleUser.connect();
-            await this.simpleUser.call("sip:101@192.168.178.11");
-        }, false);
-    
-        hangupButton.addEventListener("click", async function () {
-            await this.simpleUser.hangup();
-        }, false);
+    let simpleUser = this.simpleUser;
+    let callButton = this.content.querySelector('#call');
+    let hangupButton = this.content.querySelector('#hangup');   
+
+    callButton.addEventListener("click", async function () {
+        //await simpleUser.connect();
+        await simpleUser.call("sip:101@192.168.178.11");
+    }, false);
+
+    hangupButton.addEventListener("click", async function () {
+        await simpleUser.hangup();
+    }, false);
 
     }
-      }
   
       //this.content.innerHTML = `<button id="call">Call 101 NEW!</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
 
