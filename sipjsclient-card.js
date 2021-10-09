@@ -19065,6 +19065,8 @@ class ContentCardExample extends HTMLElement {
     };
 
     const simpleUser = new _src_platform_web__WEBPACK_IMPORTED_MODULE_1__.SimpleUser(server, options);
+    console.log("NUCLEAR ERROR DETECTED!!!");
+    console.log(simpleUser);
 
     async function connectPbx() {
         await simpleUser.connect();
