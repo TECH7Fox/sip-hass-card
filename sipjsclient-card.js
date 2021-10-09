@@ -19039,12 +19039,14 @@ class ContentCardExample extends HTMLElement {
       if (!this.content) {
         this.innerHTML = `<ha-card header="Example-card"><div class="card-content"></div></ha-card>`;
         this.content = this.querySelector('div');
+        this.content.innerHTML = `<button id="call">Call 101 NEW!</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
+
         async function connectPbx() {
             await this.simpleUser.connect();
             await this.simpleUser.register();
         }
 
-        const destination = "sip:101@192.168.178.11";
+        //const destination = "sip:101@192.168.178.11";
         const server = "wss://192.168.178.11:8089/ws";
         const aor = "sip:103@192.168.178.11";
         const authorizationUsername = '103';
@@ -19067,7 +19069,7 @@ class ContentCardExample extends HTMLElement {
         connectPbx();
       }
   
-      this.content.innerHTML = `<button id="call">Call 101</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
+      //this.content.innerHTML = `<button id="call">Call 101 NEW!</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
 
     let callButton = this.content.querySelector('#call');
     let hangupButton = this.content.querySelector('#hangup');    
@@ -19080,7 +19082,7 @@ class ContentCardExample extends HTMLElement {
 
     callButton.addEventListener("click", async function () {
         //await simpleUser.connect();
-        await this.simpleUser.call(destination);
+        await this.simpleUser.call("sip:101@192.168.178.11");
     }, false);
 
     hangupButton.addEventListener("click", async function () {
