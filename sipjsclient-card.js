@@ -19070,29 +19070,31 @@ class ContentCardExample extends HTMLElement {
     
         this.simpleUser.connect();
         this.simpleUser.register();
+
+        let callButton = this.content.querySelector('#call');
+        let hangupButton = this.content.querySelector('#hangup');    
+
+        this.simpleUser.delegate = {
+            onCallReceived: async () => {
+                await this.simpleUser.answer();
+            }
+        };
+
+        callButton.addEventListener("click", async function () {
+            //await simpleUser.connect();
+            await this.simpleUser.call("sip:101@192.168.178.11");
+        }, false);
+    
+        hangupButton.addEventListener("click", async function () {
+            await this.simpleUser.hangup();
+        }, false);
+
+    }
       }
   
       //this.content.innerHTML = `<button id="call">Call 101 NEW!</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
 
-    let callButton = this.content.querySelector('#call');
-    let hangupButton = this.content.querySelector('#hangup');    
-
-    this.simpleUser.delegate = {
-        onCallReceived: async () => {
-            await this.simpleUser.answer();
-        }
-    };
-
-    callButton.addEventListener("click", async function () {
-        //await simpleUser.connect();
-        await this.simpleUser.call("sip:101@192.168.178.11");
-    }, false);
-
-    hangupButton.addEventListener("click", async function () {
-        await this.simpleUser.hangup();
-    }, false);
-
-    }
+    
   
     // The user supplied configuration. Throw an exception and Lovelace will
     // render an error card.
