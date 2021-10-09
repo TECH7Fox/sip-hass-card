@@ -19048,7 +19048,7 @@ class ContentCardExample extends HTMLElement {
     let connectButton = this.content.querySelector('#connect');
 
     const destination = "sip:101@192.168.178.11";
-    const server = "ws://192.168.178.11:8088/ws";
+    const server = "wss://192.168.178.11:8089/ws";
     const aor = "sip:103@192.168.178.11";
     const authorizationUsername = '103';
     const authorizationPassword = '12341234abcd';
@@ -19075,7 +19075,7 @@ class ContentCardExample extends HTMLElement {
 
     connectButton.addEventListener("click", function () {
         simpleUser.connect();
-        //simpleUser.register();
+        simpleUser.register();
     }, false);
 
     callButton.addEventListener("click", function () {
