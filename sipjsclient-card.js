@@ -19066,12 +19066,6 @@ class ContentCardExample extends HTMLElement {
 
     const simpleUser = new _src_platform_web__WEBPACK_IMPORTED_MODULE_1__.SimpleUser(server, options);
 
-    simpleUser.delegate = {
-        onCallReceived: async () => {
-            await simpleUser.answer();
-        }
-    };
-
     async function connectPbx() {
         await simpleUser.connect();
         await simpleUser.register();
@@ -19079,13 +19073,19 @@ class ContentCardExample extends HTMLElement {
 
     connectPbx();
 
+    simpleUser.delegate = {
+        onCallReceived: async () => {
+            await simpleUser.answer();
+        }
+    };
+
     callButton.addEventListener("click", async function () {
         await simpleUser.connect();
-        await simpleUser.call(destination);
+        simpleUser.call(destination);
     }, false);
 
-    hangupButton.addEventListener("click", async function () {
-        await simpleUser.hangup();
+    hangupButton.addEventListener("click", function () {
+        simpleUser.hangup();
     }, false);
 
     }
