@@ -19039,13 +19039,54 @@ class ContentCardExample extends HTMLElement {
       if (!this.content) {
         this.innerHTML = `<ha-card header="Example-card"><div class="card-content"></div></ha-card>`;
         this.content = this.querySelector('div');
+        async function connectPbx() {
+            await simpleUser.connect();
+            await simpleUser.register();
+        }
+
+        const destination = "sip:101@192.168.178.11";
+        const server = "wss://192.168.178.11:8089/ws";
+        const aor = "sip:103@192.168.178.11";
+        const authorizationUsername = '103';
+        const authorizationPassword = '12341234abcd';
+        const options = {
+            aor,
+            media: {
+                remote: {
+                    audio: this.content.querySelector("#remoteAudio")
+                }
+            },
+            userAgentOptions: {
+                authorizationPassword,
+                authorizationUsername,
+            }
+        };
+
+        this.simpleUser = new _src_platform_web__WEBPACK_IMPORTED_MODULE_1__.SimpleUser(server, options);
+    
+        connectPbx();
       }
   
       this.content.innerHTML = `<button id="call">Call 101</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
 
-    
+    let callButton = this.content.querySelector('#call');
+    let hangupButton = this.content.querySelector('#hangup');    
 
-    
+    simpleUser.delegate = {
+        onCallReceived: async () => {
+            await simpleUser.answer();
+        }
+    };
+
+    callButton.addEventListener("click", async function () {
+        //await simpleUser.connect();
+        await simpleUser.call(destination);
+    }, false);
+
+    hangupButton.addEventListener("click", async function () {
+        console.log(simpleUser.session);
+        await simpleUser.hangup();
+    }, false);
 
     }
   
@@ -19055,53 +19096,7 @@ class ContentCardExample extends HTMLElement {
       if (!config.entity) {
         throw new Error('You need to define an entity');
       }
-      let callButton = this.content.querySelector('#call');
-    let hangupButton = this.content.querySelector('#hangup');
-
-    const destination = "sip:101@192.168.178.11";
-    const server = "wss://192.168.178.11:8089/ws";
-    const aor = "sip:103@192.168.178.11";
-    const authorizationUsername = '103';
-    const authorizationPassword = '12341234abcd';
-    const options = {
-        aor,
-        media: {
-            remote: {
-                audio: this.content.querySelector("#remoteAudio")
-            }
-        },
-        userAgentOptions: {
-            authorizationPassword,
-            authorizationUsername,
-        }
-    };
       this.config = config;
-      const simpleUser = new _src_platform_web__WEBPACK_IMPORTED_MODULE_1__.SimpleUser(server, options);
-    console.log("NUCLEAR ERROR DETECTED!!!");
-    console.log(simpleUser);
-
-    async function connectPbx() {
-        await simpleUser.connect();
-        await simpleUser.register();
-    }
-
-    connectPbx();
-
-    simpleUser.delegate = {
-        onCallReceived: async () => {
-            await simpleUser.answer();
-        }
-    };
-
-    callButton.addEventListener("click", async function () {
-        await simpleUser.connect();
-        await simpleUser.call(destination);
-    }, false);
-
-    hangupButton.addEventListener("click", async function () {
-        console.log(simpleUser.session);
-        await simpleUser.hangup();
-    }, false);
     }
   
     // The height of your card. Home Assistant uses this to automatically
