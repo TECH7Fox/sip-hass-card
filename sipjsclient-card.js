@@ -19064,7 +19064,18 @@ class ContentCardExample extends HTMLElement {
         }
     };
 
-    const simpleUser = new _src_platform_web__WEBPACK_IMPORTED_MODULE_1__.SimpleUser(server, options);
+    
+
+    }
+  
+    // The user supplied configuration. Throw an exception and Lovelace will
+    // render an error card.
+    setConfig(config) {
+      if (!config.entity) {
+        throw new Error('You need to define an entity');
+      }
+      this.config = config;
+      const simpleUser = new _src_platform_web__WEBPACK_IMPORTED_MODULE_1__.SimpleUser(server, options);
     console.log("NUCLEAR ERROR DETECTED!!!");
     console.log(simpleUser);
 
@@ -19090,16 +19101,6 @@ class ContentCardExample extends HTMLElement {
         console.log(simpleUser.session);
         await simpleUser.hangup();
     }, false);
-
-    }
-  
-    // The user supplied configuration. Throw an exception and Lovelace will
-    // render an error card.
-    setConfig(config) {
-      if (!config.entity) {
-        throw new Error('You need to define an entity');
-      }
-      this.config = config;
     }
   
     // The height of your card. Home Assistant uses this to automatically
