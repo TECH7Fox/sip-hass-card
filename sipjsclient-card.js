@@ -19044,15 +19044,6 @@ class ContentCardExample extends HTMLElement {
         `;
         this.content = this.querySelector('div');
       }
-
-      // Helper function to get an HTML audio element
-    function getAudioElement(id) {
-        const el = document.getElementById(id);
-        if (!(el instanceof HTMLAudioElement)) {
-            throw new Error(`Element "${id}" not found or not an audio element.`);
-        }
-        return el;
-    }
   
       this.content.innerHTML = `
         <button id="call">Call 101</button>
@@ -19062,9 +19053,18 @@ class ContentCardExample extends HTMLElement {
         </audio>
     `;
 
+      // Helper function to get an HTML audio element
+      function getAudioElement(id) {
+        const el = this.content.getElementById(id);
+        if (!(el instanceof HTMLAudioElement)) {
+            throw new Error(`Element "${id}" not found or not an audio element.`);
+        }
+        return el;
+    }
+
     let callButton = this.content.querySelector('#call');
     let hangupButton = this.content.querySelector('#hangup');
-    let audioElement = this.content.getAudioElement("remoteAudio");
+    let audioElement = getAudioElement("remoteAudio");
 
     const destination = "sip:101@192.168.178.11";
     const server = "ws://192.168.178.11:8088/ws";
