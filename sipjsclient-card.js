@@ -19040,8 +19040,8 @@ class ContentCardExample extends HTMLElement {
         this.innerHTML = `<ha-card header="Example-card"><div class="card-content"></div></ha-card>`;
         this.content = this.querySelector('div');
         async function connectPbx() {
-            await simpleUser.connect();
-            await simpleUser.register();
+            await this.simpleUser.connect();
+            await this.simpleUser.register();
         }
 
         const destination = "sip:101@192.168.178.11";
@@ -19072,20 +19072,19 @@ class ContentCardExample extends HTMLElement {
     let callButton = this.content.querySelector('#call');
     let hangupButton = this.content.querySelector('#hangup');    
 
-    simpleUser.delegate = {
+    this.simpleUser.delegate = {
         onCallReceived: async () => {
-            await simpleUser.answer();
+            await this.simpleUser.answer();
         }
     };
 
     callButton.addEventListener("click", async function () {
         //await simpleUser.connect();
-        await simpleUser.call(destination);
+        await this.simpleUser.call(destination);
     }, false);
 
     hangupButton.addEventListener("click", async function () {
-        console.log(simpleUser.session);
-        await simpleUser.hangup();
+        await this.simpleUser.hangup();
     }, false);
 
     }
