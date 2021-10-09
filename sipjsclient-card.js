@@ -19055,7 +19055,7 @@ class ContentCardExample extends HTMLElement {
         aor,
         media: {
             remote: {
-                audio: this.content.getElementById("remoteAudio");
+                audio: this.content.getElementById("remoteAudio")
             }
         },
         userAgentOptions: {
