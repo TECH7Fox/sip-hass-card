@@ -19056,7 +19056,7 @@ async function main() {
     // SIP over WebSocket is an internet standard the details of which are
     // outside the scope of this documentation, but there are many resources
     // available. See: https://tools.ietf.org/html/rfc7118 for the specification.
-    const server = "ws://192.168.178.11:8088/ws";
+    const server = "wss://192.168.178.11:8089/ws";
     // SIP Request URI
     // The SIP Request URI of the destination. It's "Who you wanna call?"
     // SIP is an internet standard the details of which are outside the
