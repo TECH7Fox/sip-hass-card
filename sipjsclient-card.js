@@ -19037,21 +19037,11 @@ class ContentCardExample extends HTMLElement {
     set hass(hass) {
       // Initialize the content if it's not there yet.
       if (!this.content) {
-        this.innerHTML = `
-          <ha-card header="Example-card">
-            <div class="card-content"></div>
-          </ha-card>
-        `;
+        this.innerHTML = `<ha-card header="Example-card"><div class="card-content"></div></ha-card>`;
         this.content = this.querySelector('div');
       }
   
-      this.content.innerHTML = `
-        <button id="call">Call 101</button>
-        <button id="hangup">Hangup</button>
-        <audio id="remoteAudio" style="display:none" controls>
-          <p>Your browser doesn't support HTML5 audio.</p>
-        </audio>
-    `;
+      this.content.innerHTML = `<button id="call">Call 101</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
 
       // Helper function to get an HTML audio element
       function getAudioElement(id) {
@@ -19064,7 +19054,6 @@ class ContentCardExample extends HTMLElement {
 
     let callButton = this.content.querySelector('#call');
     let hangupButton = this.content.querySelector('#hangup');
-    let audioElement = getAudioElement("remoteAudio");
 
     const destination = "sip:101@192.168.178.11";
     const server = "ws://192.168.178.11:8088/ws";
