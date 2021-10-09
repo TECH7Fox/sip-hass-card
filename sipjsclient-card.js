@@ -19031,37 +19031,6 @@ __webpack_require__.r(__webpack_exports__);
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable no-console */
 
-import {
-    LitElement,
-    html,
-    css
-  } from "https://unpkg.com/lit-element@2.0.1/lit-element.js?module";
-
-class ContentCardEditor extends LitElement {
-
-    setConfig(config) {
-      this._config = config;
-    }
-  
-    configChanged(newConfig) {
-      const event = new Event("config-changed", {
-        bubbles: true,
-        composed: true
-      });
-      event.detail = {config: newConfig};
-      this.dispatchEvent(event);
-    }
-  }
-  
-  customElements.define("content-card-editor", ContentCardEditor);
-  window.customCards = window.customCards || [];
-  window.customCards.push({
-    type: "content-card-example",
-    name: "Content Card",
-    preview: true, // Optional - defaults to false
-    description: "A custom card made by me!" // Optional
-  });
-
 class ContentCardExample extends HTMLElement {
     // Whenever the state changes, a new `hass` object is set. Use this to
     // update your content.
@@ -19070,9 +19039,7 @@ class ContentCardExample extends HTMLElement {
       if (!this.content) {
         this.innerHTML = `<ha-card header="Example-card"><div class="card-content"></div></ha-card>`;
         this.content = this.querySelector('div');
-        this.content.innerHTML = `<button id="call">Call 101 NEW!</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
-
-        
+        this.content.innerHTML = `<button id="call">Call Jordy</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
 
         //const destination = "sip:101@192.168.178.11";
         const server = "wss://192.168.178.11:8089/ws";
@@ -19118,14 +19085,6 @@ class ContentCardExample extends HTMLElement {
   
     // The user supplied configuration. Throw an exception and Lovelace will
     // render an error card.
-    static getConfigElement() {
-        return document.createElement("content-card-editor");
-    }
-
-    static getStubConfig() {
-        return { entity: "sun.sun" }
-    }
-
     setConfig(config) {
       if (!config.entity) {
         throw new Error('You need to define an entity');
