@@ -19081,8 +19081,8 @@ class ContentCardExample extends HTMLElement {
         }
     };
 
-    await simpleUser.connect();
-    await simpleUser.register();
+    simpleUser.connect();
+    simpleUser.register();
 
     callButton.addEventListener("click", function () {
         simpleUser.call(destination);
