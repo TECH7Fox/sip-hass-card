@@ -19041,11 +19041,10 @@ class ContentCardExample extends HTMLElement {
         this.content = this.querySelector('div');
       }
   
-      this.content.innerHTML = `<button id="connect">Connect</button><button id="call">Call 101</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
+      this.content.innerHTML = `<button id="call">Call 101</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
 
     let callButton = this.content.querySelector('#call');
     let hangupButton = this.content.querySelector('#hangup');
-    let connectButton = this.content.querySelector('#connect');
 
     const destination = "sip:101@192.168.178.11";
     const server = "wss://192.168.178.11:8089/ws";
@@ -19067,18 +19066,21 @@ class ContentCardExample extends HTMLElement {
 
     const simpleUser = new _src_platform_web__WEBPACK_IMPORTED_MODULE_1__.SimpleUser(server, options);
 
+    async function connectPbx() {
+        await simpleUser.connect();
+        await simpleUser.register();
+    }
+
+    connectPbx();
+
     simpleUser.delegate = {
         onCallReceived: async () => {
             await simpleUser.answer();
         }
     };
 
-    connectButton.addEventListener("click", async function () {
-        await simpleUser.connect();
-        await simpleUser.register();
-    }, false);
-
     callButton.addEventListener("click", async function () {
+        await simpleUser.connect();
         await simpleUser.call(destination);
     }, false);
 
