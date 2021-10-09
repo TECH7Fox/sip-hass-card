@@ -19043,7 +19043,19 @@ class ContentCardExample extends HTMLElement {
   
       this.content.innerHTML = `<button id="call">Call 101</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
 
-    let callButton = this.content.querySelector('#call');
+    
+
+    
+
+    }
+  
+    // The user supplied configuration. Throw an exception and Lovelace will
+    // render an error card.
+    setConfig(config) {
+      if (!config.entity) {
+        throw new Error('You need to define an entity');
+      }
+      let callButton = this.content.querySelector('#call');
     let hangupButton = this.content.querySelector('#hangup');
 
     const destination = "sip:101@192.168.178.11";
@@ -19063,17 +19075,6 @@ class ContentCardExample extends HTMLElement {
             authorizationUsername,
         }
     };
-
-    
-
-    }
-  
-    // The user supplied configuration. Throw an exception and Lovelace will
-    // render an error card.
-    setConfig(config) {
-      if (!config.entity) {
-        throw new Error('You need to define an entity');
-      }
       this.config = config;
       const simpleUser = new _src_platform_web__WEBPACK_IMPORTED_MODULE_1__.SimpleUser(server, options);
     console.log("NUCLEAR ERROR DETECTED!!!");
