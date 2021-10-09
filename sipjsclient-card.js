@@ -19041,10 +19041,7 @@ class ContentCardExample extends HTMLElement {
         this.content = this.querySelector('div');
         this.content.innerHTML = `<button id="call">Call 101 NEW!</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
 
-        async function connectPbx() {
-            await this.simpleUser.connect();
-            await this.simpleUser.register();
-        }
+        
 
         //const destination = "sip:101@192.168.178.11";
         const server = "wss://192.168.178.11:8089/ws";
@@ -19064,9 +19061,15 @@ class ContentCardExample extends HTMLElement {
             }
         };
 
+        async function connectPbx() {
+            await this.simpleUser.connect();
+            await this.simpleUser.register();
+        }
+
         this.simpleUser = new _src_platform_web__WEBPACK_IMPORTED_MODULE_1__.SimpleUser(server, options);
     
-        connectPbx();
+        this.simpleUser.connect();
+        this.simpleUser.register();
       }
   
       //this.content.innerHTML = `<button id="call">Call 101 NEW!</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
