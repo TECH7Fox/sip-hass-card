@@ -19031,6 +19031,12 @@ __webpack_require__.r(__webpack_exports__);
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable no-console */
 
+import {
+    LitElement,
+    html,
+    css
+  } from "https://unpkg.com/lit-element@2.0.1/lit-element.js?module";
+
 class ContentCardEditor extends LitElement {
 
     setConfig(config) {
