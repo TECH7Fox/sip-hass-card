@@ -19081,11 +19081,12 @@ class ContentCardExample extends HTMLElement {
 
     callButton.addEventListener("click", async function () {
         await simpleUser.connect();
-        simpleUser.call(destination);
+        await simpleUser.call(destination);
     }, false);
 
-    hangupButton.addEventListener("click", function () {
-        simpleUser.hangup();
+    hangupButton.addEventListener("click", async function () {
+        console.log(simpleUser.session);
+        await simpleUser.hangup();
     }, false);
 
     }
