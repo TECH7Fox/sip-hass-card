@@ -19073,7 +19073,6 @@ class ContentCardExample extends HTMLElement {
         }
     };
 
-
     connectButton.addEventListener("click", function () {
         simpleUser.connect();
         simpleUser.register();
