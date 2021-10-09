@@ -19069,20 +19069,22 @@ class ContentCardExample extends HTMLElement {
                 await this.simpleUser.answer();
             }
         };
+
+        let callButton = this.content.querySelector('#call');
+        let hangupButton = this.content.querySelector('#hangup');   
+        let simpleUser = this.simpleUser;
+        
+        callButton.addEventListener("click", async function () {
+            //await simpleUser.connect();
+            await simpleUser.call("sip:101@192.168.178.11");
+        }, false);
+
+        hangupButton.addEventListener("click", async function () {
+            await simpleUser.hangup();
+        }, false);
     }
 
-    let simpleUser = this.simpleUser;
-    let callButton = this.content.querySelector('#call');
-    let hangupButton = this.content.querySelector('#hangup');   
-
-    callButton.addEventListener("click", async function () {
-        //await simpleUser.connect();
-        await simpleUser.call("sip:101@192.168.178.11");
-    }, false);
-
-    hangupButton.addEventListener("click", async function () {
-        await simpleUser.hangup();
-    }, false);
+    
 
     }
   
