@@ -19073,9 +19073,9 @@ class ContentCardExample extends HTMLElement {
         }
     };
 
-    connectButton.addEventListener("click", function () {
-        simpleUser.connect();
-        simpleUser.register();
+    connectButton.addEventListener("click", async function () {
+        await simpleUser.connect();
+        await simpleUser.register();
     }, false);
 
     callButton.addEventListener("click", function () {
