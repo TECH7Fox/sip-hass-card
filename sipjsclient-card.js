@@ -19031,6 +19031,31 @@ __webpack_require__.r(__webpack_exports__);
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable no-console */
 
+class ContentCardEditor extends LitElement {
+
+    setConfig(config) {
+      this._config = config;
+    }
+  
+    configChanged(newConfig) {
+      const event = new Event("config-changed", {
+        bubbles: true,
+        composed: true
+      });
+      event.detail = {config: newConfig};
+      this.dispatchEvent(event);
+    }
+  }
+  
+  customElements.define("content-card-editor", ContentCardEditor);
+  window.customCards = window.customCards || [];
+  window.customCards.push({
+    type: "content-card-example",
+    name: "Content Card",
+    preview: true, // Optional - defaults to false
+    description: "A custom card made by me!" // Optional
+  });
+
 class ContentCardExample extends HTMLElement {
     // Whenever the state changes, a new `hass` object is set. Use this to
     // update your content.
@@ -19083,17 +19108,18 @@ class ContentCardExample extends HTMLElement {
             await simpleUser.hangup();
         }, false);
     }
-
-    
-
     }
-  
-      //this.content.innerHTML = `<button id="call">Call 101 NEW!</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
-
-    
   
     // The user supplied configuration. Throw an exception and Lovelace will
     // render an error card.
+    static getConfigElement() {
+        return document.createElement("content-card-editor");
+    }
+
+    static getStubConfig() {
+        return { entity: "sun.sun" }
+    }
+
     setConfig(config) {
       if (!config.entity) {
         throw new Error('You need to define an entity');
