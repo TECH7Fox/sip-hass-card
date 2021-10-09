@@ -19043,15 +19043,6 @@ class ContentCardExample extends HTMLElement {
   
       this.content.innerHTML = `<button id="call">Call 101</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
 
-      // Helper function to get an HTML audio element
-      function getAudioElement(id) {
-        const el = this.content.getElementById(id);
-        if (!(el instanceof HTMLAudioElement)) {
-            throw new Error(`Element "${id}" not found or not an audio element.`);
-        }
-        return el;
-    }
-
     let callButton = this.content.querySelector('#call');
     let hangupButton = this.content.querySelector('#hangup');
 
@@ -19064,7 +19055,7 @@ class ContentCardExample extends HTMLElement {
         aor,
         media: {
             remote: {
-                audio: getAudioElement("remoteAudio")
+                audio: this.content.getElementById("remoteAudio");
             }
         },
         userAgentOptions: {
