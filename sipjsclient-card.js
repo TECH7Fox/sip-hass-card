@@ -19088,13 +19088,13 @@ class ContentCardExample extends HTMLElement {
                 await this.simpleUser.answer();
             },
             onCallAnswered: () => {
-                time = new Date().getTime();
+                time = new Date();
                 console.log(time);
                 console.log("call answered!!!");
             },
             onCallHangup: () => {
                 // hide timer
-                console.log((time - new Date().getTime()) / 1000)
+                console.log((time - new Date()) / 1000)
                 console.log("call hangup!!");
             }
         };
