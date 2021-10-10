@@ -19049,8 +19049,8 @@ class ContentCardExample extends HTMLElement {
         let authorizationUsername = '';
         let authorizationPassword = '';
 
-        for(var client in this.config.clients.keys()) {
-            console.log("CLIENT KEY: " + client);
+        for(var client in this.config.clients) {
+            console.log(client);
             if (deviceID == client) {
                 aor = this.config.clients[client].aor;
                 authorizationUsername = this.config.clients[client].username;
