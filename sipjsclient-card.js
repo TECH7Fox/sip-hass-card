@@ -19080,7 +19080,7 @@ class ContentCardExample extends HTMLElement {
         };
 
         let timerElement = this.content.querySelector('#time');
-
+        var intervalId;
         this.simpleUser = new _src_platform_web__WEBPACK_IMPORTED_MODULE_1__.SimpleUser(server, options);
         this.simpleUser.connect();
         this.simpleUser.register(); 
@@ -19092,7 +19092,7 @@ class ContentCardExample extends HTMLElement {
             onCallAnswered: () => {
                 time = new Date();
                 console.log(time);
-                var intervalId = window.setInterval(function(){
+                intervalId = window.setInterval(function(){
                     timerElement.innerHTML = (new Date() - time);
                   }, 1000);
                 console.log("call answered!!!");
