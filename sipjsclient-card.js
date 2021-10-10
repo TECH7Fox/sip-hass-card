@@ -19039,10 +19039,10 @@ class ContentCardExample extends HTMLElement {
       if (!this.content) {
         this.innerHTML = `<ha-card header="SIP client"><div class="card-content"></div></ha-card>`;
         this.content = this.querySelector('div');
-        this.content.innerHTML = `<button id="call">Call Jordy</button><button id="call2">Call 103</button><button id="call3">Call g-dekstop</button><button id="call4">Call dashboard</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
+        this.content.innerHTML = `<button onclick="callUser('sip:101@192.168.178.11')">Call function</button><button id="call">Call Jordy</button><button id="call2">Call 103</button><button id="call3">Call g-dekstop</button><button id="call4">Call dashboard</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
 
         console.log(this.config);
-        const server = this.config.server; //"wss://192.168.178.11:8089/ws";
+        const server = this.config.server;
         const deviceID = localStorage["lovelace-player-device-id"];
 
         let aor = "";
@@ -19055,9 +19055,9 @@ class ContentCardExample extends HTMLElement {
                 aor = this.config.clients[client].aor;
                 authorizationUsername = this.config.clients[client].username;
                 authorizationPassword = this.config.clients[client].password;
-                //exit loop
+                break;
             }
-            // throw new Error('No settings for this deviceID');
+            throw new Error('No settings for this deviceID');
         };
 
         console.log("Set settings:");
@@ -19114,6 +19114,10 @@ class ContentCardExample extends HTMLElement {
         let callButton4 = this.content.querySelector('#call4');
         let hangupButton = this.content.querySelector('#hangup');   
         let simpleUser = this.simpleUser;
+
+        async function callUser(destination) {
+            await simpleUser.call(destination);
+        }
         
         callButton.addEventListener("click", async function () {
             await simpleUser.call("sip:101@192.168.178.11");
@@ -19140,8 +19144,8 @@ class ContentCardExample extends HTMLElement {
     // The user supplied configuration. Throw an exception and Lovelace will
     // render an error card.
     setConfig(config) {
-      if (!config.entity) {
-        throw new Error('You need to define an entity');
+      if (!config.server) {
+        throw new Error('You need to define a server');
       }
       this.config = config;
     }
