@@ -19083,8 +19083,25 @@ class ContentCardExample extends HTMLElement {
         this.simpleUser.delegate = {
             onCallReceived: async () => {
                 await this.simpleUser.answer();
+                //start timer
+                // show caller name/id
+            },
+            onCallAnswered: async () => {
+                //start timer
+                // show name/id of called one
+                console.log("call answered!!!!!");
+            },
+            onCallHangup: async () => {
+                //stop timer
+                //remove name/id
+                console.log("HANGUP!!!!");
+            },
+            onSessionDescriptionHandler: async () => {
+                console.log("onSessionDescriptionHandler IS DOING STUFF!!!!");
             }
         };
+
+        this.simpleUser.session.delegate
 
         let callButton = this.content.querySelector('#call');
         let callButton2 = this.content.querySelector('#call2');
