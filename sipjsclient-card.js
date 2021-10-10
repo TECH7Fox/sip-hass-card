@@ -19039,7 +19039,7 @@ class ContentCardExample extends HTMLElement {
       if (!this.content) {
         this.innerHTML = `<ha-card header="SIP client"><div class="card-content"></div></ha-card>`;
         this.content = this.querySelector('div');
-        this.content.innerHTML = `<button onclick="callUser('sip:101@192.168.178.11')">Call function</button><button id="call">Call Jordy</button><button id="call2">Call 103</button><button id="call3">Call g-dekstop</button><button id="call4">Call dashboard</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
+        this.content.innerHTML = `<button id="call">Call Jordy</button><button id="call2">Call 103</button><button id="call3">Call g-dekstop</button><button id="call4">Call dashboard</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
 
         console.log(this.config);
         const server = this.config.server;
@@ -19057,34 +19057,12 @@ class ContentCardExample extends HTMLElement {
                 authorizationPassword = this.config.clients[client].password;
                 break;
             }
-            throw new Error('No settings for this deviceID');
         };
 
         console.log("Set settings:");
         console.log(aor);
         console.log(authorizationUsername);
         console.log(authorizationPassword);
-
-        //switch (deviceID) {
-        //   case 'ae25c0fa-fb9777c5':
-        //       aor = "sip:103@192.168.178.11";
-        //       authorizationUsername = '103';
-        //       authorizationPassword = '12341234abcd';
-        //       break;
-        //   case 'G-Desktop':
-        //       aor = "sip:104@192.168.178.11";
-        //       authorizationUsername = '104';
-        //       authorizationPassword = '12341234abcd';
-        //       break;
-        //    case 'dd05f568-213c8e31':
-        //        aor = "sip:105@192.168.178.11";
-        //        authorizationUsername = '105';
-        //        authorizationPassword = '12341234abcd';
-        //        break;
-        //    default:
-        //        throw new Error('No settings for this deviceID');
-        //        break;
-        //}
         
         const options = {
             aor,
@@ -19114,10 +19092,6 @@ class ContentCardExample extends HTMLElement {
         let callButton4 = this.content.querySelector('#call4');
         let hangupButton = this.content.querySelector('#hangup');   
         let simpleUser = this.simpleUser;
-
-        async function callUser(destination) {
-            await simpleUser.call(destination);
-        }
         
         callButton.addEventListener("click", async function () {
             await simpleUser.call("sip:101@192.168.178.11");
@@ -19136,6 +19110,7 @@ class ContentCardExample extends HTMLElement {
         }, false);
 
         hangupButton.addEventListener("click", async function () {
+            console.log(simpleUser.session);
             await simpleUser.hangup();
         }, false);
     }
