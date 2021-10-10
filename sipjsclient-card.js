@@ -19051,22 +19051,22 @@ class ContentCardExample extends HTMLElement {
         let authorizationUsername = '103';
         let authorizationPassword = '12341234abcd';
 
-        switch (deviceID) {
-            case 'ae25c0fa-fb9777c5':
-                aor = "sip:103@192.168.178.11";
-                authorizationUsername = '103';
-                authorizationPassword = '12341234abcd';
-                console.log("GOT SIP:103");
-                break;
-            case 'G-Desktop':
-                aor = "sip:104@192.168.178.11";
-                authorizationUsername = '104';
-                authorizationPassword = '12341234';
-                console.log("GOT SIP:103");
-            default:
-                console.log("GOT NOTHING");
-                break;
-        }
+        //switch (deviceID) {
+        //    case 'ae25c0fa-fb9777c5':
+        //        aor = "sip:103@192.168.178.11";
+        //        authorizationUsername = '103';
+        //        authorizationPassword = '12341234abcd';
+        //        console.log("GOT SIP:103");
+        //        break;
+        //    case 'G-Desktop':
+        //        aor = "sip:104@192.168.178.11";
+        //        authorizationUsername = '104';
+        //        authorizationPassword = '12341234';
+        //        console.log("GOT SIP:104");
+        //    default:
+        //        console.log("GOT NOTHING");
+        //        break;
+        //}
         
         const options = {
             aor,
