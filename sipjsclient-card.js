@@ -19039,7 +19039,7 @@ class ContentCardExample extends HTMLElement {
       if (!this.content) {
         this.innerHTML = `<ha-card header="` + (this.config.title ? this.config.title : "") + `"><div class="card-content"></div></ha-card>`;
         this.content = this.querySelector('div');
-        this.content.innerHTML = `<h2 id="time">test4</h2><button id="hangup">Hangup</button>`;
+        this.content.innerHTML = `<h2 id="time">test5</h2><button id="hangup">Hangup</button>`;
 
         console.log(this.config);
         const server = this.config.server;
@@ -19058,7 +19058,6 @@ class ContentCardExample extends HTMLElement {
                 authorizationUsername = this.config.clients[client].username;
                 authorizationPassword = this.config.clients[client].password;
                 this.content.innerHTML += '<button>you: ' + this.config.clients[client].username + '</button>';
-                break;
             } else {
                 this.content.innerHTML += '<button id="' + client + '">call ' + this.config.clients[client].username + '</button>';
                 this.content.querySelector("#" + client).addEventListener("click", async function () {
