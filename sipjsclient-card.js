@@ -19041,7 +19041,7 @@ class ContentCardExample extends HTMLElement {
         this.content = this.querySelector('div');
         this.content.innerHTML = `<button id="call">Call Jordy</button><button id="call2">Call 103</button><button id="call3">Call g-dekstop</button><button id="call4">Call dashboard</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
 
-        const server = config.server; //"wss://192.168.178.11:8089/ws";
+        const server = this.config.server; //"wss://192.168.178.11:8089/ws";
         const deviceID = localStorage["lovelace-player-device-id"];
 
         let aor = "";
