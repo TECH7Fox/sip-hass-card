@@ -19039,7 +19039,7 @@ class ContentCardExample extends HTMLElement {
       if (!this.content) {
         this.innerHTML = `<ha-card header="Example-card"><div class="card-content"></div></ha-card>`;
         this.content = this.querySelector('div');
-        this.content.innerHTML = `<button id="call">Call Jordy NEW NEW!!</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
+        this.content.innerHTML = `<button id="call">Call Jordy</button><button id="call2">Call 104</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
 
         //const destination = "sip:101@192.168.178.11";
         const server = "wss://192.168.178.11:8089/ws";
@@ -19057,10 +19057,10 @@ class ContentCardExample extends HTMLElement {
                 authorizationUsername = '103';
                 authorizationPassword = '12341234abcd';
                 break;
-            case 'iedoad':
+            case 'G-Desktop':
                 aor = "sip:104@192.168.178.11";
                 authorizationUsername = '104';
-                authorizationPassword = '12341234abcd';
+                authorizationPassword = '12341234';
             default:
                 break;
         }
@@ -19088,11 +19088,16 @@ class ContentCardExample extends HTMLElement {
         };
 
         let callButton = this.content.querySelector('#call');
+        let callButton2 = this.content.querySelector('#call2');
         let hangupButton = this.content.querySelector('#hangup');   
         let simpleUser = this.simpleUser;
         
         callButton.addEventListener("click", async function () {
             await simpleUser.call("sip:101@192.168.178.11");
+        }, false);
+
+        callButton2.addEventListener("click", async function () {
+            await simpleUser.call("sip:104@192.168.178.11");
         }, false);
 
         hangupButton.addEventListener("click", async function () {
