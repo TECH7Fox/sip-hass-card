@@ -19052,17 +19052,13 @@ class ContentCardExample extends HTMLElement {
         for(var client in this.config.clients) {
             console.log(client);
             if (deviceID == client) {
-                aor = client.aor;
-                authorizationUsername = client.username;
-                authorizationPassword = client.password;
+                aor = this.config.clients[client].aor;
+                authorizationUsername = this.config.clients[client].username;
+                authorizationPassword = this.config.clients[client].password;
                 //exit loop
             }
             // throw new Error('No settings for this deviceID');
         };
-
-        console.log(aor);
-        console.log(authorizationUsername);
-        console.log(authorizationPassword);
 
         //switch (deviceID) {
         //   case 'ae25c0fa-fb9777c5':
