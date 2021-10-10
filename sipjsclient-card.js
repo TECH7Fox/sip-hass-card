@@ -19060,6 +19060,10 @@ class ContentCardExample extends HTMLElement {
             // throw new Error('No settings for this deviceID');
         };
 
+        console.log(aor);
+        console.log(authorizationUsername);
+        console.log(authorizationPassword);
+
         //switch (deviceID) {
         //   case 'ae25c0fa-fb9777c5':
         //       aor = "sip:103@192.168.178.11";
