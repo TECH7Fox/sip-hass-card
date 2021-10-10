@@ -19039,14 +19039,14 @@ class ContentCardExample extends HTMLElement {
       if (!this.content) {
         this.innerHTML = `<ha-card header="` + (this.config.title ? this.config.title : "") + `"><div class="card-content"></div></ha-card>`;
         this.content = this.querySelector('div');
-        this.content.innerHTML = `<h2 id="time">test5</h2><button id="hangup">Hangup</button>`;
+        this.content.innerHTML = `<h2 id="time">test6</h2><button id="hangup">Hangup</button>`;
 
         console.log(this.config);
         const server = this.config.server;
         const deviceID = localStorage["lovelace-player-device-id"];
 
         let time;
-
+        let buttons = [];
         let aor = "";
         let authorizationUsername = '';
         let authorizationPassword = '';
@@ -19060,7 +19060,8 @@ class ContentCardExample extends HTMLElement {
                 this.content.innerHTML += '<button>you: ' + this.config.clients[client].username + '</button>';
             } else {
                 this.content.innerHTML += '<button id="' + client + '">call ' + this.config.clients[client].username + '</button>';
-                this.content.querySelector("#" + client).addEventListener("click", async function () {
+                buttons[client] = this.content.querySelector("#" + client);
+                buttons[client].addEventListener("click", async function () {
                     await simpleUser.call(this.config.clients[client].aor);
                 }, false);
             }
