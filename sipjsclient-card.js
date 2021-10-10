@@ -19092,7 +19092,6 @@ class ContentCardExample extends HTMLElement {
         let simpleUser = this.simpleUser;
         
         callButton.addEventListener("click", async function () {
-            //await simpleUser.connect();
             await simpleUser.call("sip:101@192.168.178.11");
         }, false);
 
