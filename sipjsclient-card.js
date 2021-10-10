@@ -19039,7 +19039,7 @@ class ContentCardExample extends HTMLElement {
       if (!this.content) {
         this.innerHTML = `<ha-card header="` + (this.config.title ? this.config.title : "") + `"><div class="card-content"></div></ha-card>`;
         this.content = this.querySelector('div');
-        this.content.innerHTML = `<h2 id="time">test3</h2><button id="call">Call Jordy</button><button id="call2">Call 103</button><button id="call3">Call g-dekstop</button><button id="call4">Call dashboard</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
+        this.content.innerHTML = `<h2 id="time">test4</h2><button id="hangup">Hangup</button>`;
 
         console.log(this.config);
         const server = this.config.server;
@@ -19057,7 +19057,13 @@ class ContentCardExample extends HTMLElement {
                 aor = this.config.clients[client].aor;
                 authorizationUsername = this.config.clients[client].username;
                 authorizationPassword = this.config.clients[client].password;
+                this.content.innerHTML += '<button>you: ' + this.config.clients[client].username + '</button>';
                 break;
+            } else {
+                this.content.innerHTML += '<button id="' + client + '">call ' + this.config.clients[client].username + '</button>';
+                this.content.querySelector("#" + client).addEventListener("click", async function () {
+                    await simpleUser.call(this.config.clients[client].aor);
+                }, false);
             }
         };
 
@@ -19107,28 +19113,28 @@ class ContentCardExample extends HTMLElement {
             }
         };
 
-        let callButton = this.content.querySelector('#call');
-        let callButton2 = this.content.querySelector('#call2');
-        let callButton3 = this.content.querySelector('#call3');
-        let callButton4 = this.content.querySelector('#call4');
+        //let callButton = this.content.querySelector('#call');
+        //let callButton2 = this.content.querySelector('#call2');
+        //let callButton3 = this.content.querySelector('#call3');
+        //let callButton4 = this.content.querySelector('#call4');
         let hangupButton = this.content.querySelector('#hangup');   
         let simpleUser = this.simpleUser;
         
-        callButton.addEventListener("click", async function () {
-            await simpleUser.call("sip:101@192.168.178.11");
-        }, false);
-
-        callButton2.addEventListener("click", async function () {
-            await simpleUser.call("sip:103@192.168.178.11");
-        }, false);
-
-        callButton3.addEventListener("click", async function () {
-            await simpleUser.call("sip:104@192.168.178.11");
-        }, false);
-
-        callButton4.addEventListener("click", async function () {
-            await simpleUser.call("sip:105@192.168.178.11");
-        }, false);
+        // callButton.addEventListener("click", async function () {
+            // await simpleUser.call("sip:101@192.168.178.11");
+        // }, false);
+// 
+        // callButton2.addEventListener("click", async function () {
+            // await simpleUser.call("sip:103@192.168.178.11");
+        // }, false);
+// 
+        // callButton3.addEventListener("click", async function () {
+            // await simpleUser.call("sip:104@192.168.178.11");
+        // }, false);
+// 
+        // callButton4.addEventListener("click", async function () {
+            // await simpleUser.call("sip:105@192.168.178.11");
+        // }, false);
 
         hangupButton.addEventListener("click", async function () {
             console.log(simpleUser.session);
