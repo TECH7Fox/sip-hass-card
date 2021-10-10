@@ -19061,8 +19061,12 @@ class ContentCardExample extends HTMLElement {
                aor = "sip:104@192.168.178.11";
                authorizationUsername = '104';
                authorizationPassword = '12341234abcd';
-           default:
                break;
+            case 'dd05f568-213c8e31':
+                aor = "sip:105@192.168.178.11";
+                authorizationUsername = '105';
+                authorizationPassword = '12341234abcd';
+                break;
         }
         
         const options = {
