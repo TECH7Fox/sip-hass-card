@@ -19101,8 +19101,6 @@ class ContentCardExample extends HTMLElement {
             }
         };
 
-        this.simpleUser.session.delegate
-
         let callButton = this.content.querySelector('#call');
         let callButton2 = this.content.querySelector('#call2');
         let callButton3 = this.content.querySelector('#call3');
