@@ -19049,26 +19049,38 @@ class ContentCardExample extends HTMLElement {
         let authorizationUsername = '';
         let authorizationPassword = '';
 
-        switch (deviceID) {
-           case 'ae25c0fa-fb9777c5':
-               aor = "sip:103@192.168.178.11";
-               authorizationUsername = '103';
-               authorizationPassword = '12341234abcd';
-               break;
-           case 'G-Desktop':
-               aor = "sip:104@192.168.178.11";
-               authorizationUsername = '104';
-               authorizationPassword = '12341234abcd';
-               break;
-            case 'dd05f568-213c8e31':
-                aor = "sip:105@192.168.178.11";
-                authorizationUsername = '105';
-                authorizationPassword = '12341234abcd';
-                break;
-            default:
-                throw new Error('No settings for this deviceID');
-                break;
-        }
+
+        this.config.clients.forEach(client => {
+            console.log("CLIENT KEY: " + client.key);
+            if (deviceID == client.key) {
+                aor = client.aor;
+                authorizationUsername = client.username;
+                authorizationPassword = client.password;
+                //exit loop
+            }
+            // throw new Error('No settings for this deviceID');
+        });
+
+        //switch (deviceID) {
+        //   case 'ae25c0fa-fb9777c5':
+        //       aor = "sip:103@192.168.178.11";
+        //       authorizationUsername = '103';
+        //       authorizationPassword = '12341234abcd';
+        //       break;
+        //   case 'G-Desktop':
+        //       aor = "sip:104@192.168.178.11";
+        //       authorizationUsername = '104';
+        //       authorizationPassword = '12341234abcd';
+        //       break;
+        //    case 'dd05f568-213c8e31':
+        //        aor = "sip:105@192.168.178.11";
+        //        authorizationUsername = '105';
+        //        authorizationPassword = '12341234abcd';
+        //        break;
+        //    default:
+        //        throw new Error('No settings for this deviceID');
+        //        break;
+        //}
         
         const options = {
             aor,
