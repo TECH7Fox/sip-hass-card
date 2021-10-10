@@ -19096,13 +19096,13 @@ class ContentCardExample extends HTMLElement {
                     var minutes = Math.floor(delta / 60) % 60;
                     delta -= minutes * 60;
                     var seconds = delta % 60;
-                    timerElement.innerHTML = minutes + ":" + seconds;
+                    timerElement.innerHTML = minutes + ":" + seconds.round();
                   }, 1000);
                 console.log("call answered!!!");
             },
             onCallHangup: () => {
                 clearInterval(this.intervalId);
-                console.log((new Date() - time))
+                timerElement.innerHTML = "No calls";
                 console.log("call hangup!!");
             }
         };
