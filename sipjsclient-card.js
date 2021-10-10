@@ -19060,6 +19060,7 @@ class ContentCardExample extends HTMLElement {
             // throw new Error('No settings for this deviceID');
         };
 
+        console.log("Set settings:");
         console.log(aor);
         console.log(authorizationUsername);
         console.log(authorizationPassword);
