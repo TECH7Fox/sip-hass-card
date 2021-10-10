@@ -19041,15 +19041,12 @@ class ContentCardExample extends HTMLElement {
         this.content = this.querySelector('div');
         this.content.innerHTML = `<button id="call">Call Jordy</button><button id="call2">Call 103</button><button id="call3">Call g-dekstop</button><button id="call4">Call dashboard</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
 
-        //const destination = "sip:101@192.168.178.11";
-        const server = "wss://192.168.178.11:8089/ws";
-
+        const server = config.server; //"wss://192.168.178.11:8089/ws";
         const deviceID = localStorage["lovelace-player-device-id"];
-        console.log(deviceID);
 
-        let aor = "sip:103@192.168.178.11";
-        let authorizationUsername = '103';
-        let authorizationPassword = '12341234abcd';
+        let aor = "";
+        let authorizationUsername = '';
+        let authorizationPassword = '';
 
         switch (deviceID) {
            case 'ae25c0fa-fb9777c5':
@@ -19066,6 +19063,9 @@ class ContentCardExample extends HTMLElement {
                 aor = "sip:105@192.168.178.11";
                 authorizationUsername = '105';
                 authorizationPassword = '12341234abcd';
+                break;
+            default:
+                throw new Error('No settings for this deviceID');
                 break;
         }
         
