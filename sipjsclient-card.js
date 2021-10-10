@@ -19045,6 +19045,8 @@ class ContentCardExample extends HTMLElement {
         const server = this.config.server;
         const deviceID = localStorage["lovelace-player-device-id"];
 
+        let time;
+
         let aor = "";
         let authorizationUsername = '';
         let authorizationPassword = '';
@@ -19082,16 +19084,18 @@ class ContentCardExample extends HTMLElement {
         this.simpleUser.register(); 
         this.simpleUser.delegate = {
             onCallReceived: async () => {
+                //ask to answer
                 await this.simpleUser.answer();
             },
             onCallAnswered: () => {
+                time = new Date().getTime();
+                console.log(time);
                 console.log("call answered!!!");
             },
             onCallHangup: () => {
+                // hide timer
+                console.log((time - new Date().getTime()) / 1000)
                 console.log("call hangup!!");
-            },
-            onCallAnswered: () => {
-                console.log("call is answered!");
             }
         };
 
