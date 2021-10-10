@@ -19087,7 +19087,7 @@ class ContentCardExample extends HTMLElement {
             onCallAnswered: () => {
                 console.log("call answered!");
             },
-            onCallHangup: () => {
+            onCallTerminated: () => {
                 console.log("call hangup!!");
             }
         };
