@@ -19039,7 +19039,7 @@ class ContentCardExample extends HTMLElement {
       if (!this.content) {
         this.innerHTML = `<ha-card header="SIP client"><div class="card-content"></div></ha-card>`;
         this.content = this.querySelector('div');
-        this.content.innerHTML = `<h2 id="time">00:00</h2><button id="call">Call Jordy</button><button id="call2">Call 103</button><button id="call3">Call g-dekstop</button><button id="call4">Call dashboard</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
+        this.content.innerHTML = `<h2 id="time">test</h2><button id="call">Call Jordy</button><button id="call2">Call 103</button><button id="call3">Call g-dekstop</button><button id="call4">Call dashboard</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
 
         console.log(this.config);
         const server = this.config.server;
@@ -19080,7 +19080,6 @@ class ContentCardExample extends HTMLElement {
         };
 
         let timerElement = this.content.querySelector('#time');
-        var intervalId;
         this.simpleUser = new _src_platform_web__WEBPACK_IMPORTED_MODULE_1__.SimpleUser(server, options);
         this.simpleUser.connect();
         this.simpleUser.register(); 
@@ -19092,13 +19091,17 @@ class ContentCardExample extends HTMLElement {
             onCallAnswered: () => {
                 time = new Date();
                 console.log(time);
-                intervalId = window.setInterval(function(){
-                    timerElement.innerHTML = (new Date() - time);
+                this.intervalId = window.setInterval(function(){
+                    var delta = Math.abs(new Date() - time) / 1000;
+                    var minutes = Math.floor(delta / 60) % 60;
+                    delta -= minutes * 60;
+                    var seconds = delta % 60;
+                    timerElement.innerHTML = minutes + ":" + seconds;
                   }, 1000);
                 console.log("call answered!!!");
             },
             onCallHangup: () => {
-                clearInterval(intervalId);
+                clearInterval(this.intervalId);
                 console.log((new Date() - time))
                 console.log("call hangup!!");
             }
