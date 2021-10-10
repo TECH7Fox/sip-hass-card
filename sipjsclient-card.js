@@ -19056,12 +19056,15 @@ class ContentCardExample extends HTMLElement {
                 aor = "sip:103@192.168.178.11";
                 authorizationUsername = '103';
                 authorizationPassword = '12341234abcd';
+                console.log("GOT SIP:103");
                 break;
             case 'G-Desktop':
                 aor = "sip:104@192.168.178.11";
                 authorizationUsername = '104';
                 authorizationPassword = '12341234';
+                console.log("GOT SIP:103");
             default:
+                console.log("GOT NOTHING");
                 break;
         }
         
@@ -19093,10 +19096,12 @@ class ContentCardExample extends HTMLElement {
         let simpleUser = this.simpleUser;
         
         callButton.addEventListener("click", async function () {
+            console.log("CALLING SIP:101");
             await simpleUser.call("sip:101@192.168.178.11");
         }, false);
 
         callButton2.addEventListener("click", async function () {
+            console.log("CALLING SIP:104");
             await simpleUser.call("sip:104@192.168.178.11");
         }, false);
 
