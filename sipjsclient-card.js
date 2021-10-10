@@ -19079,7 +19079,7 @@ class ContentCardExample extends HTMLElement {
             }
         };
 
-        let timerElement = this.content.querySelector('#timer');
+        let timerElement = this.content.querySelector('#time');
 
         this.simpleUser = new _src_platform_web__WEBPACK_IMPORTED_MODULE_1__.SimpleUser(server, options);
         this.simpleUser.connect();
