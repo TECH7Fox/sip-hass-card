@@ -19094,7 +19094,7 @@ class ContentCardExample extends HTMLElement {
             },
             onCallHangup: () => {
                 // hide timer
-                console.log((time - new Date()) / 1000)
+                console.log((new Date() - time))
                 console.log("call hangup!!");
             }
         };
