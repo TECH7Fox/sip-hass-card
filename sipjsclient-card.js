@@ -19095,9 +19095,6 @@ class ContentCardExample extends HTMLElement {
                 //stop timer
                 //remove name/id
                 console.log("HANGUP!!!!");
-            },
-            onSessionDescriptionHandler: async () => {
-                console.log("onSessionDescriptionHandler IS DOING STUFF!!!!");
             }
         };
 
