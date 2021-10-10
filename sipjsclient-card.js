@@ -19096,7 +19096,7 @@ class ContentCardExample extends HTMLElement {
                     var minutes = Math.floor(delta / 60) % 60;
                     delta -= minutes * 60;
                     var seconds = delta % 60;
-                    timerElement.innerHTML =  (minutes + ":" + seconds.round()).split(':').map(e => `0${e}`.slice(-2)).join(':');
+                    timerElement.innerHTML =  (minutes + ":" + Math.round(seconds)).split(':').map(e => `0${e}`.slice(-2)).join(':');
                   }, 1000);
                 console.log("call answered!!!");
             },
