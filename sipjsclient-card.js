@@ -19085,10 +19085,13 @@ class ContentCardExample extends HTMLElement {
                 await this.simpleUser.answer();
             },
             onCallAnswered: () => {
-                console.log("call answered!");
+                console.log("call answered!!!");
             },
-            onCallTerminated: () => {
+            onCallHangup: () => {
                 console.log("call hangup!!");
+            },
+            onCallAnswered: () => {
+                console.log("call is answered!");
             }
         };
 
