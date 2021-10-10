@@ -19037,7 +19037,7 @@ class ContentCardExample extends HTMLElement {
     set hass(hass) {
       // Initialize the content if it's not there yet.
       if (!this.content) {
-        this.innerHTML = `<ha-card header="Example-card"><div class="card-content"></div></ha-card>`;
+        this.innerHTML = `<ha-card header="' + localStorage["lovelace-player-device-id"] + '"><div class="card-content"></div></ha-card>`;
         this.content = this.querySelector('div');
         this.content.innerHTML = `<button id="call">Call Jordy</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
 
