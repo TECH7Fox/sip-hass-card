@@ -19047,16 +19047,20 @@ class ContentCardExample extends HTMLElement {
         const deviceID = localStorage["lovelace-player-device-id"];
         console.log(deviceID);
 
+        let aor = "sip:103@192.168.178.11";
+        let authorizationUsername = '103';
+        let authorizationPassword = '12341234abcd';
+
         switch (deviceID) {
             case 'ae25c0fa-fb9777c5':
-                const aor = "sip:103@192.168.178.11";
-                const authorizationUsername = '103';
-                const authorizationPassword = '12341234abcd';
+                aor = "sip:103@192.168.178.11";
+                authorizationUsername = '103';
+                authorizationPassword = '12341234abcd';
                 break;
             case 'iedoad':
-                const aor = "sip:104@192.168.178.11";
-                const authorizationUsername = '104';
-                const authorizationPassword = '12341234abcd';
+                aor = "sip:104@192.168.178.11";
+                authorizationUsername = '104';
+                authorizationPassword = '12341234abcd';
             default:
                 break;
         }
