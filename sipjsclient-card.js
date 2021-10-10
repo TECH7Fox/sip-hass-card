@@ -19037,7 +19037,7 @@ class ContentCardExample extends HTMLElement {
     set hass(hass) {
       // Initialize the content if it's not there yet.
       if (!this.content) {
-        this.innerHTML = `<ha-card header="SIP client"><div class="card-content"></div></ha-card>`;
+        this.innerHTML = `<ha-card header="` + (this.config.title ? this.config.title : "") + `"><div class="card-content"></div></ha-card>`;
         this.content = this.querySelector('div');
         this.content.innerHTML = `<h2 id="time">test3</h2><button id="call">Call Jordy</button><button id="call2">Call 103</button><button id="call3">Call g-dekstop</button><button id="call4">Call dashboard</button><button id="hangup">Hangup</button><audio id="remoteAudio" style="display:none" controls><p>Your browser doesn't support HTML5 audio.</p></audio>`;
 
