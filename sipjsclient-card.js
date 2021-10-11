@@ -19039,11 +19039,13 @@ class ContentCardExample extends HTMLElement {
       if (!this.content) {
         this.innerHTML = `<ha-card header="` + (this.config.title ? this.config.title : "") + `"><div class="card-content"></div></ha-card>`;
         this.content = this.querySelector('div');
-        this.content.innerHTML = `<audio id="remoteAudio" style="display:none"></audio><h2 style="text-align: center" id="name">Name3</h2><span style="float:left" id="state">State</span><span style="float:right" id="time">time</span><br><hr><div class="display:grid; grid-template-columns: repeat(2, 3), minmax(0, 1fr);"><button style="background-color: lime;" id="answer">Answer</button><button style="background-color: red" id="hangup">Hangup</button></div><div class="display:grid; grid-template-columns: repeat(3, 3), minmax(0, 1fr);">`;
+        this.content.innerHTML = `<audio id="remoteAudio" style="display:none"></audio><h2 style="text-align: center" id="name">Name3</h2><span style="float:left" id="state">State</span><span style="float:right" id="time">time</span><br><hr><div><button style="background-color: var(--label-badge-green); width: 50%;" id="answer">Answer</button><button style="background-color: var(--label-badge-red); width: 50%;" id="hangup">Hangup</button></div><div id="callButtons" style="display:grid; grid-template-columns: repeat(3, 3), minmax(0, 1fr);"></div>`;
 
         console.log(this.config);
         const server = this.config.server;
         const deviceID = localStorage["lovelace-player-device-id"];
+
+        let callButtonsDiv = this.content.querySelector('callButtons');
 
         let time;
 
@@ -19058,15 +19060,13 @@ class ContentCardExample extends HTMLElement {
                 aor = this.config.clients[client].aor;
                 authorizationUsername = this.config.clients[client].username;
                 authorizationPassword = this.config.clients[client].password;
-                this.content.innerHTML += '<button>you: ' + this.config.clients[client].username + '</button>';
+                callButtonsDiv.innerHTML += '<button>you: ' + this.config.clients[client].username + '</button>';
             } else {
-                this.content.innerHTML += '<button class="callBtn" id="' + client + '">call ' + this.config.clients[client].username + '</button>';
+                callButtonsDiv.innerHTML += '<button class="callBtn" id="' + client + '">call ' + this.config.clients[client].username + '</button>';
             }
         };
 
-        this.content.innerHTML += '</div>';
-
-        this.callButtons = this.content.querySelectorAll(".callBtn");
+        this.callButtons = callButtonsDiv.querySelectorAll(".callBtn");
         this.callButtonItems = [].slice.call(this.callButtons);
         
         this.callButtonItems.forEach(function (item, idx) {
@@ -19077,10 +19077,6 @@ class ContentCardExample extends HTMLElement {
             }, false);
         });
         
-
-        // ADD EVENTLISTENER TO ALL BUTTONS
-        //https://stackoverflow.com/questions/27946703/javascript-foreach-add-addeventlistener-on-all-buttons/27947429
-
         console.log("Set settings:");
         console.log(aor);
         console.log(authorizationUsername);
@@ -19108,7 +19104,6 @@ class ContentCardExample extends HTMLElement {
         this.simpleUser.register(); 
         this.simpleUser.delegate = {
             onCallReceived: async () => {
-                answerButton.style.display = "";
                 stateElement.innerHTML = "calling";
                 console.log(this.simpleUser.session);
                 console.log(this.simpleUser.session._assertedIdentity._displayName);
@@ -19116,7 +19111,6 @@ class ContentCardExample extends HTMLElement {
             },
             onCallAnswered: () => {
                 time = new Date();
-                answerButton.style.display = "none";
                 stateElement.innerHTML = "connected";
                 nameElement.innerHTML = this.simpleUser.session._assertedIdentity._displayName;
                 this.intervalId = window.setInterval(function(){
@@ -19129,7 +19123,6 @@ class ContentCardExample extends HTMLElement {
             },
             onCallHangup: () => {
                 clearInterval(this.intervalId);
-                answerButton.style.display = "none";
                 stateElement.innerHTML = "Online";
                 nameElement.innerHTML = "Idle";
                 timerElement.innerHTML = "00:00";
@@ -19164,7 +19157,6 @@ class ContentCardExample extends HTMLElement {
         }, false);
 
         hangupButton.addEventListener("click", async function () {
-            console.log(simpleUser.session);
             await simpleUser.hangup();
         }, false);
     }
