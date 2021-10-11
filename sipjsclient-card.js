@@ -19064,8 +19064,6 @@ class ContentCardExample extends HTMLElement {
             }
         };
 
-        this.content.innerHTML += '</div>';
-
         this.callButtons = this.content.querySelectorAll(".callBtn");
         this.callButtonItems = [].slice.call(this.callButtons);
         
