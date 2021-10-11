@@ -19060,13 +19060,22 @@ class ContentCardExample extends HTMLElement {
                 authorizationPassword = this.config.clients[client].password;
                 this.content.innerHTML += '<button>you: ' + this.config.clients[client].username + '</button>';
             } else {
-                this.content.innerHTML += '<button id="' + client + '">call ' + this.config.clients[client].username + '</button>';
-                this.content.querySelector("#" + client).addEventListener("click", async function () {
-                    console.log(client);
-                    await simpleUser.call(__this.config.clients[client].aor);
-                }, false);
+                this.content.innerHTML += '<button class="callBtn" id="' + client + '">call ' + this.config.clients[client].username + '</button>';
+                //this.content.querySelector("#" + client).addEventListener("click", async function () {
+                //    console.log(client);
+                //    await simpleUser.call(__this.config.clients[client].aor);
+                //}, false);
             }
         };
+
+        this.content.querySelectorAll(".callBtn").addEventListener("click", async function () {
+            console.log("EVENT LISTENER: ");
+            console.log(this);
+            await simpleUser.call(__this.config.clients[this.id].aor);
+        }, false);
+
+        // ADD EVENTLISTENER TO ALL BUTTONS
+        //https://stackoverflow.com/questions/27946703/javascript-foreach-add-addeventlistener-on-all-buttons/27947429
 
         console.log("Set settings:");
         console.log(aor);
