@@ -19031,7 +19031,7 @@ __webpack_require__.r(__webpack_exports__);
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable no-console */
 
-class ContentCardExample extends HTMLElement {
+class SIPjsClientCard extends HTMLElement {
     // Whenever the state changes, a new `hass` object is set. Use this to
     // update your content.
     set hass(hass) {
@@ -19080,15 +19080,6 @@ class ContentCardExample extends HTMLElement {
             }, false);
         });
         
-
-        // ADD EVENTLISTENER TO ALL BUTTONS
-        //https://stackoverflow.com/questions/27946703/javascript-foreach-add-addeventlistener-on-all-buttons/27947429
-
-        console.log("Set settings:");
-        console.log(aor);
-        console.log(authorizationUsername);
-        console.log(authorizationPassword);
-        
         const options = {
             aor,
             media: {
@@ -19132,28 +19123,8 @@ class ContentCardExample extends HTMLElement {
             }
         };
 
-        //let callButton = this.content.querySelector('#call');
-        //let callButton2 = this.content.querySelector('#call2');
-        //let callButton3 = this.content.querySelector('#call3');
-        //let callButton4 = this.content.querySelector('#call4');
         let hangupButton = this.content.querySelector('#hangup');   
         let simpleUser = this.simpleUser;
-        
-        // callButton.addEventListener("click", async function () {
-            // await simpleUser.call("sip:101@192.168.178.11");
-        // }, false);
-// 
-        // callButton2.addEventListener("click", async function () {
-            // await simpleUser.call("sip:103@192.168.178.11");
-        // }, false);
-// 
-        // callButton3.addEventListener("click", async function () {
-            // await simpleUser.call("sip:104@192.168.178.11");
-        // }, false);
-// 
-        // callButton4.addEventListener("click", async function () {
-            // await simpleUser.call("sip:105@192.168.178.11");
-        // }, false);
 
         answerButton.addEventListener("click", async function () {
             await simpleUser.answer();
@@ -19182,7 +19153,7 @@ class ContentCardExample extends HTMLElement {
     }
   }
   
-  customElements.define('content-card-example', ContentCardExample);
+  customElements.define('sipjs-client-card', ContentCardExample);
 
 })();
 
