@@ -19039,7 +19039,7 @@ class ContentCardExample extends HTMLElement {
       if (!this.content) {
         this.innerHTML = `<ha-card header="` + (this.config.title ? this.config.title : "") + `"><div class="card-content"></div></ha-card>`;
         this.content = this.querySelector('div');
-        this.content.innerHTML = `<audio id="remoteAudio" style="display:none"></audio><h2 style="text-align: center" id="name">Name</h2><span style="float:left" id="state">State</span><span style="float:right" id="time">time</span><br><hr><br><div class="display:grid; grid-template-columns: repeat(2, 3), minmax(0, 1fr);"><button style="display:none" id="answer">Answer</button><button id="hangup">Hangup</button></div>`;
+        this.content.innerHTML = `<audio id="remoteAudio" style="display:none"></audio><h2 style="text-align: center" id="name">Name2</h2><span style="float:left" id="state">State</span><span style="float:right" id="time">time</span><br><hr><div class="display:grid; grid-template-columns: repeat(2, 3), minmax(0, 1fr);"><button style="display:none" id="answer">Answer</button><button id="hangup">Hangup</button></div><div class="display:grid; grid-template-columns: repeat(3, 3), minmax(0, 1fr);">`;
 
         console.log(this.config);
         const server = this.config.server;
@@ -19063,6 +19063,8 @@ class ContentCardExample extends HTMLElement {
                 this.content.innerHTML += '<button class="callBtn" id="' + client + '">call ' + this.config.clients[client].username + '</button>';
             }
         };
+
+        this.content.innerHTML += '</div>';
 
         this.callButtons = this.content.querySelectorAll(".callBtn");
         this.callButtonItems = [].slice.call(this.callButtons);
