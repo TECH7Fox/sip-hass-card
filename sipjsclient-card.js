@@ -19153,7 +19153,7 @@ class SIPjsClientCard extends HTMLElement {
     }
   }
   
-  customElements.define('sipjs-client-card', ContentCardExample);
+  customElements.define('sipjs-client-card', SIPjsClientCard);
 
 })();
 
