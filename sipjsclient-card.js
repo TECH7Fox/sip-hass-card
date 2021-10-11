@@ -19039,7 +19039,7 @@ class ContentCardExample extends HTMLElement {
       if (!this.content) {
         this.innerHTML = `<ha-card header="` + (this.config.title ? this.config.title : "") + `"><div class="card-content"></div></ha-card>`;
         this.content = this.querySelector('div');
-        this.content.innerHTML = `<h2 id="time">test7</h2><button id="hangup">Hangup</button>`;
+        this.content.innerHTML = `<h2 id="name">Name</h2><h2 id="time">test7</h2><button id="hangup">Hangup</button>`;
 
         console.log(this.config);
         const server = this.config.server;
@@ -19096,6 +19096,7 @@ class ContentCardExample extends HTMLElement {
         };
 
         let timerElement = this.content.querySelector('#time');
+        let nameElement = this.content.querySelector('#name');
         this.simpleUser = new _src_platform_web__WEBPACK_IMPORTED_MODULE_1__.SimpleUser(server, options);
         this.simpleUser.connect();
         this.simpleUser.register(); 
@@ -19106,7 +19107,8 @@ class ContentCardExample extends HTMLElement {
             },
             onCallAnswered: () => {
                 time = new Date();
-                console.log(time);
+                console.log(this.simpleUser.session);
+                //nameElement.innerHTML = this.simpleUser.session.username;
                 this.intervalId = window.setInterval(function(){
                     var delta = Math.abs(new Date() - time) / 1000;
                     var minutes = Math.floor(delta / 60) % 60;
@@ -19118,6 +19120,7 @@ class ContentCardExample extends HTMLElement {
             },
             onCallHangup: () => {
                 clearInterval(this.intervalId);
+                nameElement.innerHTML = "No one calling";
                 timerElement.innerHTML = "No calls";
                 console.log("call hangup!!");
             }
