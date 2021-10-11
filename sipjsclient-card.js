@@ -19039,7 +19039,7 @@ class ContentCardExample extends HTMLElement {
       if (!this.content) {
         this.innerHTML = `<ha-card header="` + (this.config.title ? this.config.title : "") + `"><div class="card-content"></div></ha-card>`;
         this.content = this.querySelector('div');
-        this.content.innerHTML = `<audio id="remoteAudio" style="display:none"></audio><h2 style="text-align: center" id="name">Name3</h2><span style="float:left" id="state">State</span><span style="float:right" id="time">time</span><br><hr><div><button style="background-color: var(--label-badge-green); width: 50%;" id="answer">Answer</button><button style="background-color: var(--label-badge-red); width: 50%;" id="hangup">Hangup</button></div>`;
+        this.content.innerHTML = `<audio id="remoteAudio" style="display:none"></audio><h2 style="text-align: center" id="name">Name4</h2><span style="float:left" id="state">State</span><span style="float:right" id="time">time</span><br><hr><div><button style="background-color: var(--label-badge-green); width: 50%;" id="answer">Answer</button><button style="background-color: var(--label-badge-red); width: 50%;" id="hangup">Hangup</button></div>`;
 
         console.log(this.config);
         const server = this.config.server;
