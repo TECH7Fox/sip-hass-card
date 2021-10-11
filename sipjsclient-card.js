@@ -19106,6 +19106,9 @@ class ContentCardExample extends HTMLElement {
         this.simpleUser.delegate = {
             onCallReceived: async () => {
                 answerButton.style.display = "";
+                console.log(this.simpleUser.session);
+                console.log(this.simpleUser.session._assertedIdentity._displayName);
+                nameElement.innerHTML = this.simpleUser.session._assertedIdentity._displayName;
             },
             onCallAnswered: () => {
                 answerButton.style.display = "none";
