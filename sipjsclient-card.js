@@ -19039,7 +19039,7 @@ class ContentCardExample extends HTMLElement {
       if (!this.content) {
         this.innerHTML = `<ha-card header="` + (this.config.title ? this.config.title : "") + `"><div class="card-content"></div></ha-card>`;
         this.content = this.querySelector('div');
-        this.content.innerHTML = `<audio id="remoteAudio" style="display:none"></audio><h2 id="name">Name</h2><h3 style="float:left" id="state">State</h3><h3 style="float:right" id="time">time</h3><button style="display:none" id="answer">Answer</button><button id="hangup">Hangup</button>`;
+        this.content.innerHTML = `<audio id="remoteAudio" style="display:none"></audio><h2 style="text-align: center" id="name">Name</h2><span style="float:left" id="state">State</span><span style="float:right" id="time">time</span><br><button style="display:none" id="answer">Answer</button><button id="hangup">Hangup</button>`;
 
         console.log(this.config);
         const server = this.config.server;
@@ -19100,18 +19100,21 @@ class ContentCardExample extends HTMLElement {
         let timerElement = this.content.querySelector('#time');
         let nameElement = this.content.querySelector('#name');
         let answerButton = this.content.querySelector('#answer');
+        let stateButton = this.content.querySelector('#state');
         this.simpleUser = new _src_platform_web__WEBPACK_IMPORTED_MODULE_1__.SimpleUser(server, options);
         this.simpleUser.connect();
         this.simpleUser.register(); 
         this.simpleUser.delegate = {
             onCallReceived: async () => {
                 answerButton.style.display = "";
+                stateButton.innerHTML = "calling";
                 console.log(this.simpleUser.session);
                 console.log(this.simpleUser.session._assertedIdentity._displayName);
                 nameElement.innerHTML = this.simpleUser.session._assertedIdentity._displayName;
             },
             onCallAnswered: () => {
                 answerButton.style.display = "none";
+                stateButton.innerHTML = "connected";
                 time = new Date();
                 console.log(this.simpleUser.session);
                 //nameElement.innerHTML = this.simpleUser.session.username;
@@ -19122,14 +19125,13 @@ class ContentCardExample extends HTMLElement {
                     var seconds = delta % 60;
                     timerElement.innerHTML =  (minutes + ":" + Math.round(seconds)).split(':').map(e => `0${e}`.slice(-2)).join(':');
                   }, 1000);
-                console.log("call answered!!!");
             },
             onCallHangup: () => {
                 clearInterval(this.intervalId);
                 answerButton.style.display = "none";
-                nameElement.innerHTML = "No one calling";
-                timerElement.innerHTML = "No calls";
-                console.log("call hangup!!");
+                stateButton.innerHTML = "Online";
+                nameElement.innerHTML = "Idle";
+                timerElement.innerHTML = "00:00";
             }
         };
 
