@@ -1,15 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIP client test</title>
+  <meta charset="utf-8" />
+  <title>SIP.js Demo 1</title>
+  <link rel="stylesheet" type="text/css" href="./style.css">
 </head>
+
 <body>
-    <audio id="remoteAudio" controls>
-        <p>Your browser doesn't support HTML5 audio.</p>
-      </audio>
-    <script src="javascript.js"></script>
+  <button id="call">Call 101</button>
+  <button id="hangup">Hangup</button>
+  <audio id="remoteAudio" style="display:none" controls>
+    <p>Your browser doesn't support HTML5 audio.</p>
+  </audio>
+  <script src="./scripts.js"
+    onerror="alert('To run this demo you must first build the library and demo source! See the README.')">
+    </script>
 </body>
 </html>

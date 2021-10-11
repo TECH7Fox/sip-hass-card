@@ -1,9 +1,0 @@
-{
-  "extends": "../tsconfig-base.json",
-  "compilerOptions": {
-    "sourceMap": true
-  },
-  "include": [
-    "**/*.ts"
-  ]
-}

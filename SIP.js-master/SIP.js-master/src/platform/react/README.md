@@ -1,1 +1,0 @@
-See [documentation](../.././../docs/react-native.md).
