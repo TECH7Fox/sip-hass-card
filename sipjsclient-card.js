@@ -19075,9 +19075,7 @@ class ContentCardExample extends HTMLElement {
         this.callButtonItems.forEach(function (item, idx) {
             item.addEventListener("click", async function () {
                 simpleUser.call(__this.config.clients[item.id].aor);
-                console.log("SESSION: ");
-                console.log(__this.simpleUser.session);
-                nameElement.innerHTML = __this.simpleUser.session._assertedIdentity._displayName;
+                nameElement.innerHTML = __this.simpleUser.session.remoteIdentity.uri.user;
                 stateElement.innerHTML = "calling";
             }, false);
         });
