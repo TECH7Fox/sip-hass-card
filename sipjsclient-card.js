@@ -19068,11 +19068,17 @@ class ContentCardExample extends HTMLElement {
             }
         };
 
-        this.content.querySelectorAll(".callBtn").addEventListener("click", async function () {
-            console.log("EVENT LISTENER: ");
-            console.log(this);
-            await simpleUser.call(__this.config.clients[this.id].aor);
-        }, false);
+        this.callButtons = this.content.querySelectorAll(".callBtn");
+        this.callButtonItems = [].slice.call(this.callButtons);
+        
+        this.callButtonItems.forEach(function (item, idx) {
+            item.addEventListener("click", async function () {
+                console.log("EVENT LISTENER: ");
+                console.log(idx);
+                await simpleUser.call(__this.config.clients[item.id].aor);
+            }, false);
+        });
+        
 
         // ADD EVENTLISTENER TO ALL BUTTONS
         //https://stackoverflow.com/questions/27946703/javascript-foreach-add-addeventlistener-on-all-buttons/27947429
