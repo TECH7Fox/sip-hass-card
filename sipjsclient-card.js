@@ -19039,7 +19039,7 @@ class ContentCardExample extends HTMLElement {
       if (!this.content) {
         this.innerHTML = `<ha-card header="` + (this.config.title ? this.config.title : "") + `"><div class="card-content"></div></ha-card>`;
         this.content = this.querySelector('div');
-        this.content.innerHTML = `<h2 id="name">Name</h2><h2 id="time">test7</h2><button style="hidden" id="answer">Answer</button><button id="hangup">Hangup</button>`;
+        this.content.innerHTML = `<audio id="remoteAudio" style="display:none"></audio><h2 id="name">Name</h2><h2 id="time">test7</h2><button style="display:none" id="answer">Answer</button><button id="hangup">Hangup</button>`;
 
         console.log(this.config);
         const server = this.config.server;
@@ -19061,10 +19061,6 @@ class ContentCardExample extends HTMLElement {
                 this.content.innerHTML += '<button>you: ' + this.config.clients[client].username + '</button>';
             } else {
                 this.content.innerHTML += '<button class="callBtn" id="' + client + '">call ' + this.config.clients[client].username + '</button>';
-                //this.content.querySelector("#" + client).addEventListener("click", async function () {
-                //    console.log(client);
-                //    await simpleUser.call(__this.config.clients[client].aor);
-                //}, false);
             }
         };
 
@@ -19112,7 +19108,7 @@ class ContentCardExample extends HTMLElement {
                 answerButton.style.display = "";
             },
             onCallAnswered: () => {
-                answerButton.style.display = "hidden";
+                answerButton.style.display = "none";
                 time = new Date();
                 console.log(this.simpleUser.session);
                 //nameElement.innerHTML = this.simpleUser.session.username;
@@ -19127,7 +19123,7 @@ class ContentCardExample extends HTMLElement {
             },
             onCallHangup: () => {
                 clearInterval(this.intervalId);
-                answerButton.style.display = "hidden";
+                answerButton.style.display = "none";
                 nameElement.innerHTML = "No one calling";
                 timerElement.innerHTML = "No calls";
                 console.log("call hangup!!");
