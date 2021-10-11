@@ -19066,6 +19066,11 @@ class ContentCardExample extends HTMLElement {
 
         this.callButtons = this.content.querySelectorAll(".callBtn");
         this.callButtonItems = [].slice.call(this.callButtons);
+
+        let timerElement = this.content.querySelector('#time');
+        let nameElement = this.content.querySelector('#name');
+        let answerButton = this.content.querySelector('#answer');
+        let stateElement = this.content.querySelector('#state');
         
         this.callButtonItems.forEach(function (item, idx) {
             item.addEventListener("click", async function () {
@@ -19097,10 +19102,6 @@ class ContentCardExample extends HTMLElement {
             }
         };
 
-        let timerElement = this.content.querySelector('#time');
-        let nameElement = this.content.querySelector('#name');
-        let answerButton = this.content.querySelector('#answer');
-        let stateElement = this.content.querySelector('#state');
         this.simpleUser = new _src_platform_web__WEBPACK_IMPORTED_MODULE_1__.SimpleUser(server, options);
         this.simpleUser.connect();
         this.simpleUser.register(); 
