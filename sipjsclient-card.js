@@ -19039,7 +19039,7 @@ class ContentCardExample extends HTMLElement {
       if (!this.content) {
         this.innerHTML = `<ha-card header="` + (this.config.title ? this.config.title : "") + `"><div class="card-content"></div></ha-card>`;
         this.content = this.querySelector('div');
-        this.content.innerHTML = `<audio id="remoteAudio" style="display:none"></audio><h2 style="text-align: center" id="name">Name12</h2><span style="float:left" id="state">State</span><span style="float:right" id="time">time</span><br><hr><button id="answer">Answer</button><button id="hangup">Hangup</button>`;
+        this.content.innerHTML = `<audio id="remoteAudio" style="display:none"></audio><h2 style="text-align: center" id="name">Name13</h2><span style="float:left" id="state">State</span><span style="float:right" id="time">time</span><br><hr><button id="answer">Answer</button><button id="hangup">Hangup</button>`;
 
         console.log(this.config);
         const server = this.config.server;
@@ -19075,8 +19075,8 @@ class ContentCardExample extends HTMLElement {
         this.callButtonItems.forEach(function (item, idx) {
             item.addEventListener("click", async function () {
                 simpleUser.call(__this.config.clients[item.id].aor);
-                console.log(__this);
-                console.log(__this.simpleUser.session._assertedIdentity._displayName);
+                console.log("SESSION: ");
+                console.log(__this.simpleUser.session);
                 nameElement.innerHTML = __this.simpleUser.session._assertedIdentity._displayName;
                 stateElement.innerHTML = "calling";
             }, false);
