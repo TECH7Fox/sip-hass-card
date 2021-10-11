@@ -19039,13 +19039,11 @@ class ContentCardExample extends HTMLElement {
       if (!this.content) {
         this.innerHTML = `<ha-card header="` + (this.config.title ? this.config.title : "") + `"><div class="card-content"></div></ha-card>`;
         this.content = this.querySelector('div');
-        this.content.innerHTML = `<audio id="remoteAudio" style="display:none"></audio><h2 style="text-align: center" id="name">Name3</h2><span style="float:left" id="state">State</span><span style="float:right" id="time">time</span><br><hr><div><button style="background-color: var(--label-badge-green); width: 50%;" id="answer">Answer</button><button style="background-color: var(--label-badge-red); width: 50%;" id="hangup">Hangup</button></div><div id="callButtons" style="display:grid; grid-template-columns: repeat(3, 3), minmax(0, 1fr);"></div>`;
+        this.content.innerHTML = `<audio id="remoteAudio" style="display:none"></audio><h2 style="text-align: center" id="name">Name3</h2><span style="float:left" id="state">State</span><span style="float:right" id="time">time</span><br><hr><div><button style="background-color: var(--label-badge-green); width: 50%;" id="answer">Answer</button><button style="background-color: var(--label-badge-red); width: 50%;" id="hangup">Hangup</button></div>`;
 
         console.log(this.config);
         const server = this.config.server;
         const deviceID = localStorage["lovelace-player-device-id"];
-
-        let callButtonsDiv = this.content.querySelector('callButtons');
 
         let time;
 
@@ -19060,13 +19058,15 @@ class ContentCardExample extends HTMLElement {
                 aor = this.config.clients[client].aor;
                 authorizationUsername = this.config.clients[client].username;
                 authorizationPassword = this.config.clients[client].password;
-                callButtonsDiv.innerHTML += '<button>you: ' + this.config.clients[client].username + '</button>';
+                this.content.innerHTML += '<button style="width: 33.33%;">you: ' + this.config.clients[client].username + '</button>';
             } else {
-                callButtonsDiv.innerHTML += '<button class="callBtn" id="' + client + '">call ' + this.config.clients[client].username + '</button>';
+                this.content.innerHTML += '<button style="width: 33.33%;" class="callBtn" id="' + client + '">call ' + this.config.clients[client].username + '</button>';
             }
         };
 
-        this.callButtons = callButtonsDiv.querySelectorAll(".callBtn");
+        this.content.innerHTML += '</div>';
+
+        this.callButtons = this.content.querySelectorAll(".callBtn");
         this.callButtonItems = [].slice.call(this.callButtons);
         
         this.callButtonItems.forEach(function (item, idx) {
