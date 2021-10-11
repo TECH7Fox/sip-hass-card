@@ -19039,7 +19039,7 @@ class ContentCardExample extends HTMLElement {
       if (!this.content) {
         this.innerHTML = `<ha-card header="` + (this.config.title ? this.config.title : "") + `"><div class="card-content"></div></ha-card>`;
         this.content = this.querySelector('div');
-        this.content.innerHTML = `<h2 id="name">Name</h2><h2 id="time">test7</h2><button id="hangup">Hangup</button>`;
+        this.content.innerHTML = `<h2 id="name">Name</h2><h2 id="time">test7</h2><button style="hidden" id="answer">Answer</button><button id="hangup">Hangup</button>`;
 
         console.log(this.config);
         const server = this.config.server;
@@ -19097,15 +19097,16 @@ class ContentCardExample extends HTMLElement {
 
         let timerElement = this.content.querySelector('#time');
         let nameElement = this.content.querySelector('#name');
+        let answerButton = this.content.querySelector('#answer');
         this.simpleUser = new _src_platform_web__WEBPACK_IMPORTED_MODULE_1__.SimpleUser(server, options);
         this.simpleUser.connect();
         this.simpleUser.register(); 
         this.simpleUser.delegate = {
             onCallReceived: async () => {
-                //ask to answer
-                await this.simpleUser.answer();
+                answerButton.style.display = "";
             },
             onCallAnswered: () => {
+                answerButton.style.display = "hidden";
                 time = new Date();
                 console.log(this.simpleUser.session);
                 //nameElement.innerHTML = this.simpleUser.session.username;
@@ -19120,6 +19121,7 @@ class ContentCardExample extends HTMLElement {
             },
             onCallHangup: () => {
                 clearInterval(this.intervalId);
+                answerButton.style.display = "hidden";
                 nameElement.innerHTML = "No one calling";
                 timerElement.innerHTML = "No calls";
                 console.log("call hangup!!");
@@ -19148,6 +19150,10 @@ class ContentCardExample extends HTMLElement {
         // callButton4.addEventListener("click", async function () {
             // await simpleUser.call("sip:105@192.168.178.11");
         // }, false);
+
+        answerButton.addEventListener("click", async function () {
+            await simpleUser.answer();
+        }, false);
 
         hangupButton.addEventListener("click", async function () {
             console.log(simpleUser.session);
