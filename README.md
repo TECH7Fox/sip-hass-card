@@ -10,6 +10,7 @@ This is very much still work in progress, and these are the things i want to add
  * Better CSS. **if you want to help, please do!**
  * GUI config
  * Better errror logging
+ * Ringtone when called
  * Mute function
  * Conference function
  * Videocalls
