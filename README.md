@@ -12,6 +12,7 @@ This is very much still work in progress, and these are the things i want to add
  * Better errror logging
  * Mute function
  * Conference function
+ * Videocalls
  * Option to auto answer
  * PA function? (broadcast to all)
  * Sound wave animation?
