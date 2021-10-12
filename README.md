@@ -5,11 +5,23 @@ With this card you can make and receive calls to other HA clients and other sip 
 
 ![image](https://user-images.githubusercontent.com/32220029/136860621-8a12bd7f-a052-4855-a163-29dab84901e1.png)
 
-Add as many devices you want in the config like below.
+## Roadmap
+This is very much still work in progress, and these are the things i want to add in the near future.
+ * Better CSS. **if you want to help, please do!**
+ * GUI config
+ * Better errror logging
+ * Mute function
+ * Conference function
+ * Option to auto answer
+ * PA function? (broadcast to all)
+ * Sound wave animation?
 
-![image](https://user-images.githubusercontent.com/32220029/136860840-0f3ac948-1ecc-4fa0-8bd8-d3b981891b03.png)
+**Asterisk add-on**
 
-## requirements
+One idea is to make this a all-in-one add-on that makes and configures a pbx server for you.
+If enough people want this i will consider trying it. If you want to help me with this, please contact me at **jordy.kuhne@gmail.com**
+
+## Requirements
 For this to work you will need the following:
  * A sip/pbx server. (I use freepbx on a raspberry)
  * Extension for every device.
@@ -27,12 +39,18 @@ Download using **HACS**
  6. You should now see SIP.js Client. Click `INSTALL`
 
 ## Usage
-To add a client
-1. first find the deviceID of your current HA client by typing `localStorage["lovelace-player-device-id"]` in the browser console.
-2. Add the settings in the lovelace card.
-3. Accept the certificate:
+Add the card by setting **type** to `custom:sipjs-client-card`.
 
+![image](https://user-images.githubusercontent.com/32220029/136860840-0f3ac948-1ecc-4fa0-8bd8-d3b981891b03.png)
+
+**To add a client**
+1. first find the **deviceID** of your current HA client by typing `localStorage["lovelace-player-device-id"]` in the browser console. (F12) (You can also set your own **deviceID** by typing `?deviceID=<deviceID>` behind your HA URL)
+2. Add your **deviceID** to `clients` and set all your settings. (If you only want to call to a SIP device, you dont need `password`, but you do need `username` to display).
+3. You may need to accept the certificate if you get a **1006** error. With your client go to: `https://<ip-address>:8089/ws`.
 
 ## Troubleshooting
-If you cant connect to your sip/pbx server, it may be because your browser wont accept the certificate.
-In the browser of your new client, go to: `https://<ip-address>:8089/ws`
+Most problems is because your pbx server is not configured correct.
+If you dont know how you can always make an issue or send me a email.
+
+## Contact
+**jordy.kuhne@gmail.com**
