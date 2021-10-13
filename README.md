@@ -44,7 +44,7 @@ Download using **HACS**
 ## Usage
 Add the card by setting **type** to `custom:sipjs-client-card`.
 
-![image](https://user-images.githubusercontent.com/32220029/136860840-0f3ac948-1ecc-4fa0-8bd8-d3b981891b03.png)
+![image](https://user-images.githubusercontent.com/32220029/137117118-95e69880-9ebe-44a6-88db-ffc050ed3e04.png)
 
 **To add a client**
 1. first find the **deviceID** of your current HA client by typing `localStorage["lovelace-player-device-id"]` in the browser console. (F12) (You can also set your own **deviceID** by typing `?deviceID=<deviceID>` behind your HA URL)
