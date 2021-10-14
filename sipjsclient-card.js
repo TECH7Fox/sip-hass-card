@@ -19041,6 +19041,7 @@ class SIPjsClientCard extends HTMLElement {
         this.content = this.querySelector('div');
         this.content.innerHTML = `
         <audio id="remoteAudio" style="display:none"></audio>
+        <audio id="ringtoneAudio" src="/local/community/HA-SIP/ringtone.mp3" style="display:none"></audio>
         <h2 style="text-align: center" id="name">Idle</h2>
         <span style="float:left" id="state">State</span>
         <span style="float:right" id="time">time</span>
@@ -19087,7 +19088,9 @@ class SIPjsClientCard extends HTMLElement {
         let nameElement = this.content.querySelector('#name');
         let answerButton = this.content.querySelector('#answer');
         let stateElement = this.content.querySelector('#state');
-        
+        let ringtoneAudio = this.content.querySelector('#ringtoneAudio');
+        ringtoneAudio.loop = true;
+
         this.callButtonItems.forEach(function (item, idx) {
             item.addEventListener("click", async function () {
                 simpleUser.call(__this.config.clients[item.id].aor);
@@ -19114,12 +19117,15 @@ class SIPjsClientCard extends HTMLElement {
         this.simpleUser.register(); 
         this.simpleUser.delegate = {
             onCallReceived: async () => {
+                ringtoneAudio.currentTime = 0;
+                ringtoneAudio.play();
                 stateElement.innerHTML = "calling";
                 console.log(this.simpleUser.session);
                 console.log(this.simpleUser.session._assertedIdentity._displayName);
                 nameElement.innerHTML = this.simpleUser.session._assertedIdentity._displayName;
             },
             onCallAnswered: () => {
+                ringtoneAudio.pause();
                 time = new Date();
                 stateElement.innerHTML = "connected";
                 nameElement.innerHTML = this.simpleUser.session._assertedIdentity._displayName;
@@ -19132,6 +19138,7 @@ class SIPjsClientCard extends HTMLElement {
                   }, 1000);
             },
             onCallHangup: () => {
+                ringtoneAudio.pause();
                 clearInterval(this.intervalId);
                 stateElement.innerHTML = "Online";
                 nameElement.innerHTML = "Idle";
