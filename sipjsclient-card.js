@@ -19092,7 +19092,7 @@ class SIPjsClientCard extends HTMLElement {
         this.callButtonItems.forEach(function (item, idx) {
             item.addEventListener("click", async function () {
                 simpleUser.call(__this.config.clients[item.id].aor);
-                nameElement.innerHTML = __this.config.clients[client].name ? __this.config.clients[client].name : __this.simpleUser.session.remoteIdentity.uri.user;
+                nameElement.innerHTML = __this.config.clients[item.id].name ? __this.config.clients[item.id].name : __this.simpleUser.session.remoteIdentity.uri.user;
                 stateElement.innerHTML = "calling";
             }, false);
         });
