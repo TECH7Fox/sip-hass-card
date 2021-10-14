@@ -11,8 +11,8 @@ This is very much still work in progress, and these are the things i want to add
  * GUI config
  * Option to set display name for buttons
  * Better errror logging
- * Ringtone when called
  * Mute function
+ * Popup when called (via browser_mod)
  * Conference function
  * Videocalls
  * Option to auto answer
@@ -32,6 +32,8 @@ For this to work you will need the following:
  * Browser_mod installed and working on your HA.
  * Some time :)
 
+Go to https://github.com/TECH7Fox/HA-SIP/wiki/Setup-FreePBX to see how to setup FreePBX for this card.
+
 ## Installation
 Download using **HACS**
  1. Go to HACS
@@ -44,7 +46,12 @@ Download using **HACS**
 ## Usage
 Add the card by setting **type** to `custom:sipjs-client-card`.
 
-![image](https://user-images.githubusercontent.com/32220029/137117118-95e69880-9ebe-44a6-88db-ffc050ed3e04.png)
+![image](https://user-images.githubusercontent.com/32220029/137383264-2c7b773e-63b2-463d-964f-5a5bb140b4e4.png)
+
+**Set ringtone**
+
+set your ringtone to play when being called.
+`/local` is your www folder in config.
 
 **To add a client**
 1. first find the **deviceID** of your current HA client by typing `localStorage["lovelace-player-device-id"]` in the browser console. (F12) (You can also set your own **deviceID** by typing `?deviceID=<deviceID>` behind your HA URL)
@@ -53,7 +60,9 @@ Add the card by setting **type** to `custom:sipjs-client-card`.
 
 ## Troubleshooting
 Most problems is because your pbx server is not configured correct.
-If you dont know how you can always make an issue or send me a email.
+To see how to configure FreePBX go to: https://github.com/TECH7Fox/HA-SIP/wiki/Setup-FreePBX
+
+If you are still having problems you can make an issue or send me a email.
 
 ## Contact
 **jordy.kuhne@gmail.com**
