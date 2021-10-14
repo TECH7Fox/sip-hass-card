@@ -9,7 +9,6 @@ With this card you can make and receive calls to other HA clients and other sip 
 This is very much still work in progress, and these are the things i want to add in the near future.
  * Better CSS. **if you want to help, please do!**
  * GUI config
- * Option to set display name for buttons
  * Better errror logging
  * Mute function
  * Popup when called (via browser_mod)
