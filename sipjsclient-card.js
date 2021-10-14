@@ -19058,7 +19058,6 @@ class SIPjsClientCard extends HTMLElement {
             </svg>
         </button>`;
 
-        console.log(this.config);
         const server = this.config.server;
         const deviceID = localStorage["lovelace-player-device-id"];
 
@@ -19070,14 +19069,13 @@ class SIPjsClientCard extends HTMLElement {
         let __this = this;
 
         for(var client in this.config.clients) {
-            console.log(client);
             if (deviceID == client) {
                 aor = this.config.clients[client].aor;
                 authorizationUsername = this.config.clients[client].username;
                 authorizationPassword = this.config.clients[client].password;
-                this.content.innerHTML += '<button style="vertical-align:top; height: 75px; width: 75px; margin: 5px;">you: ' + this.config.clients[client].username + '</button>';
+                this.content.innerHTML += '<button style="vertical-align:top; height: 75px; width: 75px; margin: 5px;">you: ' + (this.config.clients[client].name ? this.config.clients[client].name : this.config.clients[client].username) + '</button>';
             } else {
-                this.content.innerHTML += '<button style="vertical-align:top; height: 75px; width: 75px; margin: 5px;" class="callBtn" id="' + client + '">call ' + this.config.clients[client].username + '</button>';
+                this.content.innerHTML += '<button style="vertical-align:top; height: 75px; width: 75px; margin: 5px;" class="callBtn" id="' + client + '">call ' + (this.config.clients[client].name ? this.config.clients[client].name : this.config.clients[client].username) + '</button>';
             }
         };
 
@@ -19094,7 +19092,7 @@ class SIPjsClientCard extends HTMLElement {
         this.callButtonItems.forEach(function (item, idx) {
             item.addEventListener("click", async function () {
                 simpleUser.call(__this.config.clients[item.id].aor);
-                nameElement.innerHTML = __this.simpleUser.session.remoteIdentity.uri.user;
+                nameElement.innerHTML = __this.config.clients[client].name ? __this.config.clients[client].name : __this.simpleUser.session.remoteIdentity.uri.user;
                 stateElement.innerHTML = "calling";
             }, false);
         });
@@ -19121,7 +19119,6 @@ class SIPjsClientCard extends HTMLElement {
                 ringtoneAudio.play();
                 stateElement.innerHTML = "calling";
                 console.log(this.simpleUser.session);
-                console.log(this.simpleUser.session._assertedIdentity._displayName);
                 nameElement.innerHTML = this.simpleUser.session._assertedIdentity._displayName;
             },
             onCallAnswered: () => {
