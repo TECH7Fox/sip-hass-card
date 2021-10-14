@@ -19041,10 +19041,10 @@ class SIPjsClientCard extends HTMLElement {
         this.content = this.querySelector('div');
         this.content.innerHTML = `
         <audio id="remoteAudio" style="display:none"></audio>
-        <audio id="ringtoneAudio" src="/local/community/HA-SIP/ringtone.mp3" style="display:none"></audio>
+        <audio id="ringtoneAudio" style="display:none" loop controls></audio>
         <h2 style="text-align: center" id="name">Idle</h2>
-        <span style="float:left" id="state">State</span>
-        <span style="float:right" id="time">time</span>
+        <span style="float:left" id="state">Online</span>
+        <span style="float:right" id="time">00:00</span>
         <br><hr>
         <button style="vertical-align:top; height: 75px; width: 75px; margin: 5px;" id="answer">
             <svg style="width:48px;height:48px" viewBox="0 0 24 24">
@@ -19089,7 +19089,7 @@ class SIPjsClientCard extends HTMLElement {
         let answerButton = this.content.querySelector('#answer');
         let stateElement = this.content.querySelector('#state');
         let ringtoneAudio = this.content.querySelector('#ringtoneAudio');
-        ringtoneAudio.loop = true;
+        ringtoneAudio.src = this.config.ringtone;
 
         this.callButtonItems.forEach(function (item, idx) {
             item.addEventListener("click", async function () {
