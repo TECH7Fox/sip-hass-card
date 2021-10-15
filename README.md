@@ -7,6 +7,7 @@ With this card you can make and receive calls to other HA clients and other sip 
 
 ## Roadmap
 This is very much still work in progress, and these are the things i want to add in the near future.
+ * DTMF Signals
  * Better CSS. **if you want to help, please do!**
  * GUI config
  * Better errror logging
