@@ -19056,31 +19056,31 @@ async function main() {
     // SIP over WebSocket is an internet standard the details of which are
     // outside the scope of this documentation, but there are many resources
     // available. See: https://tools.ietf.org/html/rfc7118 for the specification.
-    const server = "wss://192.168.178.11:8089/ws";
+    const server = "wss://192.168.178.227:8089/ws";
     // SIP Request URI
     // The SIP Request URI of the destination. It's "Who you wanna call?"
     // SIP is an internet standard the details of which are outside the
     // scope of this documentation, but there are many resources available.
     // See: https://tools.ietf.org/html/rfc3261 for the specification.
-    const destination = "sip:101@192.168.178.11";
+    const destination = "sip:101@192.168.178.227";
     // SIP Address of Record (AOR)
     // This is the user's SIP address. It's "Where people can reach you."
     // SIP is an internet standard the details of which are outside the
     // scope of this documentation, but there are many resources available.
     // See: https://tools.ietf.org/html/rfc3261 for the specification.
-    const aor = "sip:103@192.168.178.11";
+    const aor = "sip:102@192.168.178.227";
     // SIP Authorization Username
     // This is the user's authorization username used for authorizing requests.
     // SIP is an internet standard the details of which are outside the
     // scope of this documentation, but there are many resources available.
     // See: https://tools.ietf.org/html/rfc3261 for the specification.
-    const authorizationUsername = '103';
+    const authorizationUsername = '102';
     // SIP Authorization Password
     // This is the user's authorization password used for authorizing requests.
     // SIP is an internet standard the details of which are outside the
     // scope of this documentation, but there are many resources available.
     // See: https://tools.ietf.org/html/rfc3261 for the specification.
-    const authorizationPassword = '12341234abcd';
+    const authorizationPassword = '1234';
     // Configuration Options
     // These are configuration options for the `SimpleUser` instance.
     // Here we are setting the HTML audio element we want to use to

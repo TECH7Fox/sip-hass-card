@@ -11,9 +11,29 @@
 <body>
   <button id="call">Call 101</button>
   <button id="hangup">Hangup</button>
+  <span style="float:left" id="state">Calling<span id="wait">.</span></span>
+  <span style="float:right" id="time">00:00</span>
   <audio id="remoteAudio" style="display:none" controls>
     <p>Your browser doesn't support HTML5 audio.</p>
   </audio>
+  <script>
+    //var request = new Request("https://192.168.178.227:8089/ws");
+    //console.log(request);
+
+    fetch('https://192.168.178.227:8089/ws')
+      .then(response = response.text())
+      .then(data => {
+        console.log(data);
+      })
+
+    var dots = window.setInterval( function() {
+        var wait = document.getElementById("wait");
+        if ( wait.innerHTML.length >= 3 ) 
+            wait.innerHTML = "";
+        else 
+            wait.innerHTML += ".";
+        }, 300);
+    </script>
   <script src="./scripts.js"
     onerror="alert('To run this demo you must first build the library and demo source! See the README.')">
     </script>
