@@ -19031,195 +19031,148 @@ __webpack_require__.r(__webpack_exports__);
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable no-console */
 
-import "https://unpkg.com/lit-element@2.0.1/lit-element.js?module";
+class SIPjsClientCard extends HTMLElement {
+    // Whenever the state changes, a new `hass` object is set. Use this to
+    // update your content.
+    set hass(hass) {
+      // Initialize the content if it's not there yet.
+      if (!this.content) {
+        this.innerHTML = `<ha-card header="` + (this.config.title ? this.config.title : "") + `"><div style="display: block; text-align: center;" class="card-content"></div></ha-card>`;
+        this.content = this.querySelector('div');
+        this.content.innerHTML = `
+        <audio id="remoteAudio" style="display:none"></audio>
+        <audio id="ringtoneAudio" style="display:none" loop controls></audio>
+        <h2 style="text-align: center" id="name">Idle</h2>
+        <span style="float:left" id="state">Online</span>
+        <span style="float:right" id="time">00:00</span>
+        <br><hr>
+        <button style="vertical-align:top; height: 75px; width: 75px; margin: 5px;" id="answer">
+            <svg style="width:48px;height:48px" viewBox="0 0 24 24">
+                <path fill="limegreen" d="M6.62,10.79C8.06,13.62 10.38,15.94 13.21,17.38L15.41,15.18C15.69,14.9 16.08,14.82 16.43,14.93C17.55,15.3 18.75,15.5 20,15.5A1,1 0 0,1 21,16.5V20A1,1 0 0,1 20,21A17,17 0 0,1 3,4A1,1 0 0,1 4,3H7.5A1,1 0 0,1 8.5,4C8.5,5.25 8.7,6.45 9.07,7.57C9.18,7.92 9.1,8.31 8.82,8.59L6.62,10.79Z">
+                </path>
+            </svg>
+        </button>
+        <button style="vertical-align:top; height: 75px; width: 75px; margin: 5px;" id="hangup">
+            <svg style="width:48px;height:48px" viewBox="0 0 24 24">
+                <path fill="red" d="M12,9C10.4,9 8.85,9.25 7.4,9.72V12.82C7.4,13.22 7.17,13.56 6.84,13.72C5.86,14.21 4.97,14.84 4.17,15.57C4,15.75 3.75,15.86 3.5,15.86C3.2,15.86 2.95,15.74 2.77,15.56L0.29,13.08C0.11,12.9 0,12.65 0,12.38C0,12.1 0.11,11.85 0.29,11.67C3.34,8.77 7.46,7 12,7C16.54,7 20.66,8.77 23.71,11.67C23.89,11.85 24,12.1 24,12.38C24,12.65 23.89,12.9 23.71,13.08L21.23,15.56C21.05,15.74 20.8,15.86 20.5,15.86C20.25,15.86 20,15.75 19.82,15.57C19.03,14.84 18.14,14.21 17.16,13.72C16.83,13.56 16.6,13.22 16.6,12.82V9.72C15.15,9.25 13.6,9 12,9Z" />
+            </svg>
+        </button>`;
 
-class SIPjsClientCard extends LitElement {
-    static get properties() {
-        return {
-          hass: {},
-          config: {}
+        const server = this.config.server;
+        const deviceID = localStorage["lovelace-player-device-id"];
+
+        let time;
+
+        let aor = "";
+        let authorizationUsername = '';
+        let authorizationPassword = '';
+        let __this = this;
+
+        for(var client in this.config.clients) {
+            if (deviceID == client) {
+                aor = this.config.clients[client].aor;
+                authorizationUsername = this.config.clients[client].username;
+                authorizationPassword = this.config.clients[client].password;
+                this.content.innerHTML += '<button style="vertical-align:top; height: 75px; width: 75px; margin: 5px;">you: ' + (this.config.clients[client].name ? this.config.clients[client].name : this.config.clients[client].username) + '</button>';
+            } else {
+                this.content.innerHTML += '<button style="vertical-align:top; height: 75px; width: 75px; margin: 5px;" class="callBtn" id="' + client + '">call ' + (this.config.clients[client].name ? this.config.clients[client].name : this.config.clients[client].username) + '</button>';
+            }
         };
-      }
 
-      render() {
-          return html`
-            <ha-card>
-                <audio id="remoteAudio" style="display:none"></audio>
-                <audio id="ringtoneAudio" style="display:none" loop controls></audio>
-                ${this.config.entities.map(ent => {
-                    const stateObj = this.hass.states[ent];
-                    return stateObj
-                        ? html`
-                            <hui-generic-entity-row>
-                                ${stateObj.attributes.user}
-                                <paper-button ${(stateObj.state == "off") ? html`disabled` : ""}
-                                    @click="${() => this._click(stateObj)}"
-                                >CALL<paper-ripple center></paper-ripple></paper-button>
-                            <hui-generic-entity-row>
-                            `
-                        : html`
-                            <div class="not-found">Entity ${ent} not found.</div>
-                      `;
-                })}
-            </ha-card>
-          `;
-      }
+        this.callButtons = this.content.querySelectorAll(".callBtn");
+        this.callButtonItems = [].slice.call(this.callButtons);
 
-      setConfig(config) {
-        if (!config.entities) {
-          throw new Error("You need to define entities");
+        let timerElement = this.content.querySelector('#time');
+        let nameElement = this.content.querySelector('#name');
+        let answerButton = this.content.querySelector('#answer');
+        let stateElement = this.content.querySelector('#state');
+        let ringtoneAudio = this.content.querySelector('#ringtoneAudio');
+        if (this.config.ringtone) {
+            ringtoneAudio.src = this.config.ringtone;
         }
-        this.config = config;
-      }
-    
-      // The height of your card. Home Assistant uses this to automatically
-      // distribute all cards over the available columns.
-      getCardSize() {
-        return this.config.entities.length + 1;
-      }
-    
-      _click(state) { // fix this
-        console.log(state.attributes.extension)
-      }
 
-    //set hass(hass) {
-    //  // Initialize the content if it's not there yet.
-    //  if (!this.content) {
-    //    this.innerHTML = `<ha-card header="` + (this.config.title ? this.config.title : "") + `"><div style="display: block; text-align: center;" class="card-content"></div><///ha-card>`;
-    //    this.content = this.querySelector('div');
-    //    this.content.innerHTML = `
-//
-    //    <h2 style="text-align: center" id="name">Idle</h2>
-    //    <span style="float:left" id="state">Online</span>
-    //    <span style="float:right" id="time">00:00</span>
-    //    <br><hr>
-    //    <button style="vertical-align:top; height: 75px; width: 75px; margin: 5px;" id="answer">
-    //        <svg style="width:48px;height:48px" viewBox="0 0 24 24">
-    //            <path fill="limegreen" d="M6.62,10.79C8.06,13.62 10.38,15.94 13.21,17.38L15.41,15.18C15.69,14.9 16.08,14.82 16.43,14.93C17.55,15.3 18.75,15.5 20,15.5A1,1 0 0,1 21,16.//5V20A1,1 0 0,1 20,21A17,17 0 0,1 3,4A1,1 0 0,1 4,3H7.5A1,1 0 0,1 8.5,4C8.5,5.25 8.7,6.45 9.07,7.57C9.18,7.92 9.1,8.31 8.82,8.59L6.62,10.79Z">
-    //            </path>
-    //        </svg>
-    //    </button>
-    //    <button style="vertical-align:top; height: 75px; width: 75px; margin: 5px;" id="hangup">
-    //        <svg style="width:48px;height:48px" viewBox="0 0 24 24">
-    //            <path fill="red" d="M12,9C10.4,9 8.85,9.25 7.4,9.72V12.82C7.4,13.22 7.17,13.56 6.84,13.72C5.86,14.21 4.97,14.84 4.17,15.57C4,15.75 3.75,15.86 3.5,15.86C3.2,15.86 2.//95,15.74 2.77,15.56L0.29,13.08C0.11,12.9 0,12.65 0,12.38C0,12.1 0.11,11.85 0.29,11.67C3.34,8.77 7.46,7 12,7C16.54,7 20.66,8.77 23.71,11.67C23.89,11.85 24,12.1 24,12.//38C24,12.65 23.89,12.9 23.71,13.08L21.23,15.56C21.05,15.74 20.8,15.86 20.5,15.86C20.25,15.86 20,15.75 19.82,15.57C19.03,14.84 18.14,14.21 17.16,13.72C16.83,13.56 16.//6,13.22 16.6,12.82V9.72C15.15,9.25 13.6,9 12,9Z" />
-    //        </svg>
-    //    </button>`;
-//
-    //    const server = this.config.server;
-    //    const deviceID = localStorage["lovelace-player-device-id"];
-//
-    //    let time;
-//
-    //    let aor = "";
-    //    let authorizationUsername = '';
-    //    let authorizationPassword = '';
-    //    let __this = this;
-//
-    //    for(var client in this.config.clients) {
-    //        if (deviceID == client) {
-    //            aor = this.config.clients[client].aor;
-    //            authorizationUsername = this.config.clients[client].username;
-    //            authorizationPassword = this.config.clients[client].password;
-    //            this.content.innerHTML += '<button style="vertical-align:top; height: 75px; width: 75px; margin: 5px;">you: ' + (this.config.clients[client].name ? this.config.//clients[client].name : this.config.clients[client].username) + '</button>';
-    //        } else {
-    //            this.content.innerHTML += '<button style="vertical-align:top; height: 75px; width: 75px; margin: 5px;" class="callBtn" id="' + client + '">call ' + (this.config.//clients[client].name ? this.config.clients[client].name : this.config.clients[client].username) + '</button>';
-    //        }
-    //    };
-//
-    //    this.callButtons = this.content.querySelectorAll(".callBtn");
-    //    this.callButtonItems = [].slice.call(this.callButtons);
-//
-    //    let timerElement = this.content.querySelector('#time');
-    //    let nameElement = this.content.querySelector('#name');
-    //    let answerButton = this.content.querySelector('#answer');
-    //    let stateElement = this.content.querySelector('#state');
-    //    let ringtoneAudio = this.content.querySelector('#ringtoneAudio');
-    //    if (this.config.ringtone) {
-    //        ringtoneAudio.src = this.config.ringtone;
-    //    }
-//
-    //    this.callButtonItems.forEach(function (item, idx) {
-    //        item.addEventListener("click", async function () {
-    //            simpleUser.call(__this.config.clients[item.id].aor);
-    //            nameElement.innerHTML = __this.config.clients[item.id].name ? __this.config.clients[item.id].name : __this.simpleUser.session.remoteIdentity.uri.user;
-    //            stateElement.innerHTML = "calling";
-    //        }, false);
-    //    });
-    //    
-    //    const options = {
-    //        aor,
-    //        media: {
-    //            remote: {
-    //                audio: this.content.querySelector("#remoteAudio")
-    //            }
-    //        },
-    //        userAgentOptions: {
-    //            authorizationPassword,
-    //            authorizationUsername,
-    //        }
-    //    };
-//
-    //    this.simpleUser = new _src_platform_web__WEBPACK_IMPORTED_MODULE_1__.SimpleUser(server, options);
-    //    this.simpleUser.connect();
-    //    this.simpleUser.register(); 
-    //    this.simpleUser.delegate = {
-    //        onCallReceived: async () => {
-    //            ringtoneAudio.currentTime = 0;
-    //            ringtoneAudio.play();
-    //            stateElement.innerHTML = "calling";
-    //            console.log(this.simpleUser.session);
-    //            nameElement.innerHTML = this.simpleUser.session._assertedIdentity._displayName;
-    //        },
-    //        onCallAnswered: () => {
-    //            ringtoneAudio.pause();
-    //            time = new Date();
-    //            stateElement.innerHTML = "connected";
-    //            nameElement.innerHTML = this.simpleUser.session._assertedIdentity._displayName;
-    //            this.intervalId = window.setInterval(function(){
-    //                var delta = Math.abs(new Date() - time) / 1000;
-    //                var minutes = Math.floor(delta / 60) % 60;
-    //                delta -= minutes * 60;
-    //                var seconds = delta % 60;
-    //                timerElement.innerHTML =  (minutes + ":" + Math.round(seconds)).split(':').map(e => `0${e}`.slice(-2)).join(':');
-    //              }, 1000);
-    //        },
-    //        onCallHangup: () => {
-    //            ringtoneAudio.pause();
-    //            clearInterval(this.intervalId);
-    //            stateElement.innerHTML = "Online";
-    //            nameElement.innerHTML = "Idle";
-    //            timerElement.innerHTML = "00:00";
-    //        }
-    //    };
-//
-    //    let hangupButton = this.content.querySelector('#hangup');   
-    //    let simpleUser = this.simpleUser;
-//
-    //    answerButton.addEventListener("click", async function () {
-    //        await simpleUser.answer();
-    //    }, false);
-//
-    //    hangupButton.addEventListener("click", async function () {
-    //        console.log(simpleUser.session);
-    //        await simpleUser.hangup();
-    //    }, false);
-    //}
-    //}
-  //
-    //// The user supplied configuration. Throw an exception and Lovelace will
-    //// render an error card.
-    //setConfig(config) {
-    //  if (!config.server) {
-    //    throw new Error('You need to define a server');
-    //  }
-    //  this.config = config;
-    //}
-  //
-    //// The height of your card. Home Assistant uses this to automatically
-    //// distribute all cards over the available columns.
-    //getCardSize() {
-    //  return 3;
-    //}
+        this.callButtonItems.forEach(function (item, idx) {
+            item.addEventListener("click", async function () {
+                simpleUser.call(__this.config.clients[item.id].aor);
+                nameElement.innerHTML = __this.config.clients[item.id].name ? __this.config.clients[item.id].name : __this.simpleUser.session.remoteIdentity.uri.user;
+                stateElement.innerHTML = "calling";
+            }, false);
+        });
+        
+        const options = {
+            aor,
+            media: {
+                remote: {
+                    audio: this.content.querySelector("#remoteAudio")
+                }
+            },
+            userAgentOptions: {
+                authorizationPassword,
+                authorizationUsername,
+            }
+        };
+
+        this.simpleUser = new _src_platform_web__WEBPACK_IMPORTED_MODULE_1__.SimpleUser(server, options);
+        this.simpleUser.connect();
+        this.simpleUser.register(); 
+        this.simpleUser.delegate = {
+            onCallReceived: async () => {
+                ringtoneAudio.currentTime = 0;
+                ringtoneAudio.play();
+                stateElement.innerHTML = "calling";
+                console.log(this.simpleUser.session);
+                nameElement.innerHTML = this.simpleUser.session._assertedIdentity._displayName;
+            },
+            onCallAnswered: () => {
+                ringtoneAudio.pause();
+                time = new Date();
+                stateElement.innerHTML = "connected";
+                nameElement.innerHTML = this.simpleUser.session._assertedIdentity._displayName;
+                this.intervalId = window.setInterval(function(){
+                    var delta = Math.abs(new Date() - time) / 1000;
+                    var minutes = Math.floor(delta / 60) % 60;
+                    delta -= minutes * 60;
+                    var seconds = delta % 60;
+                    timerElement.innerHTML =  (minutes + ":" + Math.round(seconds)).split(':').map(e => `0${e}`.slice(-2)).join(':');
+                  }, 1000);
+            },
+            onCallHangup: () => {
+                ringtoneAudio.pause();
+                clearInterval(this.intervalId);
+                stateElement.innerHTML = "Online";
+                nameElement.innerHTML = "Idle";
+                timerElement.innerHTML = "00:00";
+            }
+        };
+
+        let hangupButton = this.content.querySelector('#hangup');   
+        let simpleUser = this.simpleUser;
+
+        answerButton.addEventListener("click", async function () {
+            await simpleUser.answer();
+        }, false);
+
+        hangupButton.addEventListener("click", async function () {
+            console.log(simpleUser.session);
+            await simpleUser.hangup();
+        }, false);
+    }
+    }
+  
+    // The user supplied configuration. Throw an exception and Lovelace will
+    // render an error card.
+    setConfig(config) {
+      if (!config.server) {
+        throw new Error('You need to define a server');
+      }
+      this.config = config;
+    }
+  
+    // The height of your card. Home Assistant uses this to automatically
+    // distribute all cards over the available columns.
+    getCardSize() {
+      return 3;
+    }
   }
   
   customElements.define('sipjs-client-card', SIPjsClientCard);
