@@ -7,9 +7,9 @@ With this card you can make and receive calls to other HA clients and other sip 
 
 ## Roadmap
 This is very much still work in progress, and these are the things i want to add in the near future.
+ * DTMF Signals
  * Better CSS. **if you want to help, please do!**
  * GUI config
- * Option to set display name for buttons
  * Better errror logging
  * Mute function
  * Popup when called (via browser_mod)
@@ -56,7 +56,8 @@ set your ringtone to play when being called.
 **To add a client**
 1. first find the **deviceID** of your current HA client by typing `localStorage["lovelace-player-device-id"]` in the browser console. (F12) (You can also set your own **deviceID** by typing `?deviceID=<deviceID>` behind your HA URL)
 2. Add your **deviceID** to `clients` and set all your settings. (If you only want to call to a SIP device, you dont need `password`, but you do need `username` to display).
-3. You may need to accept the certificate if you get a **1006** error. With your client go to: `https://<ip-address>:8089/ws`.
+3. **aor** is `sip:<extension>@<ip_of_pbx_server>`. Example: `sip:101@192.168.178.1`
+4. You may need to accept the certificate if you get a **1006** error. With your client go to: `https://<ip-address>:8089/ws`.
 
 ## Troubleshooting
 Most problems is because your pbx server is not configured correct.
