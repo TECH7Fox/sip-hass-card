@@ -19021,6 +19021,13 @@ const LIBRARY_VERSION = "0.20.0";
 /************************************************************************/
 var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
+
+import {
+    LitElement,
+    html,
+    css
+} from "https://unpkg.com/lit-element@2.0.1/lit-element.js?module";
+
 (() => {
 /*!************************!*\
   !*** ./demo/demo-1.ts ***!
@@ -19030,12 +19037,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _demo_utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./demo-utils */ "./demo/demo-utils.ts");
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable no-console */
-
-import {
-    LitElement,
-    html,
-    css
-} from "https://unpkg.com/lit-element@2.0.1/lit-element.js?module";
 
 class SIPjsClientCard extends LitElement {
     static get properties() {
@@ -19226,7 +19227,7 @@ class SIPjsClientCard extends LitElement {
     //}
   }
   
-  customElements.define('sipjs-client-card', SIPjsClientCard);
+  customElements.define('sipjs-client-card-addon', SIPjsClientCard);
 
 })();
 
