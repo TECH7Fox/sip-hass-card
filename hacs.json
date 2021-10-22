@@ -1,6 +1,6 @@
 {
     "name": "SIP.js Client for Asterisk addon",
     "content_in_root": true,
-    "filename": "sipjsclient-card-addon.js",
+    "filename": "sipjsclient-card.js",
     "render_readme": true
   }
