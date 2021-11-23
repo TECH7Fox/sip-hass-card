@@ -19068,13 +19068,13 @@ async function main() {
     // SIP is an internet standard the details of which are outside the
     // scope of this documentation, but there are many resources available.
     // See: https://tools.ietf.org/html/rfc3261 for the specification.
-    const aor = "sip:102@192.168.178.227";
+    const aor = "sip:103@192.168.178.227";
     // SIP Authorization Username
     // This is the user's authorization username used for authorizing requests.
     // SIP is an internet standard the details of which are outside the
     // scope of this documentation, but there are many resources available.
     // See: https://tools.ietf.org/html/rfc3261 for the specification.
-    const authorizationUsername = '102';
+    const authorizationUsername = '103';
     // SIP Authorization Password
     // This is the user's authorization password used for authorizing requests.
     // SIP is an internet standard the details of which are outside the

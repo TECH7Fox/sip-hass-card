@@ -19113,8 +19113,7 @@ class SIPjsClientCard extends HTMLElement {
         };
 
         this.simpleUser = new _src_platform_web__WEBPACK_IMPORTED_MODULE_1__.SimpleUser(server, options);
-        this.simpleUser.connect();
-        this.simpleUser.register(); 
+        this.simpleUser.connect().then(() => {this.simpleUser.register()}); 
         this.simpleUser.delegate = {
             onCallReceived: async () => {
                 ringtoneAudio.currentTime = 0;
