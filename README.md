@@ -1,6 +1,8 @@
 # HA-SIP
 **A SIP client inside home assistant!**
 
+There is a Asterisk integration in progress with a new card which contains more functions like video, dtmf signals and more. https://github.com/TECH7Fox/Asterisk-integration
+
 With this card you can make and receive calls to other HA clients and other sip devices, so you can use it as for example an intercom.
 
 ![image](https://user-images.githubusercontent.com/32220029/136860621-8a12bd7f-a052-4855-a163-29dab84901e1.png)
