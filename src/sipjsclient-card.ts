@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import { Web } from "sip.js/lib/index";
+import { Web } from "sip.js/lib/index.js";
 import {
   LitElement,
   html,

@@ -8,9 +8,10 @@
     "importHelpers": true,
     "sourceMap": true,
     "lib": [
-      "es2015",
+      "es2017",
       "DOM"
-    ]
+    ],
+    "types": []
   },
   "include": [
     "**/*.ts"

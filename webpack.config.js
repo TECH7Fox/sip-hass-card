@@ -9,8 +9,16 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.tsx?$/,
+        test: /\.js?$/,
+        resolve: {
+          fullySpecified: false
+        },
         use: 'ts-loader'
+      },
+      {
+        test: /\.ts?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/
       }
     ]
   },
