@@ -15,8 +15,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - uses: actions/checkout@v2
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        cache: 'npm'
     - name: Install Dependencies
-      run: npm install
+      run: npm ci
     - name: Build Card
       run: npm run build
     - name: Release
