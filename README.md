@@ -1,7 +1,7 @@
 # HA-SIP
 **A SIP client inside home assistant!**
 
-This card requires the [Asterisk integration](https://github.com/TECH7Fox/Asterisk-integration).
+This card can be used with the [Asterisk integration](https://github.com/TECH7Fox/Asterisk-integration). You can also setup your own PBX but this is out of scope and won't be explained here.
 
 With this card you can make and receive calls to other HA clients and other sip devices, so you can use it as for example an intercom.
 
