@@ -2,7 +2,7 @@
   "name": "ha-sip",
   "version": "0.2.0",
   "description": "A SIP client inside home assistant!",
-  "main": "sipjsclient-card.js",
+  "main": "sipjs-card.js",
   "scripts": {
     "build": "webpack --progress --config webpack.config.js"
   },
