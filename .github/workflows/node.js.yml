@@ -5,9 +5,13 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ main ]
+    branches:
+    - main
+    - develop
   pull_request:
-    branches: [ main ]
+    branches: 
+    - main
+    - develop
 
 jobs:
   build:
@@ -15,14 +19,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Setup Node.js
-      uses: actions/setup-node@v2
-    - name: Install Dependencies
-      run: npm install
-    - name: Build Card
-      run: npm run build
-    - name: Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: sipjs-card.js
+    - uses: actions/checkout@v1
+    - uses: actions/setup-node@v1
+    - name: npm install and build
+      run: |
+        npm install
+        npm run build
