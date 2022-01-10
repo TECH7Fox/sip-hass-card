@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/TECH7Fox/HA-SIP.git"
   },
-  "keywords": ["sip", "home assistant"],
+  "keywords": ["sip", "home-assistant"],
   "author": "Jordy Kuhne",
   "license": "MIT",
   "bugs": {
