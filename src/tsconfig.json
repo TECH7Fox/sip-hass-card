@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "target": "es2017",
+    "module": "es2015",
+    "strict": true,
+    "esModuleInterop": true,
+    "importHelpers": true,
+    "sourceMap": true,
+    "lib": [
+      "es2017",
+      "DOM"
+    ],
+    "types": []
+  },
+  "include": [
+    "**/*.ts"
+  ]
+}
