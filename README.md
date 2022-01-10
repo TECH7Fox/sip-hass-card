@@ -1,4 +1,4 @@
-# HA-SIP
+# SIP Lovelace Card
 **A SIP client inside home assistant!**
 
 This card requires the [Asterisk integration](https://github.com/TECH7Fox/Asterisk-integration).
