@@ -153,6 +153,10 @@ class SIPjsClientCard extends LitElement {
         this.config = config;
         this.connect;
     }
+    static async getConfigElement() {
+        return document.createElement("sipjs-card-editor");
+    }
+
     getCardSize() {
         return this.config.entities.length + 2;
     }
@@ -285,3 +289,57 @@ class SIPjsClientCard extends LitElement {
     }
 }
 customElements.define('sipjs-card', SIPjsClientCard);
+
+class ContentCardEditor extends LitElement {
+
+    setConfig(config) {
+        this._config = config;
+    }
+
+    static get properties() {
+        return {
+            hass: {},
+            config: {}
+        };
+    }
+
+    configChanged(newConfig) {
+        console.log(newConfig);
+        const event = new Event("config-changed", {
+            bubbles: true,
+            composed: true
+        });
+        event.detail = {config: newConfig};
+        this.dispatchEvent(event);
+    }
+
+    render() {
+        return html`
+            <div class="card-config">
+                <paper-input
+                    label="Server"
+                    .value="${this._server}"
+                    .configValue=${"server"}"
+                    @value-changed="${this.configChanged}"
+                ></paper-input>
+                <paper-input
+                    label="Port"
+                    .value="${this._port}"
+                    .configValue="${"port"}"
+                    @value-changed="${this.configChanged}"
+                ></paper-input>
+            </div>
+        `;
+    }
+
+}
+
+customElements.define("sipjs-card-editor", ContentCardEditor);
+
+window.customCards = window.customCards || [];
+window.customCards.push({
+    type: "sipjs-card",
+    name: "sip.js card",
+    preview: false,
+    description: "A SIP card"
+});
