@@ -303,13 +303,22 @@ class ContentCardEditor extends LitElement {
         };
     }
 
-    configChanged(newConfig) {
-        console.log(newConfig);
+    configChanged(newConfig) {       
+        if (!this._config || !this.hass) {
+            return;
+        }
+        const target = newConfig.target;
+
+        this._config = {
+            ...this._config,
+            [target.configValue]: target.value
+        };
+
         const event = new Event("config-changed", {
             bubbles: true,
             composed: true
         });
-        event.detail = {config: newConfig};
+        event.detail = {config: this._config};
         this.dispatchEvent(event);
     }
 
@@ -318,13 +327,13 @@ class ContentCardEditor extends LitElement {
             <div class="card-config">
                 <paper-input
                     label="Server"
-                    .value="${this._server}"
-                    .configValue=${"server"}"
+                    .value="${this._config.server}"
+                    .configValue="${"server"}"
                     @value-changed="${this.configChanged}"
                 ></paper-input>
                 <paper-input
                     label="Port"
-                    .value="${this._port}"
+                    .value="${this._config.port}"
                     .configValue="${"port"}"
                     @value-changed="${this.configChanged}"
                 ></paper-input>
