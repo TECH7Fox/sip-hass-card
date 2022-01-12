@@ -296,6 +296,14 @@ class ContentCardEditor extends LitElement {
         this._config = config;
     }
 
+    static getStubConfig() {
+        // Return a minimal configuration that will result in a working card configuration
+        return {
+            server: "something!",
+            entity: ""
+        };
+    }
+
     static get properties() {
         return {
             hass: {},
@@ -303,7 +311,9 @@ class ContentCardEditor extends LitElement {
         };
     }
 
-    configChanged(newConfig) {       
+    configChanged(newConfig) {   
+        console.log("NEW!");    
+        console.log(newConfig);
         if (!this._config || !this.hass) {
             return;
         }
@@ -322,7 +332,12 @@ class ContentCardEditor extends LitElement {
         this.dispatchEvent(event);
     }
 
+    configChanged2(newConfig) {
+        console.log(newConfig);
+    }
+
     render() {
+        this._entities = [];
         return html`
             <div class="card-config">
                 <paper-input
@@ -337,8 +352,41 @@ class ContentCardEditor extends LitElement {
                     .configValue="${"port"}"
                     @value-changed="${this.configChanged}"
                 ></paper-input>
+                <div class="entities">
+                    ${this._entities.map(ent => {
+                        return html`
+                            <div class="entity">
+                                <ha-svg-icon class="handle"></ha-svg-icon>
+                                <ha-entity-picker
+                                    .hass="${this.hass}"
+                                    .configValue=${"entity"}
+                                    domain-filter="sensor"
+                                    @change="${this.configChanged}"
+                                    allow-custom-entity
+                                ></ha-entity-picker>
+                                <ha-icon-button class="remove-icon"></ha-icon-button>
+                                <ha-icon-button class="edit-icon"></ha-icon-button>
+                            </div>
+                        `;
+                    })}
+                </div>
+                <ha-entity-picker
+                    .hass="${this.hass}"
+                    .configValue=${"entity"}
+                    domain-filter="sensor"
+                    @focusout=${this._addEntity}
+                    allow-custom-entity
+                ></ha-entity-picker>
             </div>
         `;
+    }
+
+    _addEntity(entity) {
+        console.log(entity.target.value);
+        this._entities.push({
+            entity: entity.target.value
+        });
+        console.log(this._entities);
     }
 
 }
@@ -352,3 +400,24 @@ window.customCards.push({
     preview: false,
     description: "A SIP card"
 });
+
+// ${
+//     customElements.get("ha-entity-picker")
+//       ? html`
+//           <ha-entity-picker
+//             .hass="${this.hass}"
+//             .configValue=${"entity"}
+//             domain-filter="sensor"
+//             @change="${this.configChanged}"
+//             # ON RELEASE HERE!
+//             allow-custom-entity
+//           ></ha-entity-picker>
+//         `
+//       : html`
+//           <paper-input
+//             label="entity"
+//             .configValue="${"entity"}"
+//             @value-changed="${this.configChanged}"
+//           ></paper-input>
+//         `
+//   }
