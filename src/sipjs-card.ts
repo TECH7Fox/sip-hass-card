@@ -324,6 +324,8 @@ class ContentCardEditor extends LitElement {
             [target.configValue]: target.value
         };
 
+        console.log("config changed!");
+
         const event = new Event("config-changed", {
             bubbles: true,
             composed: true
@@ -337,7 +339,9 @@ class ContentCardEditor extends LitElement {
     }
 
     render() {
-        this._entities = [];
+        if (!this._entities) {
+            this._entities = [];
+        }
         return html`
             <div class="card-config">
                 <paper-input
@@ -354,6 +358,7 @@ class ContentCardEditor extends LitElement {
                 ></paper-input>
                 <div class="entities">
                     ${this._entities.map(ent => {
+                        console.log("EXTRA ENTITY HERE!!!");
                         return html`
                             <div class="entity">
                                 <ha-svg-icon class="handle"></ha-svg-icon>
@@ -380,6 +385,8 @@ class ContentCardEditor extends LitElement {
             </div>
         `;
     }
+
+    // USE <ha-entities-picker> (https://github.com/jnog93/frontend2/blob/8cc20b1f313e14a949f578dd61234eeebc9158ad/frontend/src/panels/lovelace/editor/config-elements/hui-logbook-card-editor.ts)
 
     _addEntity(entity) {
         console.log(entity.target.value);
