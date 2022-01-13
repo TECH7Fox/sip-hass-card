@@ -299,8 +299,8 @@ class ContentCardEditor extends LitElement {
     static getStubConfig() {
         // Return a minimal configuration that will result in a working card configuration
         return {
-            server: "something!",
-            entity: ""
+            server: "localhost",
+            port: "8089"
         };
     }
 
@@ -312,88 +312,190 @@ class ContentCardEditor extends LitElement {
     }
 
     configChanged(newConfig) {   
-        console.log("NEW!");    
-        console.log(newConfig);
-        if (!this._config || !this.hass) {
-            return;
-        }
-        const target = newConfig.target;
-
-        this._config = {
-            ...this._config,
-            [target.configValue]: target.value
-        };
-
-        console.log("config changed!");
-
         const event = new Event("config-changed", {
             bubbles: true,
             composed: true
         });
-        event.detail = {config: this._config};
+        event.detail = {config: newConfig};
         this.dispatchEvent(event);
     }
 
-    configChanged2(newConfig) {
-        console.log(newConfig);
+    _valueChanged(ev) {
+        if (!this._config || !this.hass) {
+            return;
+        }
+        const target = ev.target;
+        const value = target.checked !== undefined
+            ? target.checked
+            : target.value
+
+        this._config = {
+            ...this._config,
+            [target.configValue]: value
+        };
+
+        this.configChanged(this._config);
     }
 
     render() {
-        if (!this._entities) {
-            this._entities = [];
-        }
         return html`
             <div class="card-config">
                 <paper-input
                     label="Server"
                     .value="${this._config.server}"
                     .configValue="${"server"}"
-                    @value-changed="${this.configChanged}"
+                    @value-changed="${this._valueChanged}"
                 ></paper-input>
                 <paper-input
                     label="Port"
                     .value="${this._config.port}"
                     .configValue="${"port"}"
-                    @value-changed="${this.configChanged}"
+                    @value-changed="${this._valueChanged}"
                 ></paper-input>
+                <div class="side-by-side">
+                    <ha-formfield
+                        .label=${"Auto Answer"}
+                        ><ha-switch
+                            .checked=${this._config!.auto_answer !== false}
+                            .configValue=${"auto_answer"}
+                            @change=${this._valueChanged}
+                        ></ha-switch>
+                    </ha-formfield>
+                    <ha-formfield
+                        .label=${"Video"}
+                        ><ha-switch
+                            .checked=${this._config!.video !== false}
+                            .configValue=${"video"}
+                            @change=${this._valueChanged}
+                        ></ha-switch>
+                    </ha-formfield>
+                </div>
                 <div class="entities">
-                    ${this._entities.map(ent => {
-                        console.log("EXTRA ENTITY HERE!!!");
+                    ${this._config.entities!.map((ent, index) => {
+                        console.log(ent);
+                        console.log(index);
+                        var persons = Object.keys(this.hass.states).filter(entId => entId.startsWith('person.') || this.hass.states[entId].attributes.fileList != undefined || this.hass.states[entId].attributes.file_list != undefined).sort()
                         return html`
                             <div class="entity">
-                                <ha-svg-icon class="handle"></ha-svg-icon>
-                                <ha-entity-picker
-                                    .hass="${this.hass}"
-                                    .configValue=${"entity"}
-                                    domain-filter="sensor"
-                                    @change="${this.configChanged}"
-                                    allow-custom-entity
-                                ></ha-entity-picker>
-                                <ha-icon-button class="remove-icon"></ha-icon-button>
-                                <ha-icon-button class="edit-icon"></ha-icon-button>
+                                <paper-input
+                                    .label=${"Name"}
+                                    .index="${index}"
+                                    .value="${ent.name!}"
+                                    .configValue="${"name"}"
+                                    @value-changed="${this._editEntity}"
+                                ></paper-input>
+                                <paper-input
+                                    .label=${"Extension"}
+                                    .index="${index}"
+                                    .value="${ent.extension!}"
+                                    .configValue="${"extension"}"
+                                    @value-changed="${this._editEntity}"
+                                ></paper-input>
+                                <paper-input
+                                    .label=${"Secret"}
+                                    .index="${index}"
+                                    .value="${ent.secret!}"
+                                    .configValue="${"secret"}"
+                                    @value-changed="${this._editEntity}"
+                                ></paper-input>
+                                <paper-dropdown-menu
+                                    .label=${"Person"}
+                                    .index="${index}"
+                                    .value="${ent.person!}"
+                                    .configValue=${"person"}
+                                    @value-changed="${this._editEntity}"
+                                    ><paper-listbox slot="dropdown-content">
+                                        ${persons.map(entId => html`
+                                            <paper-item>${entId}</paper-item>
+                                        `)}
+                                    </paper-listbox>
+                                </paper-dropdown-menu>
                             </div>
                         `;
                     })}
                 </div>
-                <ha-entity-picker
-                    .hass="${this.hass}"
-                    .configValue=${"entity"}
-                    domain-filter="sensor"
-                    @focusout=${this._addEntity}
-                    allow-custom-entity
-                ></ha-entity-picker>
             </div>
+            <hui-entities-card-row-editor
+                .hass=${this.hass}
+                .entities=${this._config["entities"]}
+                @entities-changed=${this.configChanged}
+                @edit-detail-element=${this.configChanged}
+            ></hui-entities-card-row-editor>
         `;
     }
 
-    // USE <ha-entities-picker> (https://github.com/jnog93/frontend2/blob/8cc20b1f313e14a949f578dd61234eeebc9158ad/frontend/src/panels/lovelace/editor/config-elements/hui-logbook-card-editor.ts)
+    // USE <ha-entities-picker> (https://github.com/home-assistant/frontend/blob/dev/src/components/entity/ha-entities-picker.ts)
 
-    _addEntity(entity) {
-        console.log(entity.target.value);
-        this._entities.push({
-            entity: entity.target.value
-        });
-        console.log(this._entities);
+
+    // _addEntity(entity) {
+    //     if (entity.target.value) {
+    //         var entities = Object.assign([], this._config["entities"]);
+    //         entities.push({
+    //             entity: entity.target.value
+    //         });
+
+    //         this._config = {
+    //             ...this._config,
+    //             entities: entities
+    //         };
+
+    //         //this.configChanged(this._config);
+    //         entity.target.value = null;
+    //     }
+    // }
+
+    // _deleteEntity(entity) {
+    //     var index = entity.target.index;
+    //     var entities = Object.assign([], this._config["entities"]);
+    //     entities.splice(index, 1);
+    //     this._config = {
+    //       ...this._config,
+    //       entities: entities
+    //     };
+    // }
+
+    _editEntity(entity) {
+        var index = entity.target.index;
+        var entities = Object.assign([], this._config["entities"]);
+        entities[index] = {...entities[index], [entity.target.configValue]: entity.target.value};
+        this._config = {
+          ...this._config,
+          entities: entities
+        };
+
+        this.configChanged(this._config);
+    }
+
+    // _editEntity(entity) {
+    //     var index = entity.target.index;
+    //     var entities = Object.assign([], this._config["entities"]);
+    //     entities[index] = entity.target.value;
+    //     this._config = {
+    //       ...this._config,
+    //       entities: entities
+    //     };
+    // }
+
+    static get styles() {
+        return css`
+            ha-switch {
+                padding: 16px 6px;
+            }
+            .side-by-side {
+                display: flex;
+                flex-flow: row wrap;
+            }
+            .side-by-side > * {
+                padding-right: 8px;
+                width: 50%;
+                flex-flow: column wrap;
+                box-sizing: border-box;
+            }
+            .side-by-side > *:last-child {
+                flex: 1;
+                padding-right: 0;
+            }
+        `;
     }
 
 }
