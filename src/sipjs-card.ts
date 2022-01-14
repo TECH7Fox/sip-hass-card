@@ -343,9 +343,86 @@ class ContentCardEditor extends LitElement {
     }
 
     render() {
-        var persons = Object.keys(this.hass.states).filter(entId => entId.startsWith('person.') || this.hass.states[entId].attributes.fileList != undefined || this.hass.states[entId].attributes.file_list != undefined).sort()
+        if (!this._config || !this.hass) {
+            return;
+        }
+
         if (this._rowEditor !== undefined) {
-            var ent = this._config.entities[this._rowEditor];
+            var ent = this._config[this._rowEditor.key][this._rowEditor.index];
+            switch (this._rowEditor.key) {
+                case "entities":
+                    var rowEditor = html`
+                        <ha-entity-picker
+                            .hass="${this.hass}"
+                            .label="${"Person"}"
+                            .index=${this._rowEditor.index}
+                            .value="${ent.person!}"
+                            .configValue=${"person"}
+                            .configKey="${"entities"}"
+                            .includeDomains="${"person"}"
+                            @value-changed="${this._editArray}"
+                            allow-custom-entity
+                        ></ha-entity-picker>
+                        <paper-input
+                            .label=${"Name"}
+                            .index="${this._rowEditor.index}"
+                            .value="${ent.name!}"
+                            .configValue="${"name"}"
+                            .configKey="${"entities"}"
+                            @value-changed="${this._editArray}"
+                        ></paper-input>
+                        <paper-input
+                            .label=${"Extension"}
+                            .index="${this._rowEditor.index}"
+                            .value="${ent.extension!}"
+                            .configValue="${"extension"}"
+                            .configKey="${"entities"}"
+                            @value-changed="${this._editArray}"
+                        ></paper-input>
+                        <paper-input
+                            .label=${"Secret"}
+                            .index="${this._rowEditor.index}"
+                            .value="${ent.secret!}"
+                            .configValue="${"secret"}"
+                            .configKey="${"entities"}"
+                            @value-changed="${this._editArray}"
+                        ></paper-input>
+                        <ha-entity-picker
+                            .hass="${this.hass}"
+                            .label="${"Status Entity"}"
+                            .index=${this._rowEditor.index}
+                            .value="${ent.entity!}"
+                            .configValue=${"entity"}
+                            .configKey="${"entities"}"
+                            @value-changed="${this._editArray}"
+                            allow-custom-entity
+                        ></ha-entity-picker>
+                    `;
+                break;
+                case "dtmfs":
+                    var rowEditor = html`
+                        <paper-input
+                            .label=${"Name"}
+                            .index="${this._rowEditor.index}"
+                            .value="${ent.name!}"
+                            .configValue="${"name"}"
+                            .configKey="${"dtmfs"}"
+                            @value-changed="${this._editArray}"
+                        ></paper-input>
+                        <paper-input
+                            auto-validate pattern="[0-9]*"
+                            error-message="numbers only!"
+                            maxlength="1"
+                            .label=${"Signal"}
+                            .index="${this._rowEditor.index}"
+                            .value="${ent.signal!}"
+                            .configValue="${"signal"}"
+                            .configKey="${"dtmfs"}"
+                            @value-changed="${this._editArray}"
+                        ></paper-input>
+                    `;
+                break;
+            }
             return html`
                 <div class="header">
                     <div class="back-title">
@@ -357,49 +434,7 @@ class ContentCardEditor extends LitElement {
                         <span slot="title">Card Editor</span>
                     </div>
                 </div>
-
-                <paper-dropdown-menu
-                    .label=${"Person"}
-                    .index="${this._rowEditor}"
-                    .value="${ent.person!}"
-                    .configValue=${"person"}
-                    @value-changed="${this._editEntity}"
-                    ><paper-listbox slot="dropdown-content">
-                        ${persons.map(entId => html`
-                            <paper-item>${entId}</paper-item>
-                        `)}
-                    </paper-listbox>
-                </paper-dropdown-menu>
-                <paper-input
-                    .label=${"Name"}
-                    .index="${this._rowEditor}"
-                    .value="${ent.name!}"
-                    .configValue="${"name"}"
-                    @value-changed="${this._editEntity}"
-                ></paper-input>
-                <paper-input
-                    .label=${"Extension"}
-                    .index="${this._rowEditor}"
-                    .value="${ent.extension!}"
-                    .configValue="${"extension"}"
-                    @value-changed="${this._editEntity}"
-                ></paper-input>
-                <paper-input
-                    .label=${"Secret"}
-                    .index="${this._rowEditor}"
-                    .value="${ent.secret!}"
-                    .configValue="${"secret"}"
-                    @value-changed="${this._editEntity}"
-                ></paper-input>
-                <ha-entity-picker
-                    .hass="${this.hass}"
-                    .label="${"Status Entity"}"
-                    .index=${this._rowEditor}
-                    .value="${ent.entity!}"
-                    .configValue=${"entity"}
-                    @value-changed="${this._editEntity}"
-                    allow-custom-entity
-                ></ha-entity-picker>
+                ${rowEditor}
             `;
         }
         return html`
@@ -446,13 +481,14 @@ class ContentCardEditor extends LitElement {
                                     .value="${ent.person}"
                                     .configValue=${"person"}
                                     .includeDomains="${"person"}"
-                                    @value-changed="${this._editEntity}"
+                                    .configKey="${"entities"}"
+                                    @value-changed="${this._editArray}"
                                     allow-custom-entity
                                 ></ha-entity-picker>
-                                </paper-dropdown-menu>
                                 <ha-icon-button 
                                     class="remove-icon"
                                     .label=${"Remove Extension"}
+                                    .configKey="${"entities"}"
                                     @click="${this._removeRow}"
                                     .index="${index}"
                                     ><ha-icon icon="hass:close"></ha-icon>
@@ -460,6 +496,7 @@ class ContentCardEditor extends LitElement {
                                 <ha-icon-button 
                                     class="edit-icon"
                                     .label=${"Edit Extension"}
+                                    .configKey="${"entities"}"
                                     @click="${this._editRow}"
                                     .index="${index}"
                                     ><ha-icon icon="hass:pencil"></ha-icon>
@@ -467,37 +504,114 @@ class ContentCardEditor extends LitElement {
                             </div>
                         `;
                     }) : null}
+                    <ha-entity-picker
+                        .hass="${this.hass}"
+                        .label="${"Person"}"
+                        .includeDomains="${"person"}"
+                        .configValue="${"person"}"
+                        .configKey="${"entities"}"
+                        @value-changed=${this._addRow}
+                        allow-custom-entity
+                    ></ha-entity-picker>
+                </div>
+                <div class="entities">
+                    <h3>DTMF's</h3>
+                    ${this._config.dtmfs ? this._config.dtmfs.map((ent, index) => {
+                        return html`
+                            <div class="entity">
+                                <paper-input
+                                    .hass="${this.hass}"
+                                    .label="${"Name"}"
+                                    .index=${index}
+                                    .value="${ent.name}"
+                                    .configValue=${"name"}
+                                    .configKey="${"dtmfs"}"
+                                    @value-changed="${this._editArray}"
+                                ></paper-input>
+                                <ha-icon-button 
+                                    class="remove-icon"
+                                    .label=${"Remove DTMF"}
+                                    .configKey="${"dtmfs"}"
+                                    @click="${this._removeRow}"
+                                    .index="${index}"
+                                    ><ha-icon icon="hass:close"></ha-icon>
+                                </ha-icon-button>
+                                <ha-icon-button 
+                                    class="edit-icon"
+                                    .label=${"Edit DTMF"}
+                                    .configKey="${"dtmfs"}"
+                                    @click="${this._editRow}"
+                                    .index="${index}"
+                                    ><ha-icon icon="hass:pencil"></ha-icon>
+                                </ha-icon-button>
+                            </div>
+                        `;
+                    }) : null}
+                    <paper-input
+                        .hass="${this.hass}"
+                        .label="${"Name"}"
+                        .configValue="${"name"}"
+                        .configKey="${"dtmfs"}"
+                        @focusout=${this._addRow}
+                    ></paper-input>
                 </div>
             </div>
         `;
     }
 
-    private _removeRow(ev): void {
-        const index = (ev.currentTarget as any).index;
-        var entities = Object.assign([], this._config["entities"]);
-        entities.splice(index, 1);
+    private _addRow(ev): void {
+        if (ev.target.value == "") {
+            return;
+        }
+        var key = ev.target.configKey;
+        var array = Object.assign([], this._config[key]);
+        array.push({
+            [ev.target.configValue]: ev.target.value
+        });
         this._config = {
             ...this._config,
-            entities: entities
+            [key]: array
         };
+        ev.target.value = null;
+        this.configChanged(this._config);
+        this.requestUpdate();
+    }
+
+    private _removeRow(ev): void {
+        var key = (ev.currentTarget as any).configKey;
+        var index = (ev.currentTarget as any).index;
+        var array = Object.assign([], this._config[key]);
+        array.splice(index, 1);
+        this._config = {
+            ...this._config,
+            [key]: array
+        };
+        this.configChanged(this._config);
         this.requestUpdate();
     }
 
     private _editRow(ev): void {
+        var key = (ev.currentTarget as any).configKey;
         const index = (ev.currentTarget as any).index;
-        this._rowEditor = index;
+        this._rowEditor = {
+            key: key,
+            index: index
+        }
         this.requestUpdate();
     }
 
-    _editEntity(entity) {
-        var index = entity.target.index;
-        var entities = Object.assign([], this._config["entities"]);
-        entities[index] = {...entities[index], [entity.target.configValue]: entity.target.value};
-        this._config = {
-          ...this._config,
-          entities: entities
+    private _editArray(ev): void {
+        var key = ev.target.configKey;
+        var index = ev.target.index;
+        var array = Object.assign([], this._config[key]);
+        array[index] = {
+            ...array[index],
+            [ev.target.configValue]: ev.target.value
         };
-
+        this._config = {
+            ...this._config,
+            [key]: array
+        };
         this.configChanged(this._config);
     }
 
@@ -534,7 +648,7 @@ class ContentCardEditor extends LitElement {
                 display: flex;
                 align-items: center;
             }
-            .entity ha-entity-picker {
+            .entity ha-entity-picker, paper-input {
                 flex-grow: 1;
             }
             .entity handle {
