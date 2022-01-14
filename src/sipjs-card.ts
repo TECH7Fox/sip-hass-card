@@ -6,8 +6,9 @@ import {
   html,
   css
 } from "lit-element";
+import "./editor";
 
-class SIPjsClientCard extends LitElement {
+class SipJsCard extends LitElement {
     simpleUser: Web.SimpleUser;
     config: any;
     hass: any;
@@ -153,6 +154,18 @@ class SIPjsClientCard extends LitElement {
         this.config = config;
         this.connect;
     }
+    static async getConfigElement() {
+        return document.createElement("sipjs-card-editor");
+    }
+
+    static getStubConfig() {
+        // Return a minimal configuration that will result in a working card configuration
+        return {
+            server: "localhost",
+            port: "8089"
+        };
+    }
+
     getCardSize() {
         return this.config.entities.length + 2;
     }
@@ -284,4 +297,11 @@ class SIPjsClientCard extends LitElement {
         };
     }
 }
-customElements.define('sipjs-card', SIPjsClientCard);
+customElements.define('sipjs-card', SipJsCard);
+window.customCards = window.customCards || [];
+window.customCards.push({
+    type: "sipjs-card",
+    name: "sip.js card",
+    preview: false,
+    description: "A SIP card."
+});
