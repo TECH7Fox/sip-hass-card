@@ -410,6 +410,13 @@ class SipJsCard extends LitElement {
                 this.timerElement.innerHTML = "00:00";
             }
         };
+
+        var urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('call')) {
+            console.log("calling " + urlParams.get('call'));
+            this._call(urlParams.get('call'));
+            this.openPopup();
+        }
     }
 }
 customElements.define('sipjs-card', SipJsCard);
