@@ -260,6 +260,12 @@ class SipJsCard extends LitElement {
         if (!config.server) {
             throw new Error("You need to define a server!");
         }
+        if (!config.port) {
+            throw new Error("You need to define a port!");
+        }
+        if (!config.extensions) {
+            throw new Error("You need to define at least one extension!");
+        }
         this.config = config;
     }
 
@@ -268,10 +274,23 @@ class SipJsCard extends LitElement {
     }
 
     static getStubConfig() {
-        // Return a minimal configuration that will result in a working card configuration
         return {
             server: "192.168.178.0.1",
-            port: "8089"
+            port: "8089",
+            custom: [
+                {
+                    name: 'Custom1',
+                    number: '123',
+                    icon: 'mdi:phone-classic'
+                }
+            ],
+            dtmfs: [
+                {
+                    name: 'dtmf1',
+                    signal: 1,
+                    icon: 'mdi:door'
+                }
+            ]
         };
     }
 
@@ -397,7 +416,7 @@ customElements.define('sipjs-card', SipJsCard);
 window.customCards = window.customCards || [];
 window.customCards.push({
     type: "sipjs-card",
-    name: "sip.js card",
+    name: "SIP Card",
     preview: false,
-    description: "A SIP card."
+    description: "A SIP card, made by Jordy Kuhne."
 });
