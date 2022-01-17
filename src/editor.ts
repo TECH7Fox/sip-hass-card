@@ -38,7 +38,7 @@ export class SipJsCardEditor extends LitElement {
         if (this._rowEditor) {
             var ent = this._config[this._rowEditor.key][this._rowEditor.index];
             switch (this._rowEditor.key) {
-                case "entities":
+                case "extensions":
                     var rowEditor = html`
                         <ha-entity-picker
                             .hass="${this.hass}"
@@ -46,7 +46,7 @@ export class SipJsCardEditor extends LitElement {
                             .index=${this._rowEditor.index}
                             .value="${ent.person!}"
                             .configValue=${"person"}
-                            .configKey="${"entities"}"
+                            .configKey="${"extensions"}"
                             .includeDomains="${"person"}"
                             @value-changed="${this._editArray}"
                             allow-custom-entity
@@ -56,7 +56,7 @@ export class SipJsCardEditor extends LitElement {
                             .index="${this._rowEditor.index}"
                             .value="${ent.name!}"
                             .configValue="${"name"}"
-                            .configKey="${"entities"}"
+                            .configKey="${"extensions"}"
                             @value-changed="${this._editArray}"
                         ></paper-input>
                         <paper-input
@@ -64,7 +64,7 @@ export class SipJsCardEditor extends LitElement {
                             .index="${this._rowEditor.index}"
                             .value="${ent.extension!}"
                             .configValue="${"extension"}"
-                            .configKey="${"entities"}"
+                            .configKey="${"extensions"}"
                             @value-changed="${this._editArray}"
                         ></paper-input>
                         <paper-input
@@ -72,7 +72,7 @@ export class SipJsCardEditor extends LitElement {
                             .index="${this._rowEditor.index}"
                             .value="${ent.secret!}"
                             .configValue="${"secret"}"
-                            .configKey="${"entities"}"
+                            .configKey="${"extensions"}"
                             @value-changed="${this._editArray}"
                         ></paper-input>
                         <ha-entity-picker
@@ -81,7 +81,7 @@ export class SipJsCardEditor extends LitElement {
                             .index=${this._rowEditor.index}
                             .value="${ent.entity!}"
                             .configValue=${"entity"}
-                            .configKey="${"entities"}"
+                            .configKey="${"extensions"}"
                             @value-changed="${this._editArray}"
                             allow-custom-entity
                         ></ha-entity-picker>
@@ -90,11 +90,11 @@ export class SipJsCardEditor extends LitElement {
                             .index="${this._rowEditor.index}"
                             .value="${ent.icon!}"
                             .configValue=${"icon"}
-                            .configKey="${"entities"}"
+                            .configKey="${"extensions"}"
                             @value-changed="${this._editArray}"
                         ></ha-icon-picker>
                     `;
-                break;
+                    break;
                 case "custom":
                     var rowEditor = html`
                         <paper-input
@@ -115,6 +115,16 @@ export class SipJsCardEditor extends LitElement {
                             .configKey="${"custom"}"
                             @value-changed="${this._editArray}"
                         ></paper-input>
+                        <ha-entity-picker
+                            .hass="${this.hass}"
+                            .label="${"Status Entity"}"
+                            .index=${this._rowEditor.index}
+                            .value="${ent.entity!}"
+                            .configValue=${"entity"}
+                            .configKey="${"custom"}"
+                            @value-changed="${this._editArray}"
+                            allow-custom-entity
+                        ></ha-entity-picker>
                         <ha-icon-picker
                             .label=${"Icon"}
                             .index="${this._rowEditor.index}"
@@ -124,7 +134,7 @@ export class SipJsCardEditor extends LitElement {
                             @value-changed="${this._editArray}"
                         ></ha-icon-picker>
                     `;
-                break;
+                    break;
                 case "dtmfs":
                     var rowEditor = html`
                         <paper-input
@@ -155,7 +165,7 @@ export class SipJsCardEditor extends LitElement {
                             @value-changed="${this._editArray}"
                         ></ha-icon-picker>
                     `;
-                break;
+                    break;
             }
             return html`
                 <div class="header">
@@ -189,7 +199,7 @@ export class SipJsCardEditor extends LitElement {
                     <ha-formfield
                         .label=${"Auto Answer"}
                         ><ha-switch
-                            .checked=${this._config!.auto_answer !== false}
+                            .checked=${this._config.auto_answer}
                             .configValue=${"auto_answer"}
                             @change=${this._valueChanged}
                         ></ha-switch>
@@ -197,15 +207,35 @@ export class SipJsCardEditor extends LitElement {
                     <ha-formfield
                         .label=${"Video"}
                         ><ha-switch
-                            .checked=${this._config!.video !== false}
+                            .checked=${this._config.video}
                             .configValue=${"video"}
                             @change=${this._valueChanged}
                         ></ha-switch>
                     </ha-formfield>
+                    <ha-formfield
+                        .label=${"Color icons based on state?"}
+                        ><ha-switch
+                            .checked=${this._config.state_color}
+                            .configValue=${"state_color"}
+                            @change=${this._valueChanged}
+                        ></ha-switch>
+                    </ha-formfield>
                 </div>
+                <paper-input
+                    .label=${"Ringtone"}
+                    .value="${this._config.ringtone}"
+                    .configValue="${"ringtone"}"
+                    @value-changed="${this._valueChanged}"
+                ></paper-input>
+                <paper-input
+                    .label=${"Ringback Tone"}
+                    .value="${this._config.ringbacktone}"
+                    .configValue="${"ringbacktone"}"
+                    @value-changed="${this._valueChanged}"
+                ></paper-input>
                 <div class="entities">
                     <h3>Extensions (required)</h3>
-                    ${this._config.entities ? this._config.entities.map((ent, index) => {
+                    ${this._config.extensions ? this._config.extensions.map((ent, index) => {
                         return html`
                             <div class="entity">
                                 <ha-entity-picker
@@ -215,14 +245,14 @@ export class SipJsCardEditor extends LitElement {
                                     .value="${ent.person}"
                                     .configValue=${"person"}
                                     .includeDomains="${"person"}"
-                                    .configKey="${"entities"}"
+                                    .configKey="${"extensions"}"
                                     @value-changed="${this._editArray}"
                                     allow-custom-entity
                                 ></ha-entity-picker>
                                 <ha-icon-button 
                                     class="remove-icon"
                                     .label=${"Remove Extension"}
-                                    .configKey="${"entities"}"
+                                    .configKey="${"extensions"}"
                                     @click="${this._removeRow}"
                                     .index="${index}"
                                     ><ha-icon icon="hass:close"></ha-icon>
@@ -230,7 +260,7 @@ export class SipJsCardEditor extends LitElement {
                                 <ha-icon-button 
                                     class="edit-icon"
                                     .label=${"Edit Extension"}
-                                    .configKey="${"entities"}"
+                                    .configKey="${"extensions"}"
                                     @click="${this._editRow}"
                                     .index="${index}"
                                     ><ha-icon icon="hass:pencil"></ha-icon>
@@ -243,7 +273,7 @@ export class SipJsCardEditor extends LitElement {
                         .label="${"Person"}"
                         .includeDomains="${"person"}"
                         .configValue="${"person"}"
-                        .configKey="${"entities"}"
+                        .configKey="${"extensions"}"
                         @value-changed=${this._addRow}
                         allow-custom-entity
                     ></ha-entity-picker>
@@ -334,7 +364,7 @@ export class SipJsCardEditor extends LitElement {
         `;
     }
 
-    _valueChanged(ev) {
+    private _valueChanged(ev): void {
         if (!this._config || !this.hass) {
             return;
         }
