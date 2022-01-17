@@ -75,6 +75,21 @@ class SipJsCard extends LitElement {
                 width: 100%;
                 background-color: dimgray;
             }
+            .visualizer-container {
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                top: 0;
+                display: flex;
+                align-items: center;
+            }
+            .visualizer-bar {
+                display: inline-block;
+                background: white;
+                margin: 0 2px;
+                width: 25px;
+            }
             .box {
                 /* start paper-font-common-nowrap style */
                 white-space: nowrap;
@@ -133,6 +148,68 @@ class SipJsCard extends LitElement {
         `;
     }
 
+    audioVisualizer() {
+        const NBR_OF_BARS = 10;
+        const audio = this.renderRoot.querySelector("#remoteAudio");
+        var ctx = new AudioContext();
+        var audioSource = ctx.createMediaStreamSource(audio);
+        var analayzer = ctx.createAnalyser();
+        audioSource.connect(analayzer);
+        audioSource.connect(ctx.destination);
+
+        const frequencyData = new Uint8Array(analayzer.frequencyBinCount);
+        analayzer.getByteFrequencyData(frequencyData);
+        console.log("frequencyData", frequencyData);
+
+        const visualizerContainer = this.renderRoot.querySelector(".visualizer-container");
+
+        
+        // Create a set of pre-defined bars
+        for( let i = 0; i < NBR_OF_BARS; i++ ) {
+
+            const bar = document.createElement("DIV");
+            bar.setAttribute("id", "bar" + i);
+            bar.setAttribute("class", "visualizer-bar");
+            visualizerContainer.appendChild(bar);
+
+        }
+
+        // This function has the task to adjust the bar heights according to the frequency data
+        function renderFrame() {
+
+            // Update our frequency data array with the latest frequency data
+            analayzer.getByteFrequencyData(frequencyData);
+
+            for( let i = 0; i < NBR_OF_BARS; i++ ) {
+
+                // Since the frequency data array is 1024 in length, we don't want to fetch
+                // the first NBR_OF_BARS of values, but try and grab frequencies over the whole spectrum
+                const index = (i + 10) * 2;
+                // fd is a frequency value between 0 and 255
+                const fd = frequencyData[index];
+
+                // Fetch the bar DIV element
+                const bar = this.renderRoot.querySelector("#bar" + i);
+                if( !bar ) {
+                    continue;
+                }
+
+                // If fd is undefined, default to 0, then make sure fd is at least 4
+                // This will make make a quiet frequency at least 4px high for visual effects
+                const barHeight = Math.max(4, fd || 0);
+                bar.style.height = barHeight + "px";
+
+            }
+
+            // At the next animation frame, call ourselves
+            window.requestAnimationFrame(renderFrame.call(this));
+
+        }
+
+        renderFrame.call(this);
+        
+    }
+
     closePopup() {
         this.popup = false;
         this.requestUpdate();
@@ -162,6 +239,7 @@ class SipJsCard extends LitElement {
                         <audio id="remoteAudio" style="display:none"></audio>
                         <audio id="toneAudio" style="display:none" loop controls></audio>
                     </div>
+                    <div class="visualizer-container"></div>
                     <div class="box">
                         <div class="row">
                             <ha-icon-button 
@@ -356,6 +434,9 @@ class SipJsCard extends LitElement {
 
             },
             onCallAnswered: () => {
+                
+                this.audioVisualizer();
+
                 this.ring("pause");
                 console.log(this.simpleUser.session);
                 if (this.simpleUser.session._assertedIdentity) {
