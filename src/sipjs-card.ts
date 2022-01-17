@@ -6,265 +6,393 @@ import {
   html,
   css
 } from "lit-element";
+import "./editor";
 
-class SIPjsClientCard extends LitElement {
+class SipJsCard extends LitElement {
     simpleUser: Web.SimpleUser;
+    user: any;
     config: any;
     hass: any;
-    toneAudio: any;
-    nameElement: any;
     timerElement: any;
     renderRoot: any;
-    stateElement: any;
     intervalId: number;
+
     static get properties() {
         return {
             hass: {},
             config: {}
         };
     }
+
     static get styles() {
         return css `
-    :host {
-      display: flex;
-      align-items: center;
-    }
-    .wrapper {
-      padding: 8px;
-      padding-top: 0px;
-      padding-bottom: 2px;
-    }
-    .flex {
-      flex: 1;
-      margin-top: 6px;
-      margin-bottom: 6px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      min-width: 0;
-    }
-    .info {
-      flex: 1 1 30%;
-      cursor: pointer;
-      margin-left: 16px;
-      margin-right: 8px;
-    }
-    state-badge {
-      cursor: pointer;
-    }
-    .secondary {
-      color: var(--secondary-text-color);
-    }
-    .good {
-      color: var(--label-badge-green);
-    }
-    .warning {
-      color: var(--label-badge-yellow);
-    }
-    .critical {
-      color: var(--label-badge-red);
-    }
-    .icon {
-      width: 40px;
-      height: 40px;
-    }
-    .video {
-      width: 100%;
-      height: auto;
-    }`;
-    }
-    render() {
-        return html `
-              <ha-card>
-              <audio id="remoteAudio" style="display:none"></audio>
-              <audio id="toneAudio" style="display:none" loop controls></audio>
-              <div class="wrapper">
-              <h2 style="text-align: center; padding-top: 15px; margin-top: 0;" id="name">Idle</h2>
-              <span style="float:left" id="state">Connecting</span>
-              <span style="float:right" id="time">00:00</span>
-              ${this.config.video ? html `<video class="video" id="remoteVideo"></video>` : ''}
-              <br><hr style="margin-bottom: 12px;">
-              <mwc-button outlined @click=${() => this._answer()} style="float: right;">
-                  <svg class="icon" viewBox="0 0 24 24">
-                    <path fill="limegreen" d="M6.62,10.79C8.06,13.62 10.38,15.94 13.21,17.38L15.41,15.18C15.69,14.9 16.08,14.82 16.43,14.93C17.55,15.3 18.75,15.5 20,15.5A1,1 0 0,1 21,16.5V20A1,1 0 0,1 20,21A17,17 0 0,1 3,4A1,1 0 0,1 4,3H7.5A1,1 0 0,1 8.5,4C8.5,5.25 8.7,6.45 9.07,7.57C9.18,7.92 9.1,8.31 8.82,8.59L6.62,10.79Z">
-                    </path>
-                  </svg>
-              </mwc-button>
-              <mwc-button outlined @click=${() => this._hangup()} style="float: left;">
-                <svg class="icon" viewBox="0 0 24 24">
-                    <path fill="red" d="M12,9C10.4,9 8.85,9.25 7.4,9.72V12.82C7.4,13.22 7.17,13.56 6.84,13.72C5.86,14.21 4.97,14.84 4.17,15.57C4,15.75 3.75,15.86 3.5,15.86C3.2,15.86 2.95,15.74 2.77,15.56L0.29,13.08C0.11,12.9 0,12.65 0,12.38C0,12.1 0.11,11.85 0.29,11.67C3.34,8.77 7.46,7 12,7C16.54,7 20.66,8.77 23.71,11.67C23.89,11.85 24,12.1 24,12.38C24,12.65 23.89,12.9 23.71,13.08L21.23,15.56C21.05,15.74 20.8,15.86 20.5,15.86C20.25,15.86 20,15.75 19.82,15.57C19.03,14.84 18.14,14.21 17.16,13.72C16.83,13.56 16.6,13.22 16.6,12.82V9.72C15.15,9.25 13.6,9 12,9Z" />
-                </svg>
-              </mwc-button>
-              <br><br>
-              ${this.config.entities.map(ent => {
-                const stateObj = this.hass.states[ent.entity]; // filter: grayscale(1); FOR VIDEO
-                if (!stateObj) {
-                    return html `
-                        <div class="not-found">Entity ${ent.entity} not found.</div>
-                    `;
-                }
-                var isMe = false;
-                if (this.hass.user.id == this.hass.states[ent.person].attributes.user_id) {
-                    isMe = true;
-                }
-                return html `
-                    <div class="flex">
-                    <state-badge .stateObj="${stateObj}" icon></state-badge>
-                    <div class="info ${isMe ? "good" : ""}">${this.hass.states[ent.person].attributes.id}</div>
-                    ${isMe ? html `<mwc-button disabled .hass=${this.hass} .config=${this.config} @click="${() => this._click(ent)}">CALL</mwc-button>` 
-                        : html `<mwc-button .hass=${this.hass} .config=${this.config} @click="${() => this._click(ent)}">CALL</mwc-button>`}
-                    </div>
-                `;
-              })}
-              ${this.config.custom ?
-                this.config.custom.map(custom => {
-                  return html `
-                    <div class="flex">
-                    <div class="info">${custom.name}</div>
-                    <mwc-button .hass=${this.hass} .config=${this.config} @click="${() => this._call(custom.number)}">CALL</mwc-button>
-                    </div>
-                  `;
-                }) : ""
+            .wrapper {
+                padding: 8px;
+                padding-top: 0px;
+                padding-bottom: 2px;
+            }
+            .flex {
+                flex: 1;
+                margin-top: 6px;
+                margin-bottom: 6px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                min-width: 0;
+            }
+            .info, .info > * {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .info {
+                flex: 1 1 30%;
+                cursor: pointer;
+                margin-left: 16px;
+                margin-right: 8px;
+            }
+            ha-card {
+                cursor: pointer;
+            }
+            .good {
+                color: var(--label-badge-green);
+            }
+            .warning {
+                color: var(--label-badge-yellow);
+            }
+            .critical {
+                color: var(--label-badge-red);
+            }
+            .icon {
+                padding: 0px 18px 0px 8px;
               }
-              ${this.config.dtmfs ?  
-                  this.config.dtmfs.map(dtmf => {
-                    return html `
-                      <div class="flex">
-                      <div class="info">${dtmf.name}</div>
-                      <mwc-button .hass=${this.hass} .config=${this.config} @click="${() => this._sendDTMF(dtmf.signal)}">SEND</mwc-button>
-                      </div>
-                    `;
-                  }) : ""
-                }
-        </div>
-        </ha-card>
+            #phone .content {
+                color: white;
+            }
+            video {
+                display: block;
+                height: auto;
+                width: 100%;
+                background-color: dimgray;
+            }
+            .box {
+                /* start paper-font-common-nowrap style */
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                /* end paper-font-common-nowrap style */
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: var(
+                  --ha-picture-card-background-color,
+                  rgba(0, 0, 0, 0.3)
+                );
+                padding: 4px 8px;
+                font-size: 16px;
+                line-height: 40px;
+                color: var(--ha-picture-card-text-color, white);
+                display: flex;
+                justify-content: space-between;
+                flex-direction: row;
+            }
+            .box .title {
+                font-weight: 500;
+                margin-left: 8px;
+            }
+            .row {
+                display: flex;
+                flex-direction: row;
+            }
+            .container {
+                transition: filter 0.2s linear 0s;
+                width: 80vw;
+            }
+            ha-dialog {
+                --dialog-content-padding: 0;
+            }
+            .box, ha-icon {
+                display: flex;
+                align-items: center;
+            }
+            .accept-btn {
+                color: var(--label-badge-green);
+            }
+            .hangup-btn {
+                color: var(--label-badge-red);
+            }
+            ha-dialog {
+                --mdc-dialog-max-width: 80vw;
+            }
+            #time, .title {
+                margin-right: 8px;
+                display: flex;
+                align-items: center;
+            }
+            .extension {
+                color: gray;
+            }
+            .card-header {
+                display: flex;
+                justify-content: space-between;
+            }
         `;
     }
+
+    closePopup() {
+        this.popup = false;
+        this.requestUpdate();
+    }
+
+    openPopup() {
+        // Temp solution! Otherwise won't open dialog again.
+        this.popup = false;
+        super.update();
+        this.popup = true;
+        super.update();
+    }
+
+    render() {
+        return html`
+            <ha-dialog id="phone" ?open=${this.popup} hideactions>
+                <div slot="heading" class="heading">
+                    <ha-header-bar>
+                        <ha-icon-button slot="navigationIcon" dialogaction="cancel"></ha-icon-button>
+                        <div slot="title" class="main-title" title="Call">Call</div>
+                        <ha-icon-button slot="actionItems"></ha-icon-button>
+                    </ha-header-bar>
+                </div>
+                <div class="content">
+                    <div class="container">
+                        <video id="remoteVideo"></video>
+                        <audio id="remoteAudio" style="display:none"></audio>
+                        <audio id="toneAudio" style="display:none" loop controls></audio>
+                    </div>
+                    <div class="box">
+                        <div class="row">
+                            <ha-icon-button 
+                                class="accept-btn"
+                                .label=${"Accept Call"}
+                                @click="${this._answer}"
+                                ><ha-icon icon="hass:phone"></ha-icon>
+                            </ha-icon-button>
+                            <span id="name" class="title">Idle</span>
+                        </div>
+                        <div class="row">
+                            ${this.config.dtmfs ?  
+                                this.config.dtmfs.map(dtmf => {
+                                    return html `
+                                        <ha-icon-button 
+                                            @click="${() => this._sendDTMF(dtmf.signal)}"
+                                            .label="${dtmf.name}"
+                                            ><ha-icon icon="${dtmf.icon}"></ha-icon>
+                                        </ha-icon-button>
+                                    `;
+                                }) : ""
+                            }
+                        </div>
+                        <div class="row">
+                            <span id="time">00:00</span>
+                            <ha-icon-button 
+                                class="hangup-btn"
+                                .label=${"Decline Call"}
+                                @click="${this._hangup}"
+                            ><ha-icon icon="hass:phone-hangup"></ha-icon>
+                            </ha-icon-button>
+                        </div>
+                    </div>
+                </div>
+            </ha-dialog>
+            
+            <ha-card @click="${this.openPopup}">
+                <h1 class="card-header">
+                    <span id="state" class="name">Connecting</span>
+                    <span id="extension" class="extension">Offline</span>
+                </h1>
+                <div class="wrapper">
+
+                    ${this.config.extensions.map(extension => {
+                        var stateObj = this.hass.states[extension.entity];
+                        var isMe = (this.hass.user.id == this.hass.states[extension.person].attributes.user_id);
+                        if (isMe) { this.user = extension; }
+                        return html`
+                            <div class="flex">
+                                <state-badge
+                                    .stateObj=${stateObj}
+                                    .overrideIcon=${extension.icon}
+                                    .stateColor=${this.config.state_color}
+                                ></state-badge>
+                                <div class="info">${extension.name}</div>
+                                <mwc-button @click="${() => this._call(extension.extension)}">CALL</mwc-button>
+                            </div>
+                        `;
+                    })}
+
+                    ${this.config.custom ?
+                        this.config.custom.map(custom => {
+                            var stateObj = this.hass.states[custom.entity];
+                            return html`
+                                <div class="flex">
+                                    <state-badge
+                                        .stateObj=${stateObj}
+                                        .overrideIcon=${custom.icon}
+                                        .stateColor=${this.config.state_color}
+                                    ></state-badge>
+                                    <div class="info">${custom.name}</div>
+                                    <mwc-button @click="${() => this._call(custom.number)}">CALL</mwc-button>
+                                </div>
+                            `;
+                        }) : ""
+                    }
+              
+                </div>
+            </ha-card>
+        `;
+    }
+
     firstUpdated() {
+        this.popup = false;
         this.connect();
     }
+
     setConfig(config) {
         if (!config.server) {
-            throw new Error("You need to define a server");
+            throw new Error("You need to define a server!");
         }
-        if (!config.entities) {
-            throw new Error("You need to define entities");
+        if (!config.port) {
+            throw new Error("You need to define a port!");
+        }
+        if (!config.extensions) {
+            throw new Error("You need to define at least one extension!");
         }
         this.config = config;
-        this.connect;
     }
+
+    static async getConfigElement() {
+        return document.createElement("sipjs-card-editor");
+    }
+
+    static getStubConfig() {
+        return {
+            server: "192.168.178.0.1",
+            port: "8089",
+            custom: [
+                {
+                    name: 'Custom1',
+                    number: '123',
+                    icon: 'mdi:phone-classic'
+                }
+            ],
+            dtmfs: [
+                {
+                    name: 'dtmf1',
+                    signal: 1,
+                    icon: 'mdi:door'
+                }
+            ]
+        };
+    }
+
     getCardSize() {
-        return this.config.entities.length + 2;
+        return this.config.extensions.length + 1;
     }
-    async _click(ent) {
-        if (this.config.backtone) {
-            this.toneAudio.src = this.config.backtone;
-            this.toneAudio.currentTime = 0;
-            this.toneAudio.play();
+
+    private ring(tone) {
+        var toneAudio = this.renderRoot.querySelector('#toneAudio');
+        if (this.config[tone]) {
+            toneAudio.src = this.config[tone];
+            toneAudio.currentTime = 0;
+            toneAudio.play();
+        } else {
+            toneAudio.pause();
         }
-        this.nameElement.innerHTML = "Calling..."
-        var inviterOptions: any = {}
-        if (this.config.earlyMedia) {
-            inviterOptions.earlyMedia = true;
-        }
-        await this.simpleUser.call("sip:" + ent.entity.match(/\d/g).join("") + "@" + this.config.server, inviterOptions);
     }
-    async _call(number) {
-        if (this.config.backtone) {
-            this.toneAudio.src = this.config.backtone;
-            this.toneAudio.currentTime = 0;
-            this.toneAudio.play();
-        }
-        this.nameElement.innerHTML = "Calling..."
-        var inviterOptions: any = {}
-        if (this.config.earlyMedia) {
-            inviterOptions.earlyMedia = true;
-        }
-        await this.simpleUser.call("sip:" + number + "@" + this.config.server, inviterOptions);
+
+    private setName(text) {
+        this.renderRoot.querySelector('#name').innerHTML = text;
     }
+
+    private setState(text) {
+        this.renderRoot.querySelector('#state').innerHTML = text;
+    }
+
+    private setExtension(text) {
+        this.renderRoot.querySelector('#extension').innerHTML = text;
+    }
+
+    async _call(extension) {
+        this.ring("ringbacktone");
+        this.setName("Calling...");
+        await this.simpleUser.call("sip:" + extension + "@" + this.config.server);
+    }
+
     async _answer() {
         await this.simpleUser.answer();
     }
+
     async _hangup() {
         await this.simpleUser.hangup();
     }
+
     async _sendDTMF(signal) {
         await this.simpleUser.sendDTMF(signal);
     }
+    
     async connect() {
         this.timerElement = this.renderRoot.querySelector('#time');
-        this.nameElement = this.renderRoot.querySelector('#name');
-        this.stateElement = this.renderRoot.querySelector('#state');
-        this.toneAudio = this.renderRoot.querySelector('#toneAudio');
 
-        var aor = "";
-        var authorizationUsername = "";
-        var authorizationPassword = "";
         console.log(this.hass);
-        this.config.entities.map(ent => {
-            var extension = ent.entity.match(/\d/g).join("");
-            var person = this.hass.states[ent.person];
-            if (this.hass.user.id == person.attributes.user_id) {
-                aor = "sip:" + extension + "@" + this.config.server;
-                authorizationUsername = extension;
-                authorizationPassword = ent.secret;
-            }
-        });
 
         var options: Web.SimpleUserOptions = {
-            aor: aor,
+            aor: "sip:" + this.user.extension + "@" + this.config.server,
             media: {
                 remote: {
                     audio: this.renderRoot.querySelector("#remoteAudio"),
                 }
             },
             userAgentOptions: {
-                authorizationPassword,
-                authorizationUsername,
+                authorizationUsername: this.user.extension,
+                authorizationPassword: this.user.secret,
             }
         };
 
         if (this.config.video) {
             options.media.remote.video = this.renderRoot.querySelector('#remoteVideo');
         }
-
-        var port = "8089";
-
-        if (this.config.port) {
-            port = this.config.port;
-        }
         
-        this.simpleUser = new Web.SimpleUser("wss://" + this.config.server + ":" + port + "/ws", options);
+        this.simpleUser = new Web.SimpleUser("wss://" + this.config.server + ":" + this.config.port + "/ws", options);
         
         await this.simpleUser.connect();
-        this.stateElement.innerHTML = "connected";
+        this.setState("Connected");
 
         await this.simpleUser.register();
-        this.stateElement.innerHTML = "registered";
+        this.setState("Registered as " + this.user.name);
+        this.setExtension(this.user.extension);
 
         this.simpleUser.delegate = {
             onCallReceived: async () => {
-                if (this.config.ringtone) {
-                    this.toneAudio.src = this.config.ringtone;
-                    this.toneAudio.currentTime = 0;
-                    this.toneAudio.play();
-                }
-                if (this.simpleUser.session._assertedIdentity) {
-                    this.nameElement.innerHTML = "Incoming call: " + this.simpleUser.session._assertedIdentity._displayName;
-                } else {
-                    this.nameElement.innerHTML = "Incoming call. "; 
-                }
                 if (this.config.autoAnswer) {
                     await this.simpleUser.answer();
+                    return;
                 }
+
+                this.ring("ringtone");
+
+                if (this.simpleUser.session._assertedIdentity) {
+                    this.setName("Incoming Call From " + this.simpleUser.session._assertedIdentity._displayName);
+                } else {
+                    this.setName("Incoming Call"); 
+                }
+
             },
             onCallAnswered: () => {
-                this.toneAudio.pause();
+                this.ring("pause");
                 console.log(this.simpleUser.session);
                 if (this.simpleUser.session._assertedIdentity) {
-                    this.nameElement.innerHTML = this.simpleUser.session._assertedIdentity._displayName;
+                    this.setName(this.simpleUser.session._assertedIdentity._displayName);
                 } else {
-                    this.nameElement.innerHTML = "Connected";
+                    this.setName("On Call");
                 }
                 var time = new Date();
                 this.intervalId = window.setInterval(function(){
@@ -276,12 +404,19 @@ class SIPjsClientCard extends LitElement {
                   }.bind(this), 1000);
             },
             onCallHangup: () => {
-                this.toneAudio.pause();
-                this.nameElement.innerHTML = "Idle";
+                this.ring("pause");
+                this.setName("Idle");
                 clearInterval(this.intervalId);
                 this.timerElement.innerHTML = "00:00";
             }
         };
     }
 }
-customElements.define('sipjs-card', SIPjsClientCard);
+customElements.define('sipjs-card', SipJsCard);
+window.customCards = window.customCards || [];
+window.customCards.push({
+    type: "sipjs-card",
+    name: "SIP Card",
+    preview: false,
+    description: "A SIP card, made by Jordy Kuhne."
+});
