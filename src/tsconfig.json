@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
+    "resolveJsonModule": true,
     "allowJs": true,
     "target": "es2017",
     "module": "es2015",
+    "moduleResolution": "node",
     "strict": true,
     "esModuleInterop": true,
     "importHelpers": true,

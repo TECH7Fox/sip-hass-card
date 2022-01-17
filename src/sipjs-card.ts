@@ -7,6 +7,7 @@ import {
   css
 } from "lit-element";
 import "./editor";
+import { localize } from './localize/localize';
 
 class SipJsCard extends LitElement {
     simpleUser: Web.SimpleUser;
@@ -258,13 +259,13 @@ class SipJsCard extends LitElement {
 
     setConfig(config) {
         if (!config.server) {
-            throw new Error("You need to define a server!");
+            throw new Error(localize('common.no_server'));
         }
         if (!config.port) {
-            throw new Error("You need to define a port!");
+            throw new Error(localize('common.no_port'));
         }
         if (!config.extensions) {
-            throw new Error("You need to define at least one extension!");
+            throw new Error(localize('common.no_extensions'));
         }
         this.config = config;
     }

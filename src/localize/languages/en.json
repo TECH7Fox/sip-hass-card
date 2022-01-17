@@ -1,0 +1,7 @@
+{
+    "common": {
+      "no_server": "You need to define a server!",
+      "no_port": "You need to define a port!",
+      "no_extensions": "You need to define at least one extension!"
+    }
+  }
