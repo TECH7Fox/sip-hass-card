@@ -130,6 +130,13 @@ class SipJsCard extends LitElement {
                 display: flex;
                 align-items: center;
             }
+            .extension {
+                color: gray;
+            }
+            .card-header {
+                display: flex;
+                justify-content: space-between;
+            }
         `;
     }
 
@@ -200,8 +207,8 @@ class SipJsCard extends LitElement {
             
             <ha-card @click="${this.openPopup}">
                 <h1 class="card-header">
-                    <span id="state" class="name">Connecting...</span>
-                    <span style="display: none;">State color?</span>
+                    <span id="state" class="name">Connecting</span>
+                    <span id="extension" class="extension">Offline</span>
                 </h1>
                 <div class="wrapper">
 
@@ -291,6 +298,10 @@ class SipJsCard extends LitElement {
         this.renderRoot.querySelector('#state').innerHTML = text;
     }
 
+    private setExtension(text) {
+        this.renderRoot.querySelector('#extension').innerHTML = text;
+    }
+
     async _call(extension) {
         this.ring("ringbacktone");
         this.setName("Calling...");
@@ -337,7 +348,8 @@ class SipJsCard extends LitElement {
         this.setState("Connected");
 
         await this.simpleUser.register();
-        this.setState("Registered as " + this.user.name + ' <span style="color: gray">' + this.user.extension + "</span>");
+        this.setState("Registered as " + this.user.name);
+        this.setExtension(this.user.extension);
 
         this.simpleUser.delegate = {
             onCallReceived: async () => {
