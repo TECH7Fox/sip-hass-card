@@ -12,6 +12,7 @@ The card supports (limited) video, DTMF signals, custom icons, custom names and 
 ## Roadmap
 This is very much still work in progress, and these are the things i want to add in the near future.
  * Include default ringtones
+ * Fix video on android companion app
  * Better errror logging
  * Mute function
  * Videocalls (send video from webcam)
