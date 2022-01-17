@@ -85,6 +85,14 @@ export class SipJsCardEditor extends LitElement {
                             @value-changed="${this._editArray}"
                             allow-custom-entity
                         ></ha-entity-picker>
+                        <ha-icon-picker
+                            .label=${"Icon"}
+                            .index="${this._rowEditor.index}"
+                            .value="${ent.icon!}"
+                            .configValue=${"icon"}
+                            .configKey="${"entities"}"
+                            @value-changed="${this._editArray}"
+                        ></ha-icon-picker>
                     `;
                 break;
                 case "custom":
@@ -99,7 +107,7 @@ export class SipJsCardEditor extends LitElement {
                         ></paper-input>
                         <paper-input
                             auto-validate pattern="[0-9]*"
-                            error-message="numbers only!"
+                            error-message="Numbers Only!"
                             .label=${"Number"}
                             .index="${this._rowEditor.index}"
                             .value="${ent.number!}"
@@ -107,6 +115,14 @@ export class SipJsCardEditor extends LitElement {
                             .configKey="${"custom"}"
                             @value-changed="${this._editArray}"
                         ></paper-input>
+                        <ha-icon-picker
+                            .label=${"Icon"}
+                            .index="${this._rowEditor.index}"
+                            .value="${ent.icon!}"
+                            .configValue=${"icon"}
+                            .configKey="${"custom"}"
+                            @value-changed="${this._editArray}"
+                        ></ha-icon-picker>
                     `;
                 break;
                 case "dtmfs":
@@ -130,6 +146,14 @@ export class SipJsCardEditor extends LitElement {
                             .configKey="${"dtmfs"}"
                             @value-changed="${this._editArray}"
                         ></paper-input>
+                        <ha-icon-picker
+                            .label=${"Icon"}
+                            .index="${this._rowEditor.index}"
+                            .value="${ent.icon!}"
+                            .configValue=${"icon"}
+                            .configKey="${"dtmfs"}"
+                            @value-changed="${this._editArray}"
+                        ></ha-icon-picker>
                     `;
                 break;
             }
