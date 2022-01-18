@@ -1,7 +1,45 @@
 {
-    "common": {
-      "no_server": "You need to define a server!",
-      "no_port": "You need to define a port!",
-      "no_extensions": "You need to define at least one extension!"
+    "errors": {
+        "no_server": "You need to define a server!",
+        "no_port": "You need to define a port!",
+        "no_extensions": "You need to define at least one extension!"
+    },
+    "config": {
+        "editor": "Editor",
+        "extensions": "Extensions (required)",
+        "dtmfs": "DTMF's",
+        "custom": "Custom",
+        "dtmf": "DTMF",
+        "person": "Person",
+        "name": "Name",
+        "extension": "Extension",
+        "secret": "Secret",
+        "entity": "Status Entity",
+        "icon": "Icon",
+        "number": "Number",
+        "signal": "Signal",
+        "server": "Server",
+        "port": "Port",
+        "auto_answer": "Auto Answer",
+        "video": "Video",
+        "state_color": "Color icons based on state?",
+        "ringtone": "Ringtone",
+        "ringbacktone": "Ringback Tone"
+    },
+    "controls": {
+        "back": "Go Back",
+        "remove": "Remove",
+        "edit": "Edit"
+    },
+    "states": {
+        "registered": "Registered as ",
+        "connected": "Connected",
+        "connecting": "Connecting"
+    },
+    "names": {
+        "idle": "Idle",
+        "oncall": "On Call",
+        "incoming_from": "Incoming Call From ",
+        "incoming": "Incoming Call"
     }
-  }
+}
