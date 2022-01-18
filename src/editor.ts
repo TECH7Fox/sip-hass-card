@@ -252,7 +252,7 @@ export class SipJsCardEditor extends LitElement {
                                 ></ha-entity-picker>
                                 <ha-icon-button 
                                     class="remove-icon"
-                                    .label="${localize('controls.remove') + localize('config.extension')}"
+                                    .label="${localize('controls.remove_extension')}"
                                     .configKey="${"extensions"}"
                                     @click="${this._removeRow}"
                                     .index="${index}"
@@ -260,7 +260,7 @@ export class SipJsCardEditor extends LitElement {
                                 </ha-icon-button>
                                 <ha-icon-button 
                                     class="edit-icon"
-                                    .label="${localize('controls.edit') + localize('config.extension')}"
+                                    .label="${localize('controls.edit_extension')}"
                                     .configKey="${"extensions"}"
                                     @click="${this._editRow}"
                                     .index="${index}"
@@ -271,7 +271,7 @@ export class SipJsCardEditor extends LitElement {
                     }) : null}
                     <ha-entity-picker
                         .hass="${this.hass}"
-                        .label="${"Person"}"
+                        .label="${localize('config.person')}"
                         .includeDomains="${"person"}"
                         .configValue="${"person"}"
                         .configKey="${"extensions"}"
@@ -286,7 +286,7 @@ export class SipJsCardEditor extends LitElement {
                             <div class="entity">
                                 <paper-input
                                     .hass="${this.hass}"
-                                    .label="${"Name"}"
+                                    .label="${localize('config.name')}"
                                     .index=${index}
                                     .value="${ent.name}"
                                     .configValue=${"name"}
@@ -295,7 +295,7 @@ export class SipJsCardEditor extends LitElement {
                                 ></paper-input>
                                 <ha-icon-button 
                                     class="remove-icon"
-                                    .label=${"Remove Custom Number"}
+                                    .label="${localize('controls.remove_custom')}"
                                     .configKey="${"custom"}"
                                     @click="${this._removeRow}"
                                     .index="${index}"
@@ -303,7 +303,7 @@ export class SipJsCardEditor extends LitElement {
                                 </ha-icon-button>
                                 <ha-icon-button 
                                     class="edit-icon"
-                                    .label=${"Edit Custom Number"}
+                                    .label="${localize('controls.edit_custom')}"
                                     .configKey="${"custom"}"
                                     @click="${this._editRow}"
                                     .index="${index}"
@@ -314,20 +314,20 @@ export class SipJsCardEditor extends LitElement {
                     }) : null}
                     <paper-input
                         .hass="${this.hass}"
-                        .label="${"Name"}"
+                        .label="${localize('config.name')}"
                         .configValue="${"name"}"
                         .configKey="${"custom"}"
                         @focusout=${this._addRow}
                     ></paper-input>
                 </div>
                 <div class="entities">
-                    <h3>DTMF's</h3>
+                    <h3>${localize('config.dtmfs')}</h3>
                     ${this._config.dtmfs ? this._config.dtmfs.map((ent, index) => {
                         return html`
                             <div class="entity">
                                 <paper-input
                                     .hass="${this.hass}"
-                                    .label="${"Name"}"
+                                    .label="${localize('config.name')}"
                                     .index=${index}
                                     .value="${ent.name}"
                                     .configValue=${"name"}
@@ -336,7 +336,7 @@ export class SipJsCardEditor extends LitElement {
                                 ></paper-input>
                                 <ha-icon-button 
                                     class="remove-icon"
-                                    .label=${"Remove DTMF"}
+                                    .label="${localize('controls.remove_dtmf')}"
                                     .configKey="${"dtmfs"}"
                                     @click="${this._removeRow}"
                                     .index="${index}"
@@ -344,7 +344,7 @@ export class SipJsCardEditor extends LitElement {
                                 </ha-icon-button>
                                 <ha-icon-button 
                                     class="edit-icon"
-                                    .label=${"Edit DTMF"}
+                                    .label="${localize('controls.edit_dtmf')}"
                                     .configKey="${"dtmfs"}"
                                     @click="${this._editRow}"
                                     .index="${index}"
@@ -355,7 +355,7 @@ export class SipJsCardEditor extends LitElement {
                     }) : null}
                     <paper-input
                         .hass="${this.hass}"
-                        .label="${"Name"}"
+                        .label="${localize('config.name')}"
                         .configValue="${"name"}"
                         .configKey="${"dtmfs"}"
                         @focusout=${this._addRow}

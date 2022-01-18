@@ -153,10 +153,10 @@ class SipJsCard extends LitElement {
         this.popup = true;
         super.update();
     }
-
+    // scrimclickaction
     render() {
         return html`
-            <ha-dialog id="phone" ?open=${this.popup} hideactions>
+            <ha-dialog id="phone" ?open=${this.popup} ?scrimclickaction=${this.scrimclickaction} hideactions>
                 <div slot="heading" class="heading">
                     <ha-header-bar>
                         <ha-icon-button slot="navigationIcon" dialogaction="cancel"></ha-icon-button>
@@ -174,7 +174,7 @@ class SipJsCard extends LitElement {
                         <div class="row">
                             <ha-icon-button 
                                 class="accept-btn"
-                                .label=${"Accept Call"}
+                                .label="${localize('controls.accept')}"
                                 @click="${this._answer}"
                                 ><ha-icon icon="hass:phone"></ha-icon>
                             </ha-icon-button>
@@ -183,7 +183,7 @@ class SipJsCard extends LitElement {
                         <div class="row">
                             ${this.config.dtmfs ?  
                                 this.config.dtmfs.map(dtmf => {
-                                    return html `
+                                    return html`
                                         <ha-icon-button 
                                             @click="${() => this._sendDTMF(dtmf.signal)}"
                                             .label="${dtmf.name}"
@@ -197,7 +197,7 @@ class SipJsCard extends LitElement {
                             <span id="time">00:00</span>
                             <ha-icon-button 
                                 class="hangup-btn"
-                                .label=${"Decline Call"}
+                                .label="${localize('controls.decline')}"
                                 @click="${this._hangup}"
                             ><ha-icon icon="hass:phone-hangup"></ha-icon>
                             </ha-icon-button>
@@ -208,8 +208,8 @@ class SipJsCard extends LitElement {
             
             <ha-card @click="${this.openPopup}">
                 <h1 class="card-header">
-                    <span id="state" class="name">Connecting</span>
-                    <span id="extension" class="extension">Offline</span>
+                    <span id="state" class="name">${localize('states.connecting')}</span>
+                    <span id="extension" class="extension">${localize('states.offline')}</span>
                 </h1>
                 <div class="wrapper">
 
@@ -324,7 +324,7 @@ class SipJsCard extends LitElement {
 
     async _call(extension) {
         this.ring("ringbacktone");
-        this.setName("Calling...");
+        this.setName(localize('names.calling'));
         await this.simpleUser.call("sip:" + extension + "@" + this.config.server);
     }
 
@@ -365,10 +365,10 @@ class SipJsCard extends LitElement {
         this.simpleUser = new Web.SimpleUser("wss://" + this.config.server + ":" + this.config.port + "/ws", options);
         
         await this.simpleUser.connect();
-        this.setState("Connected");
+        this.setState(localize('states.connected'));
 
         await this.simpleUser.register();
-        this.setState("Registered as " + this.user.name);
+        this.setState(localize('state.registered') + this.user.name);
         this.setExtension(this.user.extension);
 
         this.simpleUser.delegate = {
@@ -382,9 +382,9 @@ class SipJsCard extends LitElement {
                 this.ring("ringtone");
 
                 if (this.simpleUser.session._assertedIdentity) {
-                    this.setName("Incoming Call From " + this.simpleUser.session._assertedIdentity._displayName);
+                    this.setName(localize('names.incoming_from') + this.simpleUser.session._assertedIdentity._displayName);
                 } else {
-                    this.setName("Incoming Call"); 
+                    this.setName(localize('names.incoming')); 
                 }
 
             },
@@ -394,7 +394,7 @@ class SipJsCard extends LitElement {
                 if (this.simpleUser.session._assertedIdentity) {
                     this.setName(this.simpleUser.session._assertedIdentity._displayName);
                 } else {
-                    this.setName("On Call");
+                    this.setName(localize('names.oncall'));
                 }
                 var time = new Date();
                 this.intervalId = window.setInterval(function(){
@@ -407,7 +407,7 @@ class SipJsCard extends LitElement {
             },
             onCallHangup: () => {
                 this.ring("pause");
-                this.setName("Idle");
+                this.setName(localize('names.idle'));
                 clearInterval(this.intervalId);
                 this.timerElement.innerHTML = "00:00";
                 this.closePopup();

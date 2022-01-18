@@ -30,18 +30,26 @@
     },
     "controls": {
         "back": "Go Back",
-        "remove": "Remove ",
-        "edit": "Edit "
+        "remove_extension": "Remove Extension",
+        "edit_extension": "Edit Extension",
+        "remove_custom": "Remove Custom Number",
+        "edit_custom": "Edit Custom Number",
+        "remove_dtmf": "Remove DTMF",
+        "edit_dtmf": "Edit DTMF",
+        "decline": "Decline Call",
+        "accept": "Accept Call"
     },
     "states": {
+        "offline": "Offline",
         "registered": "Registered as ",
-        "connected": "Connected",
+        "connected": "Connected!!!",
         "connecting": "Connecting"
     },
     "names": {
         "idle": "Idle",
         "oncall": "On Call",
         "incoming_from": "Incoming Call From ",
-        "incoming": "Incoming Call"
+        "incoming": "Incoming Call",
+        "calling": "Calling"
     }
 }
