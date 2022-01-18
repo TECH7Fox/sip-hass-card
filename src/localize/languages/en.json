@@ -2,7 +2,9 @@
     "errors": {
         "no_server": "You need to define a server!",
         "no_port": "You need to define a port!",
-        "no_extensions": "You need to define at least one extension!"
+        "no_extensions": "You need to define at least one extension!",
+        "dtmf": "Numbers, # or * only!",
+        "custom": "Numbers Only!"
     },
     "config": {
         "editor": "Editor",
@@ -28,8 +30,8 @@
     },
     "controls": {
         "back": "Go Back",
-        "remove": "Remove",
-        "edit": "Edit"
+        "remove": "Remove ",
+        "edit": "Edit "
     },
     "states": {
         "registered": "Registered as ",
