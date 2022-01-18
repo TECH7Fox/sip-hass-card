@@ -343,7 +343,7 @@ class SipJsCard extends LitElement {
     async connect() {
         this.timerElement = this.renderRoot.querySelector('#time');
 
-        console.log(this.hass);
+        //console.log(this.hass);
 
         var options: Web.SimpleUserOptions = {
             aor: "sip:" + this.user.extension + "@" + this.config.server,
@@ -372,7 +372,8 @@ class SipJsCard extends LitElement {
         this.setExtension(this.user.extension);
 
         this.simpleUser.delegate = {
-            onCallReceived: async () => {
+            onCallReceived: async () => { 
+                this.openPopup();
                 if (this.config.autoAnswer) {
                     await this.simpleUser.answer();
                     return;
@@ -389,7 +390,7 @@ class SipJsCard extends LitElement {
             },
             onCallAnswered: () => {
                 this.ring("pause");
-                console.log(this.simpleUser.session);
+                //console.log(this.simpleUser.session);
                 if (this.simpleUser.session._assertedIdentity) {
                     this.setName(this.simpleUser.session._assertedIdentity._displayName);
                 } else {
@@ -409,12 +410,12 @@ class SipJsCard extends LitElement {
                 this.setName("Idle");
                 clearInterval(this.intervalId);
                 this.timerElement.innerHTML = "00:00";
+                this.closePopup();
             }
         };
 
         var urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('call')) {
-            console.log("calling " + urlParams.get('call'));
             this._call(urlParams.get('call'));
             this.openPopup();
         }
