@@ -146,8 +146,8 @@ export class SipJsCardEditor extends LitElement {
                             @value-changed="${this._editArray}"
                         ></paper-input>
                         <paper-input
-                            auto-validate pattern="[0-9]*"
-                            error-message="numbers only!"
+                            auto-validate pattern="[0-9#*]*"
+                            error-message="numbers, # or * only!"
                             maxlength="1"
                             .label=${"Signal"}
                             .index="${this._rowEditor.index}"
