@@ -47,6 +47,9 @@ The entire card is configurable from the editor.
 set your ringtones to play when calling/being called.
 `/local` is your `www` folder in config. Example: `/local/ringtone.mp3` = `/config/www/ringtone.mp3`.
 
+### Auto call
+You can put `?call=<number>` behind the URL to auto call that number when the card loads. Useful for notifications.
+
 ## Troubleshooting
 Most problems is because your PBX server is not configured correct, or your certificate is not accepted.
 To accept the certificate for Asterisk/FreePBX go to `https://<host>:8089/ws` and click continue.
