@@ -137,6 +137,11 @@ class SipJsCard extends LitElement {
                 display: flex;
                 justify-content: space-between;
             }
+            ha-camera-stream {
+                height: 100%;
+                width: 100%;
+                display: block;
+            }
         `;
     }
 
@@ -153,6 +158,8 @@ class SipJsCard extends LitElement {
         super.update();
     }
 
+    // allow-exoplayer
+
     render() {
         return html`
             <ha-dialog id="phone" ?open=${this.popup} hideactions>
@@ -165,7 +172,12 @@ class SipJsCard extends LitElement {
                 </div>
                 <div class="content">
                     <div class="container">
-                        <video id="remoteVideo"></video>
+                        <ha-camera-stream
+                            allow-exoplayer
+                            muted
+                            .hass=${this.hass}
+                            .stateObj=${this.hass.states[this.config.camera]}
+                        ></ha-camera-stream>
                         <audio id="remoteAudio" style="display:none"></audio>
                         <audio id="toneAudio" style="display:none" loop controls></audio>
                     </div>
@@ -347,6 +359,10 @@ class SipJsCard extends LitElement {
         var options: Web.SimpleUserOptions = {
             aor: "sip:" + this.user.extension + "@" + this.config.server,
             media: {
+                constraints: {
+                    audio: true,
+                    video: false
+                },
                 remote: {
                     audio: this.renderRoot.querySelector("#remoteAudio"),
                 }
