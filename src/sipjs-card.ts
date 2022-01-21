@@ -153,6 +153,11 @@ class SipJsCard extends LitElement {
         super.update();
     }
 
+    // use passtrough to make sure it's the same codec?
+
+    // mediaSource.addSourceBuffer(
+    //     `video/mp4; codecs="${data.codecs}"`);
+
     render() {
         return html`
             <ha-dialog id="phone" ?open=${this.popup} hideactions>
