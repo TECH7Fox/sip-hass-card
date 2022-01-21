@@ -227,7 +227,7 @@ export class SipJsCardEditor extends LitElement {
                         ></ha-switch>
                     </ha-formfield>
                     <ha-formfield
-                        .label=${"Video"}
+                        .label=${"Video (experimental)"}
                         ><ha-switch
                             .checked=${this._config.video}
                             .configValue=${"video"}
