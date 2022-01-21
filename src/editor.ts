@@ -96,10 +96,12 @@ export class SipJsCardEditor extends LitElement {
                         <ha-entity-picker
                             .hass="${this.hass}"
                             .label="${"Camera"}"
+                            .index="${this._rowEditor.index}"
+                            .value="${ent.camera!}"
                             .includeDomains="${"camera"}"
                             .configValue="${"camera"}"
                             .configKey="${"extensions"}"
-                            @value-changed="${this._editArray}"
+                            @value-changed=${this._editArray}
                             allow-custom-entity
                         ></ha-entity-picker>
                     `;
@@ -145,10 +147,12 @@ export class SipJsCardEditor extends LitElement {
                         <ha-entity-picker
                             .hass="${this.hass}"
                             .label="${"Camera"}"
+                            .index="${this._rowEditor.index}"
+                            .value="${ent.camera!}"
                             .includeDomains="${"camera"}"
                             .configValue="${"camera"}"
                             .configKey="${"custom"}"
-                            @value-changed="${this._editArray}"
+                            @value-changed=${this._editArray}
                             allow-custom-entity
                         ></ha-entity-picker>
                     `;

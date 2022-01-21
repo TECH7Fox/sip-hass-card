@@ -342,7 +342,6 @@ class SipJsCard extends LitElement {
         this.ring("ringbacktone");
         this.setName("Calling...");
         this.currentCamera = (camera ? camera : undefined);
-        super.update();
         await this.simpleUser.call("sip:" + extension + "@" + this.config.server);
     }
 
@@ -360,8 +359,6 @@ class SipJsCard extends LitElement {
     
     async connect() {
         this.timerElement = this.renderRoot.querySelector('#time');
-
-        //console.log(this.hass);
 
         var options: Web.SimpleUserOptions = {
             aor: "sip:" + this.user.extension + "@" + this.config.server,
@@ -394,7 +391,18 @@ class SipJsCard extends LitElement {
         this.setExtension(this.user.extension);
 
         this.simpleUser.delegate = {
-            onCallReceived: async () => { 
+            onCallReceived: async () => {
+                var extension = this.simpleUser.session.remoteIdentity.uri.normal.user;
+                this.config.extensions.forEach(element => {
+                    if (element.extension == extension) {
+                        this.currentCamera = (element.camera ? element.camera : undefined);
+                    }
+                });
+                this.config.custom.forEach(element => {
+                    if (element.extension == extension) {
+                        this.currentCamera = (element.camera ? element.camera : undefined);
+                    }
+                });
                 this.openPopup();
                 if (this.config.autoAnswer) {
                     await this.simpleUser.answer();
@@ -412,7 +420,7 @@ class SipJsCard extends LitElement {
             },
             onCallAnswered: () => {
                 this.ring("pause");
-                //console.log(this.simpleUser.session);
+                console.log(this.simpleUser.session);
                 if (this.simpleUser.session._assertedIdentity) {
                     this.setName(this.simpleUser.session._assertedIdentity._displayName);
                 } else {
@@ -432,9 +440,8 @@ class SipJsCard extends LitElement {
                 this.setName("Idle");
                 clearInterval(this.intervalId);
                 this.timerElement.innerHTML = "00:00";
-                this.closePopup();
                 this.currentCamera = undefined;
-                super.update();
+                this.closePopup();
             }
         };
 
