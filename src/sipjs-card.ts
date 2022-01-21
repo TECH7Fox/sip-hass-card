@@ -147,7 +147,7 @@ class SipJsCard extends LitElement {
 
     closePopup() {
         this.popup = false;
-        this.requestUpdate();
+        super.update();
     }
 
     openPopup() {
@@ -342,6 +342,7 @@ class SipJsCard extends LitElement {
         this.ring("ringbacktone");
         this.setName("Calling...");
         this.currentCamera = (camera ? camera : undefined);
+        super.update();
         await this.simpleUser.call("sip:" + extension + "@" + this.config.server);
     }
 
@@ -432,6 +433,8 @@ class SipJsCard extends LitElement {
                 clearInterval(this.intervalId);
                 this.timerElement.innerHTML = "00:00";
                 this.closePopup();
+                this.currentCamera = undefined;
+                super.update();
             }
         };
 
