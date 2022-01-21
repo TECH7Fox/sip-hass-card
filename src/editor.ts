@@ -93,6 +93,15 @@ export class SipJsCardEditor extends LitElement {
                             .configKey="${"extensions"}"
                             @value-changed="${this._editArray}"
                         ></ha-icon-picker>
+                        <ha-entity-picker
+                            .hass="${this.hass}"
+                            .label="${"Camera"}"
+                            .includeDomains="${"camera"}"
+                            .configValue="${"camera"}"
+                            .configKey="${"extensions"}"
+                            @value-changed="${this._editArray}"
+                            allow-custom-entity
+                        ></ha-entity-picker>
                     `;
                     break;
                 case "custom":
@@ -133,6 +142,15 @@ export class SipJsCardEditor extends LitElement {
                             .configKey="${"custom"}"
                             @value-changed="${this._editArray}"
                         ></ha-icon-picker>
+                        <ha-entity-picker
+                            .hass="${this.hass}"
+                            .label="${"Camera"}"
+                            .includeDomains="${"camera"}"
+                            .configValue="${"camera"}"
+                            .configKey="${"custom"}"
+                            @value-changed="${this._editArray}"
+                            allow-custom-entity
+                        ></ha-entity-picker>
                     `;
                     break;
                 case "dtmfs":

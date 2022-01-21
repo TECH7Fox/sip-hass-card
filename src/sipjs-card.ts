@@ -172,12 +172,16 @@ class SipJsCard extends LitElement {
                 </div>
                 <div class="content">
                     <div class="container">
-                        <ha-camera-stream
-                            allow-exoplayer
-                            muted
-                            .hass=${this.hass}
-                            .stateObj=${this.hass.states[this.config.camera]}
-                        ></ha-camera-stream>
+                        ${this.currentCamera !== undefined ? html`
+                            <ha-camera-stream
+                                allow-exoplayer
+                                muted
+                                .hass=${this.hass}
+                                .stateObj=${this.hass.states[this.currentCamera]}
+                            ></ha-camera-stream>
+                        ` : html`
+                            <video id="remoteVideo"></video>
+                        `}
                         <audio id="remoteAudio" style="display:none"></audio>
                         <audio id="toneAudio" style="display:none" loop controls></audio>
                     </div>
@@ -236,7 +240,7 @@ class SipJsCard extends LitElement {
                                     .stateColor=${this.config.state_color}
                                 ></state-badge>
                                 <div class="info">${extension.name}</div>
-                                <mwc-button @click="${() => this._call(extension.extension)}">CALL</mwc-button>
+                                <mwc-button @click="${() => this._call(extension.extension, extension.camera)}">CALL</mwc-button>
                             </div>
                         `;
                     })}
@@ -252,7 +256,7 @@ class SipJsCard extends LitElement {
                                         .stateColor=${this.config.state_color}
                                     ></state-badge>
                                     <div class="info">${custom.name}</div>
-                                    <mwc-button @click="${() => this._call(custom.number)}">CALL</mwc-button>
+                                    <mwc-button @click="${() => this._call(custom.number, custom.camera)}">CALL</mwc-button>
                                 </div>
                             `;
                         }) : ""
@@ -265,6 +269,7 @@ class SipJsCard extends LitElement {
 
     firstUpdated() {
         this.popup = false;
+        this.currentCamera = undefined;
         this.connect();
     }
 
@@ -333,9 +338,10 @@ class SipJsCard extends LitElement {
         this.renderRoot.querySelector('#extension').innerHTML = text;
     }
 
-    async _call(extension) {
+    async _call(extension, camera) {
         this.ring("ringbacktone");
         this.setName("Calling...");
+        this.currentCamera = (camera ? camera : undefined);
         await this.simpleUser.call("sip:" + extension + "@" + this.config.server);
     }
 
