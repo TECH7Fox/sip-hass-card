@@ -163,6 +163,11 @@ class SipJsCard extends LitElement {
 
         const visualizerContainer = this.renderRoot.querySelector(".visualizer-container");
 
+
+        // MERGE THE MediaElementSource's
+        // https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/createChannelMerger
+        // https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode
+
         
         // Create a set of pre-defined bars
         for( let i = 0; i < NBR_OF_BARS; i++ ) {
