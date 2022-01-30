@@ -89,6 +89,7 @@ class SipJsCard extends LitElement {
                 background: white;
                 margin: 0 2px;
                 width: 25px;
+                min-height: 5px;
             }
             .box {
                 /* start paper-font-common-nowrap style */
@@ -162,23 +163,19 @@ class SipJsCard extends LitElement {
 
     audioVisualizer() {
         const NBR_OF_BARS = 10;
-        const audio = this.renderRoot.querySelector("#remoteAudio");
-        var ctx = new AudioContext();
-        var audioSource = ctx.createMediaStreamSource(audio);
-        var analayzer = ctx.createAnalyser();
-        audioSource.connect(analayzer);
-        audioSource.connect(ctx.destination);
+        
+        //analayzer.getByteFrequencyData(frequencyData);
+        //console.log("frequencyData", frequencyData);
 
-        const frequencyData = new Uint8Array(analayzer.frequencyBinCount);
-        analayzer.getByteFrequencyData(frequencyData);
-        console.log("frequencyData", frequencyData);
+        var visualizerContainer = this.renderRoot.querySelector(".visualizer-container");
 
-        const visualizerContainer = this.renderRoot.querySelector(".visualizer-container");
+        var renderRoot = this.renderRoot;
 
 
         // MERGE THE MediaElementSource's
         // https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/createChannelMerger
         // https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode
+        // https://developer.mozilla.org/en-US/docs/Web/API/MediaElementAudioSourceNode
 
         
         // Create a set of pre-defined bars
@@ -194,6 +191,20 @@ class SipJsCard extends LitElement {
         // This function has the task to adjust the bar heights according to the frequency data
         function renderFrame() {
 
+            var audio = renderRoot.querySelector("#remoteAudio");
+            var ctx = new (window.AudioContext || window.webkitAudioContext)();
+            var options : MediaStreamAudioSourceOptions =  {
+                mediaStream : audio.captureStream()
+            };
+        
+            var audioSource = new MediaStreamAudioSourceNode(ctx, options);
+            audioSource.audioNode = audio;
+            var analayzer = ctx.createAnalyser();
+            audioSource.connect(analayzer);
+            audioSource.connect(ctx.destination);
+        
+            var frequencyData = new Uint8Array(analayzer.frequencyBinCount);
+
             // Update our frequency data array with the latest frequency data
             analayzer.getByteFrequencyData(frequencyData);
 
@@ -201,29 +212,31 @@ class SipJsCard extends LitElement {
 
                 // Since the frequency data array is 1024 in length, we don't want to fetch
                 // the first NBR_OF_BARS of values, but try and grab frequencies over the whole spectrum
-                const index = (i + 10) * 2;
+                var index = (i + 10) * 2;
+
+                console.log(frequencyData);
                 // fd is a frequency value between 0 and 255
-                const fd = frequencyData[index];
+                var fd = frequencyData[index];
 
                 // Fetch the bar DIV element
-                const bar = this.renderRoot.querySelector("#bar" + i);
+                var bar = renderRoot.querySelector("#bar" + i);
                 if( !bar ) {
                     continue;
                 }
 
                 // If fd is undefined, default to 0, then make sure fd is at least 4
                 // This will make make a quiet frequency at least 4px high for visual effects
-                const barHeight = Math.max(4, fd || 0);
+                var barHeight = Math.max(4, fd || 0);
                 bar.style.height = barHeight + "px";
 
             }
 
             // At the next animation frame, call ourselves
-            window.requestAnimationFrame(renderFrame.call(this));
+            window.requestAnimationFrame(renderFrame);
 
         }
 
-        renderFrame.call(this);
+        renderFrame();
         
     }
 
@@ -437,6 +450,7 @@ class SipJsCard extends LitElement {
     }
 
     async _sendDTMF(signal) {
+        this.audioVisualizer();
         await this.simpleUser.sendDTMF(signal);
     }
     
@@ -503,9 +517,6 @@ class SipJsCard extends LitElement {
 
             },
             onCallAnswered: () => {
-                
-                this.audioVisualizer();
-
                 this.ring("pause");
                 console.log(this.simpleUser.session);
                 if (this.simpleUser.session._assertedIdentity) {
