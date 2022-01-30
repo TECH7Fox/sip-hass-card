@@ -400,7 +400,7 @@ class SipJsCard extends LitElement {
                     }
                 });
                 this.config.custom.forEach(element => {
-                    if (element.extension == extension) {
+                    if (element.number == extension) {
                         this.currentCamera = (element.camera ? element.camera : undefined);
                     }
                 });
