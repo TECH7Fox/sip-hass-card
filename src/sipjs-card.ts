@@ -145,6 +145,18 @@ class SipJsCard extends LitElement {
                 display: flex;
                 align-items: center;
             }
+            .extension {
+                color: gray;
+            }
+            .card-header {
+                display: flex;
+                justify-content: space-between;
+            }
+            ha-camera-stream {
+                height: 100%;
+                width: 100%;
+                display: block;
+            }
         `;
     }
 
@@ -217,7 +229,7 @@ class SipJsCard extends LitElement {
 
     closePopup() {
         this.popup = false;
-        this.requestUpdate();
+        super.update();
     }
 
     openPopup() {
@@ -227,6 +239,8 @@ class SipJsCard extends LitElement {
         this.popup = true;
         super.update();
     }
+
+    // allow-exoplayer
 
     render() {
         return html`
@@ -240,7 +254,16 @@ class SipJsCard extends LitElement {
                 </div>
                 <div class="content">
                     <div class="container">
-                        <video id="remoteVideo"></video>
+                        ${this.currentCamera !== undefined ? html`
+                            <ha-camera-stream
+                                allow-exoplayer
+                                muted
+                                .hass=${this.hass}
+                                .stateObj=${this.hass.states[this.currentCamera]}
+                            ></ha-camera-stream>
+                        ` : html`
+                            <video id="remoteVideo"></video>
+                        `}
                         <audio id="remoteAudio" style="display:none"></audio>
                         <audio id="toneAudio" style="display:none" loop controls></audio>
                     </div>
@@ -283,8 +306,8 @@ class SipJsCard extends LitElement {
             
             <ha-card @click="${this.openPopup}">
                 <h1 class="card-header">
-                    <span id="state" class="name">Connecting...</span>
-                    <span style="display: none;">State color?</span>
+                    <span id="state" class="name">Connecting</span>
+                    <span id="extension" class="extension">Offline</span>
                 </h1>
                 <div class="wrapper">
 
@@ -300,7 +323,7 @@ class SipJsCard extends LitElement {
                                     .stateColor=${this.config.state_color}
                                 ></state-badge>
                                 <div class="info">${extension.name}</div>
-                                <mwc-button @click="${() => this._call(extension.extension)}">CALL</mwc-button>
+                                <mwc-button @click="${() => this._call(extension.extension, extension.camera)}">CALL</mwc-button>
                             </div>
                         `;
                     })}
@@ -316,7 +339,7 @@ class SipJsCard extends LitElement {
                                         .stateColor=${this.config.state_color}
                                     ></state-badge>
                                     <div class="info">${custom.name}</div>
-                                    <mwc-button @click="${() => this._call(custom.number)}">CALL</mwc-button>
+                                    <mwc-button @click="${() => this._call(custom.number, custom.camera)}">CALL</mwc-button>
                                 </div>
                             `;
                         }) : ""
@@ -329,12 +352,19 @@ class SipJsCard extends LitElement {
 
     firstUpdated() {
         this.popup = false;
+        this.currentCamera = undefined;
         this.connect();
     }
 
     setConfig(config) {
         if (!config.server) {
             throw new Error("You need to define a server!");
+        }
+        if (!config.port) {
+            throw new Error("You need to define a port!");
+        }
+        if (!config.extensions) {
+            throw new Error("You need to define at least one extension!");
         }
         this.config = config;
     }
@@ -344,10 +374,23 @@ class SipJsCard extends LitElement {
     }
 
     static getStubConfig() {
-        // Return a minimal configuration that will result in a working card configuration
         return {
             server: "192.168.178.0.1",
-            port: "8089"
+            port: "8089",
+            custom: [
+                {
+                    name: 'Custom1',
+                    number: '123',
+                    icon: 'mdi:phone-classic'
+                }
+            ],
+            dtmfs: [
+                {
+                    name: 'dtmf1',
+                    signal: 1,
+                    icon: 'mdi:door'
+                }
+            ]
         };
     }
 
@@ -374,9 +417,14 @@ class SipJsCard extends LitElement {
         this.renderRoot.querySelector('#state').innerHTML = text;
     }
 
-    async _call(extension) {
+    private setExtension(text) {
+        this.renderRoot.querySelector('#extension').innerHTML = text;
+    }
+
+    async _call(extension, camera) {
         this.ring("ringbacktone");
         this.setName("Calling...");
+        this.currentCamera = (camera ? camera : undefined);
         await this.simpleUser.call("sip:" + extension + "@" + this.config.server);
     }
 
@@ -395,11 +443,13 @@ class SipJsCard extends LitElement {
     async connect() {
         this.timerElement = this.renderRoot.querySelector('#time');
 
-        console.log(this.hass);
-
         var options: Web.SimpleUserOptions = {
             aor: "sip:" + this.user.extension + "@" + this.config.server,
             media: {
+                constraints: {
+                    audio: true,
+                    video: false
+                },
                 remote: {
                     audio: this.renderRoot.querySelector("#remoteAudio"),
                 }
@@ -412,6 +462,7 @@ class SipJsCard extends LitElement {
 
         if (this.config.video) {
             options.media.remote.video = this.renderRoot.querySelector('#remoteVideo');
+            options.media.constraints.video = true;
         }
         
         this.simpleUser = new Web.SimpleUser("wss://" + this.config.server + ":" + this.config.port + "/ws", options);
@@ -420,10 +471,23 @@ class SipJsCard extends LitElement {
         this.setState("Connected");
 
         await this.simpleUser.register();
-        this.setState("Registered as " + this.user.name + ' <span style="color: gray">' + this.user.extension + "</span>");
+        this.setState("Registered as " + this.user.name);
+        this.setExtension(this.user.extension);
 
         this.simpleUser.delegate = {
             onCallReceived: async () => {
+                var extension = this.simpleUser.session.remoteIdentity.uri.normal.user;
+                this.config.extensions.forEach(element => {
+                    if (element.extension == extension) {
+                        this.currentCamera = (element.camera ? element.camera : undefined);
+                    }
+                });
+                this.config.custom.forEach(element => {
+                    if (element.number == extension) {
+                        this.currentCamera = (element.camera ? element.camera : undefined);
+                    }
+                });
+                this.openPopup();
                 if (this.config.autoAnswer) {
                     await this.simpleUser.answer();
                     return;
@@ -463,15 +527,23 @@ class SipJsCard extends LitElement {
                 this.setName("Idle");
                 clearInterval(this.intervalId);
                 this.timerElement.innerHTML = "00:00";
+                this.currentCamera = undefined;
+                this.closePopup();
             }
         };
+
+        var urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('call')) {
+            this._call(urlParams.get('call'));
+            this.openPopup();
+        }
     }
 }
 customElements.define('sipjs-card', SipJsCard);
 window.customCards = window.customCards || [];
 window.customCards.push({
     type: "sipjs-card",
-    name: "sip.js card",
+    name: "SIP Card",
     preview: false,
-    description: "A SIP card."
+    description: "A SIP card, made by Jordy Kuhne."
 });

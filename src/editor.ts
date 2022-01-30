@@ -93,6 +93,17 @@ export class SipJsCardEditor extends LitElement {
                             .configKey="${"extensions"}"
                             @value-changed="${this._editArray}"
                         ></ha-icon-picker>
+                        <ha-entity-picker
+                            .hass="${this.hass}"
+                            .label="${"Camera"}"
+                            .index="${this._rowEditor.index}"
+                            .value="${ent.camera!}"
+                            .includeDomains="${"camera"}"
+                            .configValue="${"camera"}"
+                            .configKey="${"extensions"}"
+                            @value-changed=${this._editArray}
+                            allow-custom-entity
+                        ></ha-entity-picker>
                     `;
                     break;
                 case "custom":
@@ -133,6 +144,17 @@ export class SipJsCardEditor extends LitElement {
                             .configKey="${"custom"}"
                             @value-changed="${this._editArray}"
                         ></ha-icon-picker>
+                        <ha-entity-picker
+                            .hass="${this.hass}"
+                            .label="${"Camera"}"
+                            .index="${this._rowEditor.index}"
+                            .value="${ent.camera!}"
+                            .includeDomains="${"camera"}"
+                            .configValue="${"camera"}"
+                            .configKey="${"custom"}"
+                            @value-changed=${this._editArray}
+                            allow-custom-entity
+                        ></ha-entity-picker>
                     `;
                     break;
                 case "dtmfs":
@@ -146,8 +168,8 @@ export class SipJsCardEditor extends LitElement {
                             @value-changed="${this._editArray}"
                         ></paper-input>
                         <paper-input
-                            auto-validate pattern="[0-9]*"
-                            error-message="numbers only!"
+                            auto-validate pattern="[0-9#*]*"
+                            error-message="numbers, # or * only!"
                             maxlength="1"
                             .label=${"Signal"}
                             .index="${this._rowEditor.index}"
@@ -205,7 +227,7 @@ export class SipJsCardEditor extends LitElement {
                         ></ha-switch>
                     </ha-formfield>
                     <ha-formfield
-                        .label=${"Video"}
+                        .label=${"Video (experimental)"}
                         ><ha-switch
                             .checked=${this._config.video}
                             .configValue=${"video"}
