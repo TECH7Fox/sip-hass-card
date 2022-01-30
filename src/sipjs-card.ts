@@ -380,7 +380,6 @@ class SipJsCard extends LitElement {
         if (this.config.video) {
             options.media.remote.video = this.renderRoot.querySelector('#remoteVideo');
             options.media.constraints.video = true;
-            options.media.constraints.audio = false;
         }
         
         this.simpleUser = new Web.SimpleUser("wss://" + this.config.server + ":" + this.config.port + "/ws", options);
