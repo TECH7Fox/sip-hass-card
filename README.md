@@ -16,7 +16,6 @@ This is very much still work in progress, and these are the things i want to add
  * Translations
  * Better errror logging
  * Mute function
- * Videocalls (send video from webcam)
  * Audio visualizer when there is no video 
 
 **Asterisk add-on**
