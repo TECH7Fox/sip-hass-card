@@ -7,6 +7,7 @@ import {
   css
 } from "lit-element";
 import "./editor";
+import { unsafeCSS } from "../node_modules/@lit/reactive-element/css-tag";
 
 class SipJsCard extends LitElement {
     simpleUser: Web.SimpleUser;
@@ -162,6 +163,12 @@ class SipJsCard extends LitElement {
 
     render() {
         return html`
+            <style>
+                ha-icon-button {
+                    --mdc-icon-button-size: ${this.config.button_size ? unsafeCSS(this.config.button_size) : css`48`}px;
+                    --mdc-icon-size: ${this.config.button_size ? unsafeCSS(this.config.button_size - 25) : css`23`}px;
+                }
+            </style>
             <ha-dialog id="phone" ?open=${this.popup} hideactions>
                 <div slot="heading" class="heading">
                     <ha-header-bar>
@@ -294,6 +301,7 @@ class SipJsCard extends LitElement {
         return {
             server: "192.168.178.0.1",
             port: "8089",
+            button_size: "48",
             custom: [
                 {
                     name: 'Custom1',
