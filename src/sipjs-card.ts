@@ -405,7 +405,7 @@ class SipJsCard extends LitElement {
                     }
                 });
                 this.openPopup();
-                if (this.config.autoAnswer) {
+                if (this.config.auto_answer) {
                     await this.simpleUser.answer();
                     return;
                 }
