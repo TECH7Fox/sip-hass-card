@@ -255,6 +255,14 @@ export class SipJsCardEditor extends LitElement {
                     .configValue="${"ringbacktone"}"
                     @value-changed="${this._valueChanged}"
                 ></paper-input>
+                <paper-input
+                    auto-validate pattern="[0-9]*"
+                    error-message="Numbers Only!"
+                    .label=${"Button Size"}
+                    .value="${this._config.button_size}"
+                    .configValue="${"button_size"}"
+                    @value-changed="${this._valueChanged}"
+                ></paper-input>
                 <div class="entities">
                     <h3>Extensions (required)</h3>
                     ${this._config.extensions ? this._config.extensions.map((ent, index) => {
