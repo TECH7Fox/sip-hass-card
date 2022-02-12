@@ -54,6 +54,8 @@ Most problems is because your PBX server is not configured correct, or your cert
 To accept the certificate for Asterisk/FreePBX go to `https://<host>:8089/ws` and click continue.
 To see how to configure FreePBX go to: https://github.com/TECH7Fox/HA-SIP/wiki/Setup-FreePBX
 
+Android companion app 2022.2 required for speaker + audio permissions.
+
 If you are still having problems you can make an issue or ask on the discord server.
 
 ## Contact
