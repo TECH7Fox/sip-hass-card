@@ -5,7 +5,7 @@ With this card you can make and receive calls to other HA clients and other sip 
 
 ![image](https://user-images.githubusercontent.com/32220029/149833595-204a0faa-d129-4b9b-9338-78155031b7d7.png)
 
-The card supports (limited) video, DTMF signals, custom icons, custom names and status entities.
+The card supports video, DTMF signals, custom icons, custom names, status entities and camera entities.
 
 ![image](https://user-images.githubusercontent.com/32220029/149833763-6a74bae6-bc6e-4207-97c8-b430123fa3c3.png)
 
