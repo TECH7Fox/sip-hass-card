@@ -214,6 +214,17 @@ class SipJsCard extends LitElement {
                                     `;
                                 }) : ""
                             }
+                            ${this.config.buttons ?  
+                                this.config.buttons.map(button => {
+                                    return html `
+                                        <ha-icon-button 
+                                            @click="${() => this._sendDTMF(button.entity)}"
+                                            .label="${button.name}"
+                                            ><ha-icon icon="${button.icon}"></ha-icon>
+                                        </ha-icon-button>
+                                    `;
+                                }) : ""
+                            }
                         </div>
                         <div class="row">
                             <span id="time">00:00</span>
