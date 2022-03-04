@@ -218,7 +218,7 @@ class SipJsCard extends LitElement {
                                 this.config.buttons.map(button => {
                                     return html `
                                         <ha-icon-button 
-                                            @click="${() => this._sendDTMF(button.entity)}"
+                                            @click="${() => this._button(button.entity)}"
                                             .label="${button.name}"
                                             ><ha-icon icon="${button.icon}"></ha-icon>
                                         </ha-icon-button>
@@ -374,6 +374,29 @@ class SipJsCard extends LitElement {
 
     async _sendDTMF(signal) {
         await this.simpleUser.sendDTMF(signal);
+    }
+
+    async _button(entity) {
+        const domain = entity.split(".")[0];
+        let service;
+        console.log(domain);
+        
+        switch(domain) {
+            case "script":
+                service = "turn_on";
+            case "button":
+                service = "press";
+            case "scene":
+                service = "turn_on";
+            default:
+                console.log("No supported service");
+                return;
+        }
+        console.log(service);
+
+        await this.hass.callService(domain, service, {
+            entity_id: entity
+        });
     }
     
     async connect() {
