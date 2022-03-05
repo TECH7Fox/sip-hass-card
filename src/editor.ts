@@ -272,6 +272,14 @@ export class SipJsCardEditor extends LitElement {
                             @change=${this._valueChanged}
                         ></ha-switch>
                     </ha-formfield>
+                    <ha-formfield
+                        .label=${"Hide Me"}
+                        ><ha-switch
+                            .checked=${this._config.hide_me}
+                            .configValue=${"hide_me"}
+                            @change=${this._valueChanged}
+                        ></ha-switch>
+                    </ha-formfield>
                 </div>
                 <paper-input
                     .label=${"Ringtone"}

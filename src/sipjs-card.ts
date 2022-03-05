@@ -249,7 +249,12 @@ class SipJsCard extends LitElement {
                     ${this.config.extensions.map(extension => {
                         var stateObj = this.hass.states[extension.entity];
                         var isMe = (this.hass.user.id == this.hass.states[extension.person].attributes.user_id);
-                        if (isMe) { this.user = extension; }
+                        if (isMe) {
+                            this.user = extension;
+                            if (this.config.hide_me) {
+                                continue;
+                            }
+                        }
                         return html`
                             <div class="flex">
                                 <state-badge
