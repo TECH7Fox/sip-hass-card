@@ -7,6 +7,7 @@ import {
   css
 } from "lit-element";
 import "./editor";
+import { unsafeCSS } from "../node_modules/@lit/reactive-element/css-tag";
 
 class SipJsCard extends LitElement {
     simpleUser: Web.SimpleUser;
@@ -162,6 +163,12 @@ class SipJsCard extends LitElement {
 
     render() {
         return html`
+            <style>
+                ha-icon-button {
+                    --mdc-icon-button-size: ${this.config.button_size ? unsafeCSS(this.config.button_size) : css`48`}px;
+                    --mdc-icon-size: ${this.config.button_size ? unsafeCSS(this.config.button_size - 25) : css`23`}px;
+                }
+            </style>
             <ha-dialog id="phone" ?open=${this.popup} hideactions>
                 <div slot="heading" class="heading">
                     <ha-header-bar>
@@ -203,6 +210,17 @@ class SipJsCard extends LitElement {
                                             @click="${() => this._sendDTMF(dtmf.signal)}"
                                             .label="${dtmf.name}"
                                             ><ha-icon icon="${dtmf.icon}"></ha-icon>
+                                        </ha-icon-button>
+                                    `;
+                                }) : ""
+                            }
+                            ${this.config.buttons ?  
+                                this.config.buttons.map(button => {
+                                    return html `
+                                        <ha-icon-button 
+                                            @click="${() => this._button(button.entity)}"
+                                            .label="${button.name}"
+                                            ><ha-icon icon="${button.icon}"></ha-icon>
                                         </ha-icon-button>
                                     `;
                                 }) : ""
@@ -294,6 +312,7 @@ class SipJsCard extends LitElement {
         return {
             server: "192.168.178.0.1",
             port: "8089",
+            button_size: "48",
             custom: [
                 {
                     name: 'Custom1',
@@ -355,6 +374,32 @@ class SipJsCard extends LitElement {
 
     async _sendDTMF(signal) {
         await this.simpleUser.sendDTMF(signal);
+    }
+
+    async _button(entity) {
+        const domain = entity.split(".")[0];
+        let service;
+        console.log(domain);
+        
+        switch(domain) {
+            case "script":
+                service = "turn_on";
+                break;
+            case "button":
+                service = "press";
+                break;
+            case "scene":
+                service = "turn_on";
+                break;
+            default:
+                console.log("No supported service");
+                return;
+        }
+        console.log(service);
+
+        await this.hass.callService(domain, service, {
+            entity_id: entity
+        });
     }
     
     async connect() {
