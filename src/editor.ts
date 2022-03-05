@@ -247,6 +247,12 @@ export class SipJsCardEditor extends LitElement {
                     .configValue="${"port"}"
                     @value-changed="${this._valueChanged}"
                 ></paper-input>
+                <paper-input
+                    label="Custom title"
+                    .value="${this._config.custom_title}"
+                    .configValue="${"custom_title"}"
+                    @value-changed="${this._valueChanged}"
+                ></paper-input>
                 <div class="side-by-side">
                     <ha-formfield
                         .label=${"Auto Answer"}

@@ -241,7 +241,7 @@ class SipJsCard extends LitElement {
             
             <ha-card @click="${this.openPopup}">
                 <h1 class="card-header">
-                    <span id="state" class="name">Connecting</span>
+                    <span id="title" class="name">Unknown person</span>
                     <span id="extension" class="extension">Offline</span>
                 </h1>
                 <div class="wrapper">
@@ -353,8 +353,8 @@ class SipJsCard extends LitElement {
         this.renderRoot.querySelector('#name').innerHTML = text;
     }
 
-    private setState(text) {
-        this.renderRoot.querySelector('#state').innerHTML = text;
+    private setTitle(text) {
+        this.renderRoot.querySelector('#title').innerHTML = text;
     }
 
     private setExtension(text) {
@@ -408,6 +408,7 @@ class SipJsCard extends LitElement {
     
     async connect() {
         this.timerElement = this.renderRoot.querySelector('#time');
+        this.setTitle((this.config.custom_title !== "") ? this.config.custom_title : this.user.name);
 
         var options: Web.SimpleUserOptions = {
             aor: "sip:" + this.user.extension + "@" + this.config.server,
@@ -434,10 +435,8 @@ class SipJsCard extends LitElement {
         this.simpleUser = new Web.SimpleUser("wss://" + this.config.server + ":" + this.config.port + "/ws", options);
         
         await this.simpleUser.connect();
-        this.setState("Connected");
 
         await this.simpleUser.register();
-        this.setState("Registered as " + this.user.name);
         this.setExtension(this.user.extension);
 
         this.simpleUser.delegate = {
