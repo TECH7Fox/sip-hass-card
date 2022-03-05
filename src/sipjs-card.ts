@@ -384,10 +384,13 @@ class SipJsCard extends LitElement {
         switch(domain) {
             case "script":
                 service = "turn_on";
+                break;
             case "button":
                 service = "press";
+                break;
             case "scene":
                 service = "turn_on";
+                break;
             default:
                 console.log("No supported service");
                 return;
