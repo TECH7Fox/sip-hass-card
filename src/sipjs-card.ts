@@ -252,17 +252,19 @@ class SipJsCard extends LitElement {
                         if (isMe) {
                             this.user = extension;
                         }
-                        return html`
-                            <div class="flex">
-                                <state-badge
-                                    .stateObj=${stateObj}
-                                    .overrideIcon=${extension.icon}
-                                    .stateColor=${this.config.state_color}
-                                ></state-badge>
-                                <div class="info">${extension.name}</div>
-                                <mwc-button @click="${() => this._call(extension.extension, extension.camera)}">CALL</mwc-button>
-                            </div>
-                        `;
+                        if (isMe && this.config.hide_me !== true) {
+                            return html`
+                                <div class="flex">
+                                    <state-badge
+                                        .stateObj=${stateObj}
+                                        .overrideIcon=${extension.icon}
+                                        .stateColor=${this.config.state_color}
+                                    ></state-badge>
+                                    <div class="info">${extension.name}</div>
+                                    <mwc-button @click="${() => this._call(extension.extension, extension.camera)}">CALL</mwc-button>
+                                </div>
+                            `;
+                        }
                     })}
 
                     ${this.config.custom ?
