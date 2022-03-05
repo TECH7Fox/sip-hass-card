@@ -247,6 +247,12 @@ export class SipJsCardEditor extends LitElement {
                     .configValue="${"port"}"
                     @value-changed="${this._valueChanged}"
                 ></paper-input>
+                <paper-input
+                    label="Custom title"
+                    .value="${this._config.custom_title}"
+                    .configValue="${"custom_title"}"
+                    @value-changed="${this._valueChanged}"
+                ></paper-input>
                 <div class="side-by-side">
                     <ha-formfield
                         .label=${"Auto Answer"}
@@ -269,6 +275,14 @@ export class SipJsCardEditor extends LitElement {
                         ><ha-switch
                             .checked=${this._config.state_color}
                             .configValue=${"state_color"}
+                            @change=${this._valueChanged}
+                        ></ha-switch>
+                    </ha-formfield>
+                    <ha-formfield
+                        .label=${"Hide Me"}
+                        ><ha-switch
+                            .checked=${this._config.hide_me}
+                            .configValue=${"hide_me"}
                             @change=${this._valueChanged}
                         ></ha-switch>
                     </ha-formfield>
