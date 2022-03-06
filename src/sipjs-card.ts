@@ -4,10 +4,10 @@ import { Web } from "sip.js/lib/index.js";
 import {
   LitElement,
   html,
-  css
-} from "lit-element";
+  css,
+  unsafeCSS
+} from "lit";
 import "./editor";
-import { unsafeCSS } from "../node_modules/@lit/reactive-element/css-tag";
 
 class SipJsCard extends LitElement {
     simpleUser: Web.SimpleUser;
