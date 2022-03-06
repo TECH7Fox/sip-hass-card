@@ -252,7 +252,7 @@ class SipJsCard extends LitElement {
                         if (isMe) {
                             this.user = extension;
                         }
-                        if (!(isMe && this.config.hide_me !== true)) {
+                        if (!(isMe && this.config.hide_me)) {
                             return html`
                                 <div class="flex">
                                     <state-badge
