@@ -162,85 +162,6 @@ class SipJsCard extends LitElement {
         `;
     }
 
-    audioVisualizer() {
-        const NBR_OF_BARS = 10;
-        
-        //analayzer.getByteFrequencyData(frequencyData);
-        //console.log("frequencyData", frequencyData);
-
-        var visualizerContainer = this.renderRoot.querySelector(".visualizer-container");
-
-        var renderRoot = this.renderRoot;
-
-
-        // MERGE THE MediaElementSource's
-        // https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/createChannelMerger
-        // https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode
-        // https://developer.mozilla.org/en-US/docs/Web/API/MediaElementAudioSourceNode
-
-        
-        // Create a set of pre-defined bars
-        for( let i = 0; i < NBR_OF_BARS; i++ ) {
-
-            const bar = document.createElement("DIV");
-            bar.setAttribute("id", "bar" + i);
-            bar.setAttribute("class", "visualizer-bar");
-            visualizerContainer.appendChild(bar);
-
-        }
-
-        // This function has the task to adjust the bar heights according to the frequency data
-        function renderFrame() {
-
-            var audio = renderRoot.querySelector("#remoteAudio");
-            var ctx = new (window.AudioContext || window.webkitAudioContext)();
-            var options : MediaStreamAudioSourceOptions =  {
-                mediaStream : audio.captureStream()
-            };
-        
-            var audioSource = new MediaStreamAudioSourceNode(ctx, options);
-            audioSource.audioNode = audio;
-            var analayzer = ctx.createAnalyser();
-            audioSource.connect(analayzer);
-            audioSource.connect(ctx.destination);
-        
-            var frequencyData = new Uint8Array(analayzer.frequencyBinCount);
-
-            // Update our frequency data array with the latest frequency data
-            analayzer.getByteFrequencyData(frequencyData);
-
-            for( let i = 0; i < NBR_OF_BARS; i++ ) {
-
-                // Since the frequency data array is 1024 in length, we don't want to fetch
-                // the first NBR_OF_BARS of values, but try and grab frequencies over the whole spectrum
-                var index = (i + 10) * 2;
-
-                console.log(frequencyData);
-                // fd is a frequency value between 0 and 255
-                var fd = frequencyData[index];
-
-                // Fetch the bar DIV element
-                var bar = renderRoot.querySelector("#bar" + i);
-                if( !bar ) {
-                    continue;
-                }
-
-                // If fd is undefined, default to 0, then make sure fd is at least 4
-                // This will make make a quiet frequency at least 4px high for visual effects
-                var barHeight = Math.max(4, fd || 0);
-                bar.style.height = barHeight + "px";
-
-            }
-
-            // At the next animation frame, call ourselves
-            window.requestAnimationFrame(renderFrame);
-
-        }
-
-        renderFrame();
-        
-    }
-
     closePopup() {
         this.popup = false;
         super.update();
@@ -385,6 +306,47 @@ class SipJsCard extends LitElement {
         `;
     }
 
+    audioVisualizer() {
+        const remoteMedia: any = this.simpleUser.session.sessionDescriptionHandler.remoteMediaStream;
+        var ctx = new AudioContext();
+        var audioSource = ctx.createMediaStreamSource(remoteMedia);
+        var analayzer = ctx.createAnalyser();
+        audioSource.connect(analayzer);
+        audioSource.connect(ctx.destination);
+
+        const frequencyData = new Uint8Array(analayzer.frequencyBinCount);
+        analayzer.getByteFrequencyData(frequencyData);
+        console.log("frequencyData", frequencyData);
+
+        
+        // Update our frequency data array with the latest frequency data
+        analayzer.getByteFrequencyData(frequencyData);
+
+        const NBR_OF_BARS = 10;
+
+        for( let i = 0; i < NBR_OF_BARS; i++ ) {
+
+            // Since the frequency data array is 1024 in length, we don't want to fetch
+            // the first NBR_OF_BARS of values, but try and grab frequencies over the whole spectrum
+            const index = (i + 10) * 2;
+            // fd is a frequency value between 0 and 255
+            const fd = frequencyData[index];
+
+            // Fetch the bar DIV element
+            const bar = this.renderRoot.querySelector("#bar" + i);
+            if( !bar ) {
+                continue;
+            }
+
+            // If fd is undefined, default to 0, then make sure fd is at least 4
+            // This will make make a quiet frequency at least 4px high for visual effects
+            const barHeight = Math.max(4, fd || 0);
+            bar.style.height = barHeight + "px";
+
+        }
+
+    }
+
     firstUpdated() {
         this.popup = false;
         this.currentCamera = undefined;
@@ -504,6 +466,19 @@ class SipJsCard extends LitElement {
     }
     
     async connect() {
+        const NBR_OF_BARS = 10;
+        const visualizerContainer = this.renderRoot.querySelector(".visualizer-container");
+
+        // Create a set of pre-defined bars
+        for( let i = 0; i < NBR_OF_BARS; i++ ) {
+
+            const bar = document.createElement("DIV");
+            bar.setAttribute("id", "bar" + i);
+            bar.setAttribute("class", "visualizer-bar");
+            visualizerContainer.appendChild(bar);
+
+        }
+
         this.timerElement = this.renderRoot.querySelector('#time');
         this.setTitle((this.config.custom_title !== "") ? this.config.custom_title : this.user.name);
 
@@ -574,6 +549,7 @@ class SipJsCard extends LitElement {
                 }
                 var time = new Date();
                 this.intervalId = window.setInterval(function(){
+                    this.audioVisualizer();
                     var delta = Math.abs(new Date() - time) / 1000;
                     var minutes = Math.floor(delta / 60) % 60;
                     delta -= minutes * 60;
