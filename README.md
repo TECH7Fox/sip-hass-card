@@ -5,7 +5,7 @@ With this card you can make and receive calls to other HA clients and other sip 
 
 ![image](https://user-images.githubusercontent.com/32220029/149833595-204a0faa-d129-4b9b-9338-78155031b7d7.png)
 
-The card supports (limited) video, DTMF signals, custom icons, custom names and status entities.
+The card supports video, DTMF signals, custom icons, custom names, status entities and camera entities.
 
 ![image](https://user-images.githubusercontent.com/32220029/149833763-6a74bae6-bc6e-4207-97c8-b430123fa3c3.png)
 
@@ -53,6 +53,8 @@ You can put `?call=<number>` behind the URL to auto call that number when the ca
 Most problems is because your PBX server is not configured correct, or your certificate is not accepted.
 To accept the certificate for Asterisk/FreePBX go to `https://<host>:8089/ws` and click continue.
 To see how to configure FreePBX go to: https://github.com/TECH7Fox/HA-SIP/wiki/Setup-FreePBX
+
+Android companion app 2022.2 required for speaker + audio permissions.
 
 If you are still having problems you can make an issue or ask on the discord server.
 

@@ -188,6 +188,36 @@ export class SipJsCardEditor extends LitElement {
                         ></ha-icon-picker>
                     `;
                     break;
+                case "buttons":
+                    var rowEditor = html`
+                        <paper-input
+                            .label=${"Name"}
+                            .index="${this._rowEditor.index}"
+                            .value="${ent.name!}"
+                            .configValue="${"name"}"
+                            .configKey="${"buttons"}"
+                            @value-changed="${this._editArray}"
+                        ></paper-input>
+                        <ha-entity-picker
+                            .hass="${this.hass}"
+                            .label="${"Entity"}"
+                            .index=${this._rowEditor.index}
+                            .value="${ent.entity!}"
+                            .configValue=${"entity"}
+                            .configKey="${"buttons"}"
+                            @value-changed="${this._editArray}"
+                            allow-custom-entity
+                        ></ha-entity-picker>
+                        <ha-icon-picker
+                            .label=${"Icon"}
+                            .index="${this._rowEditor.index}"
+                            .value="${ent.icon!}"
+                            .configValue=${"icon"}
+                            .configKey="${"buttons"}"
+                            @value-changed="${this._editArray}"
+                        ></ha-icon-picker>
+                    `;
+                    break;
             }
             return html`
                 <div class="header">
@@ -217,6 +247,12 @@ export class SipJsCardEditor extends LitElement {
                     .configValue="${"port"}"
                     @value-changed="${this._valueChanged}"
                 ></paper-input>
+                <paper-input
+                    label="Custom title"
+                    .value="${this._config.custom_title}"
+                    .configValue="${"custom_title"}"
+                    @value-changed="${this._valueChanged}"
+                ></paper-input>
                 <div class="side-by-side">
                     <ha-formfield
                         .label=${"Auto Answer"}
@@ -242,6 +278,14 @@ export class SipJsCardEditor extends LitElement {
                             @change=${this._valueChanged}
                         ></ha-switch>
                     </ha-formfield>
+                    <ha-formfield
+                        .label=${"Hide Me"}
+                        ><ha-switch
+                            .checked=${this._config.hide_me}
+                            .configValue=${"hide_me"}
+                            @change=${this._valueChanged}
+                        ></ha-switch>
+                    </ha-formfield>
                 </div>
                 <paper-input
                     .label=${"Ringtone"}
@@ -253,6 +297,14 @@ export class SipJsCardEditor extends LitElement {
                     .label=${"Ringback Tone"}
                     .value="${this._config.ringbacktone}"
                     .configValue="${"ringbacktone"}"
+                    @value-changed="${this._valueChanged}"
+                ></paper-input>
+                <paper-input
+                    auto-validate pattern="[0-9]*"
+                    error-message="Numbers Only!"
+                    .label=${"Button Size"}
+                    .value="${this._config.button_size}"
+                    .configValue="${"button_size"}"
                     @value-changed="${this._valueChanged}"
                 ></paper-input>
                 <div class="entities">
@@ -379,6 +431,47 @@ export class SipJsCardEditor extends LitElement {
                         .label="${"Name"}"
                         .configValue="${"name"}"
                         .configKey="${"dtmfs"}"
+                        @focusout=${this._addRow}
+                    ></paper-input>
+                </div>
+                <div class="entities">
+                    <h3>Buttons</h3>
+                    ${this._config.buttons ? this._config.buttons.map((ent, index) => {
+                        return html`
+                            <div class="entity">
+                                <paper-input
+                                    .hass="${this.hass}"
+                                    .label="${"Name"}"
+                                    .index=${index}
+                                    .value="${ent.name}"
+                                    .configValue=${"name"}
+                                    .configKey="${"buttons"}"
+                                    @value-changed="${this._editArray}"
+                                ></paper-input>
+                                <ha-icon-button 
+                                    class="remove-icon"
+                                    .label=${"Remove Button"}
+                                    .configKey="${"buttons"}"
+                                    @click="${this._removeRow}"
+                                    .index="${index}"
+                                    ><ha-icon icon="hass:close"></ha-icon>
+                                </ha-icon-button>
+                                <ha-icon-button 
+                                    class="edit-icon"
+                                    .label=${"Edit Button"}
+                                    .configKey="${"buttons"}"
+                                    @click="${this._editRow}"
+                                    .index="${index}"
+                                    ><ha-icon icon="hass:pencil"></ha-icon>
+                                </ha-icon-button>
+                            </div>
+                        `;
+                    }) : null}
+                    <paper-input
+                        .hass="${this.hass}"
+                        .label="${"Name"}"
+                        .configValue="${"name"}"
+                        .configKey="${"buttons"}"
                         @focusout=${this._addRow}
                     ></paper-input>
                 </div>

@@ -7,6 +7,7 @@ import {
   css
 } from "lit-element";
 import "./editor";
+import { unsafeCSS } from "../node_modules/@lit/reactive-element/css-tag";
 
 class SipJsCard extends LitElement {
     simpleUser: Web.SimpleUser;
@@ -257,6 +258,12 @@ class SipJsCard extends LitElement {
 
     render() {
         return html`
+            <style>
+                ha-icon-button {
+                    --mdc-icon-button-size: ${this.config.button_size ? unsafeCSS(this.config.button_size) : css`48`}px;
+                    --mdc-icon-size: ${this.config.button_size ? unsafeCSS(this.config.button_size - 25) : css`23`}px;
+                }
+            </style>
             <ha-dialog id="phone" ?open=${this.popup} hideactions>
                 <div slot="heading" class="heading">
                     <ha-header-bar>
@@ -303,6 +310,17 @@ class SipJsCard extends LitElement {
                                     `;
                                 }) : ""
                             }
+                            ${this.config.buttons ?  
+                                this.config.buttons.map(button => {
+                                    return html `
+                                        <ha-icon-button 
+                                            @click="${() => this._button(button.entity)}"
+                                            .label="${button.name}"
+                                            ><ha-icon icon="${button.icon}"></ha-icon>
+                                        </ha-icon-button>
+                                    `;
+                                }) : ""
+                            }
                         </div>
                         <div class="row">
                             <span id="time">00:00</span>
@@ -319,7 +337,7 @@ class SipJsCard extends LitElement {
             
             <ha-card @click="${this.openPopup}">
                 <h1 class="card-header">
-                    <span id="state" class="name">Connecting</span>
+                    <span id="title" class="name">Unknown person</span>
                     <span id="extension" class="extension">Offline</span>
                 </h1>
                 <div class="wrapper">
@@ -327,18 +345,22 @@ class SipJsCard extends LitElement {
                     ${this.config.extensions.map(extension => {
                         var stateObj = this.hass.states[extension.entity];
                         var isMe = (this.hass.user.id == this.hass.states[extension.person].attributes.user_id);
-                        if (isMe) { this.user = extension; }
-                        return html`
-                            <div class="flex">
-                                <state-badge
-                                    .stateObj=${stateObj}
-                                    .overrideIcon=${extension.icon}
-                                    .stateColor=${this.config.state_color}
-                                ></state-badge>
-                                <div class="info">${extension.name}</div>
-                                <mwc-button @click="${() => this._call(extension.extension, extension.camera)}">CALL</mwc-button>
-                            </div>
-                        `;
+                        if (isMe) {
+                            this.user = extension;
+                        }
+                        if (!(isMe && this.config.hide_me)) {
+                            return html`
+                                <div class="flex">
+                                    <state-badge
+                                        .stateObj=${stateObj}
+                                        .overrideIcon=${extension.icon}
+                                        .stateColor=${this.config.state_color}
+                                    ></state-badge>
+                                    <div class="info">${extension.name}</div>
+                                    <mwc-button @click="${() => this._call(extension.extension, extension.camera)}">CALL</mwc-button>
+                                </div>
+                            `;
+                        }
                     })}
 
                     ${this.config.custom ?
@@ -390,6 +412,7 @@ class SipJsCard extends LitElement {
         return {
             server: "192.168.178.0.1",
             port: "8089",
+            button_size: "48",
             custom: [
                 {
                     name: 'Custom1',
@@ -426,8 +449,8 @@ class SipJsCard extends LitElement {
         this.renderRoot.querySelector('#name').innerHTML = text;
     }
 
-    private setState(text) {
-        this.renderRoot.querySelector('#state').innerHTML = text;
+    private setTitle(text) {
+        this.renderRoot.querySelector('#title').innerHTML = text;
     }
 
     private setExtension(text) {
@@ -453,9 +476,36 @@ class SipJsCard extends LitElement {
         this.audioVisualizer();
         await this.simpleUser.sendDTMF(signal);
     }
+
+    async _button(entity) {
+        const domain = entity.split(".")[0];
+        let service;
+        console.log(domain);
+        
+        switch(domain) {
+            case "script":
+                service = "turn_on";
+                break;
+            case "button":
+                service = "press";
+                break;
+            case "scene":
+                service = "turn_on";
+                break;
+            default:
+                console.log("No supported service");
+                return;
+        }
+        console.log(service);
+
+        await this.hass.callService(domain, service, {
+            entity_id: entity
+        });
+    }
     
     async connect() {
         this.timerElement = this.renderRoot.querySelector('#time');
+        this.setTitle((this.config.custom_title !== "") ? this.config.custom_title : this.user.name);
 
         var options: Web.SimpleUserOptions = {
             aor: "sip:" + this.user.extension + "@" + this.config.server,
@@ -482,10 +532,8 @@ class SipJsCard extends LitElement {
         this.simpleUser = new Web.SimpleUser("wss://" + this.config.server + ":" + this.config.port + "/ws", options);
         
         await this.simpleUser.connect();
-        this.setState("Connected");
 
         await this.simpleUser.register();
-        this.setState("Registered as " + this.user.name);
         this.setExtension(this.user.extension);
 
         this.simpleUser.delegate = {
