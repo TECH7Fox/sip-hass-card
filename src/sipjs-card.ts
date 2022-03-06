@@ -203,6 +203,13 @@ class SipJsCard extends LitElement {
                             <span id="name" class="title">Idle</span>
                         </div>
                         <div class="row">
+                            <ha-icon-button
+                                .label=${"Mute"}
+                                @click="${this._toggleMute}"
+                                ><ha-icon id="mute-icon" icon="hass:microphone"></ha-icon>
+                            </ha-icon-button>
+                        </div>
+                        <div class="row">
                             ${this.config.dtmfs ?  
                                 this.config.dtmfs.map(dtmf => {
                                     return html `
@@ -374,6 +381,20 @@ class SipJsCard extends LitElement {
 
     async _hangup() {
         await this.simpleUser.hangup();
+    }
+
+    async _toggleMute() {
+        const pc: any = this.simpleUser.session.sessionDescriptionHandler.peerConnection
+        pc.getSenders().forEach((stream: any) => {
+            stream.track.enabled = !stream.track.enabled;
+            console.log(stream.track.enabled);
+            if (stream.track.enabled) {
+                this.renderRoot.querySelector('#mute-icon').icon = "hass:microphone";
+            } else {
+                this.renderRoot.querySelector('#mute-icon').icon = "hass:microphone-off";
+            }
+        });
+
     }
 
     async _sendDTMF(signal) {
