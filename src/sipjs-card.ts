@@ -306,8 +306,9 @@ class SipJsCard extends LitElement {
         `;
     }
 
-    audioVisualizer() {
-        const remoteMedia: any = this.simpleUser.session.sessionDescriptionHandler.remoteMediaStream;
+    async audioVisualizer() {
+        const remoteMedia: any = await this.simpleUser.session.sessionDescriptionHandler.peerConnection.getLocalStreams()[0];
+        console.log(remoteMedia);
         var ctx = new AudioContext();
         var audioSource = ctx.createMediaStreamSource(remoteMedia);
         var analayzer = ctx.createAnalyser();
