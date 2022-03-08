@@ -1,12 +1,9 @@
 import {
     LitElement,
+    customElement,
     html,
     css,
 } from "lit-element";
-
-import {
-    customElement
-} from 'lit-element/decorators.js';
 
 @customElement('sipjs-card-editor')
 export class SipJsCardEditor extends LitElement {
@@ -30,11 +27,12 @@ export class SipJsCardEditor extends LitElement {
             bubbles: true,
             composed: true
         });
-        event.detail = {config: newConfig};
+        (event as any).detail = {config: newConfig};
         this.dispatchEvent(event);
     }
     dispatchEvent(event: Event) {
         throw new Error("Method not implemented.");
+        return false; // Fix ts error
     }
 
     render() {
@@ -44,9 +42,10 @@ export class SipJsCardEditor extends LitElement {
 
         if (this._rowEditor) {
             var ent = this._config[this._rowEditor.key][this._rowEditor.index];
+            var rowEditor;
             switch (this._rowEditor.key) {
                 case "extensions":
-                    var rowEditor = html`
+                    rowEditor = html`
                         <ha-entity-picker
                             .hass="${this.hass}"
                             .label="${"Person"}"
@@ -114,7 +113,7 @@ export class SipJsCardEditor extends LitElement {
                     `;
                     break;
                 case "custom":
-                    var rowEditor = html`
+                    rowEditor = html`
                         <paper-input
                             .label=${"Name"}
                             .index="${this._rowEditor.index}"
@@ -165,7 +164,7 @@ export class SipJsCardEditor extends LitElement {
                     `;
                     break;
                 case "dtmfs":
-                    var rowEditor = html`
+                    rowEditor = html`
                         <paper-input
                             .label=${"Name"}
                             .index="${this._rowEditor.index}"
@@ -196,7 +195,7 @@ export class SipJsCardEditor extends LitElement {
                     `;
                     break;
                 case "buttons":
-                    var rowEditor = html`
+                    rowEditor = html`
                         <paper-input
                             .label=${"Name"}
                             .index="${this._rowEditor.index}"

@@ -21,7 +21,12 @@ class SipJsCard extends LitElement {
     static get properties() {
         return {
             hass: {},
-            config: {}
+            config: {},
+            popup: {
+                type: Boolean
+            },
+            timerElement: {},
+            currentCamera: {}
         };
     }
 
@@ -148,15 +153,10 @@ class SipJsCard extends LitElement {
 
     closePopup() {
         this.popup = false;
-        super.update();
     }
 
     openPopup() {
-        // Temp solution! Otherwise won't open dialog again.
-        this.popup = false;
-        super.update();
-        this.popup = true;
-        super.update();
+        this.popup = true; // test this. Added popup to properties to trigger a update.
     }
 
     // allow-exoplayer
@@ -449,8 +449,8 @@ class SipJsCard extends LitElement {
         };
 
         if (this.config.video) {
-            options.media.remote.video = this.renderRoot.querySelector('#remoteVideo');
-            options.media.constraints.video = true;
+            options!.media!.remote!.video = this.renderRoot.querySelector('#remoteVideo');
+            options!.media!.constraints!.video = true;
         }
         
         this.simpleUser = new Web.SimpleUser("wss://" + this.config.server + ":" + this.config.port + "/ws", options);
@@ -497,13 +497,13 @@ class SipJsCard extends LitElement {
                     this.setName("On Call");
                 }
                 var time = new Date();
-                this.intervalId = window.setInterval(function(){
-                    var delta = Math.abs(new Date() - time) / 1000;
+                this.intervalId = window.setInterval(function(this: any) {
+                    var delta = Math.abs(new Date().getTime() - time.getTime()) / 1000;
                     var minutes = Math.floor(delta / 60) % 60;
                     delta -= minutes * 60;
                     var seconds = delta % 60;
                     this.timerElement.innerHTML =  (minutes + ":" + Math.round(seconds)).split(':').map(e => `0${e}`.slice(-2)).join(':');
-                  }.bind(this), 1000);
+                  }, 1000);
             },
             onCallHangup: () => {
                 this.ring("pause");
@@ -523,8 +523,9 @@ class SipJsCard extends LitElement {
     }
 }
 customElements.define('sipjs-card', SipJsCard);
-window.customCards = window.customCards || [];
-window.customCards.push({
+// 
+(window as any).customCards = (window as any).customCards || [];
+(window as any).customCards.push({
     type: "sipjs-card",
     name: "SIP Card",
     preview: false,
