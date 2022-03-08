@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import { Web } from "sip.js/lib/index.js";
 import {
   LitElement,
@@ -10,13 +8,15 @@ import {
 import "./editor";
 
 class SipJsCard extends LitElement {
-    simpleUser: Web.SimpleUser;
+    simpleUser: any;
     user: any;
     config: any;
     hass: any;
     timerElement: any;
     renderRoot: any;
-    intervalId: number;
+    popup: boolean = false;
+    currentCamera: any;
+    intervalId!: number;
 
     static get properties() {
         return {
@@ -211,7 +211,7 @@ class SipJsCard extends LitElement {
                         </div>
                         <div class="row">
                             ${this.config.dtmfs ?  
-                                this.config.dtmfs.map(dtmf => {
+                                this.config.dtmfs.map((dtmf: { signal: any; name: any; icon: any; }) => {
                                     return html `
                                         <ha-icon-button 
                                             @click="${() => this._sendDTMF(dtmf.signal)}"
@@ -222,7 +222,7 @@ class SipJsCard extends LitElement {
                                 }) : ""
                             }
                             ${this.config.buttons ?  
-                                this.config.buttons.map(button => {
+                                this.config.buttons.map((button: { entity: any; name: any; icon: any; }) => {
                                     return html `
                                         <ha-icon-button 
                                             @click="${() => this._button(button.entity)}"
@@ -253,7 +253,7 @@ class SipJsCard extends LitElement {
                 </h1>
                 <div class="wrapper">
 
-                    ${this.config.extensions.map(extension => {
+                    ${this.config.extensions.map((extension: { entity: string | number; person: string | number; icon: any; name: any; extension: any; camera: any; }) => {
                         var stateObj = this.hass.states[extension.entity];
                         var isMe = (this.hass.user.id == this.hass.states[extension.person].attributes.user_id);
                         if (isMe) {
@@ -275,7 +275,7 @@ class SipJsCard extends LitElement {
                     })}
 
                     ${this.config.custom ?
-                        this.config.custom.map(custom => {
+                        this.config.custom.map((custom: { entity: string | number; icon: any; name: any; number: any; camera: any; }) => {
                             var stateObj = this.hass.states[custom.entity];
                             return html`
                                 <div class="flex">
@@ -302,7 +302,7 @@ class SipJsCard extends LitElement {
         this.connect();
     }
 
-    setConfig(config) {
+    setConfig(config: { server: any; port: any; extensions: any; }) {
         if (!config.server) {
             throw new Error("You need to define a server!");
         }
@@ -345,7 +345,7 @@ class SipJsCard extends LitElement {
         return this.config.extensions.length + 1;
     }
 
-    private ring(tone) {
+    private ring(tone: string) {
         var toneAudio = this.renderRoot.querySelector('#toneAudio');
         if (this.config[tone]) {
             toneAudio.src = this.config[tone];
@@ -356,19 +356,19 @@ class SipJsCard extends LitElement {
         }
     }
 
-    private setName(text) {
+    private setName(text: string) {
         this.renderRoot.querySelector('#name').innerHTML = text;
     }
 
-    private setTitle(text) {
+    private setTitle(text: any) {
         this.renderRoot.querySelector('#title').innerHTML = text;
     }
 
-    private setExtension(text) {
+    private setExtension(text: any) {
         this.renderRoot.querySelector('#extension').innerHTML = text;
     }
 
-    async _call(extension, camera) {
+    async _call(extension: string | null, camera: any) {
         this.ring("ringbacktone");
         this.setName("Calling...");
         this.currentCamera = (camera ? camera : undefined);
@@ -397,11 +397,11 @@ class SipJsCard extends LitElement {
 
     }
 
-    async _sendDTMF(signal) {
+    async _sendDTMF(signal: any) {
         await this.simpleUser.sendDTMF(signal);
     }
 
-    async _button(entity) {
+    async _button(entity: string) {
         const domain = entity.split(".")[0];
         let service;
         console.log(domain);
@@ -463,12 +463,12 @@ class SipJsCard extends LitElement {
         this.simpleUser.delegate = {
             onCallReceived: async () => {
                 var extension = this.simpleUser.session.remoteIdentity.uri.normal.user;
-                this.config.extensions.forEach(element => {
+                this.config.extensions.forEach((element: { extension: any; camera: boolean; }) => {
                     if (element.extension == extension) {
                         this.currentCamera = (element.camera ? element.camera : undefined);
                     }
                 });
-                this.config.custom.forEach(element => {
+                this.config.custom.forEach((element: { number: any; camera: boolean; }) => {
                     if (element.number == extension) {
                         this.currentCamera = (element.camera ? element.camera : undefined);
                     }
@@ -517,7 +517,7 @@ class SipJsCard extends LitElement {
 
         var urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('call')) {
-            this._call(urlParams.get('call'));
+            this._call(urlParams.get('call'), undefined); // TODO: Add camera here or in the _call function itself.
             this.openPopup();
         }
     }
