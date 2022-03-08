@@ -156,7 +156,9 @@ class SipJsCard extends LitElement {
     }
 
     openPopup() {
-        this.popup = true; // test this. Added popup to properties to trigger a update.
+        this.popup = false;
+        super.performUpdate();
+        this.popup = true;
     }
 
     // allow-exoplayer
@@ -497,13 +499,13 @@ class SipJsCard extends LitElement {
                     this.setName("On Call");
                 }
                 var time = new Date();
-                this.intervalId = window.setInterval(function(this: any) {
+                this.intervalId = window.setInterval(function(this: any): void {
                     var delta = Math.abs(new Date().getTime() - time.getTime()) / 1000;
                     var minutes = Math.floor(delta / 60) % 60;
                     delta -= minutes * 60;
                     var seconds = delta % 60;
-                    this.timerElement.innerHTML =  (minutes + ":" + Math.round(seconds)).split(':').map(e => `0${e}`.slice(-2)).join(':');
-                  }, 1000);
+                    this.timerElement.innerHTML = (minutes + ":" + Math.round(seconds)).split(':').map(e => `0${e}`.slice(-2)).join(':');
+                }.bind(this), 1000);
             },
             onCallHangup: () => {
                 this.ring("pause");
