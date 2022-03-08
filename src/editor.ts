@@ -2,11 +2,11 @@ import {
     LitElement,
     html,
     css,
-} from "lit";
+} from "lit-element";
 
 import {
     customElement
-} from 'lit/decorators.js';
+} from 'lit-element/decorators.js';
 
 @customElement('sipjs-card-editor')
 export class SipJsCardEditor extends LitElement {

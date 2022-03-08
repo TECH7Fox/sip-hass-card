@@ -4,7 +4,7 @@ import {
   html,
   css,
   unsafeCSS
-} from "lit";
+} from "lit-element";
 import "./editor";
 
 class SipJsCard extends LitElement {
