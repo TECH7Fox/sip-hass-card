@@ -6,7 +6,7 @@ import {
   unsafeCSS
 } from "lit";
 import "./editor";
-import { customElement } from "lit/decorators";
+import { customElement } from "lit/decorators.js";
 
 @customElement('sipjs-card')
 class SipJsCard extends LitElement {
