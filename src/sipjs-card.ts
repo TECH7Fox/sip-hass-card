@@ -4,9 +4,11 @@ import {
   html,
   css,
   unsafeCSS
-} from "lit-element";
+} from "lit";
 import "./editor";
+import { customElement } from "lit/decorators";
 
+@customElement('sipjs-card')
 class SipJsCard extends LitElement {
     simpleUser: any;
     user: any;
@@ -524,8 +526,7 @@ class SipJsCard extends LitElement {
         }
     }
 }
-customElements.define('sipjs-card', SipJsCard);
-// 
+ 
 (window as any).customCards = (window as any).customCards || [];
 (window as any).customCards.push({
     type: "sipjs-card",

@@ -1,9 +1,9 @@
 import {
     LitElement,
-    customElement,
     html,
     css,
-} from "lit-element";
+} from "lit";
+import { customElement } from 'lit/decorators';
 
 @customElement('sipjs-card-editor')
 export class SipJsCardEditor extends LitElement {
