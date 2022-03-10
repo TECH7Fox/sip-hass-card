@@ -416,6 +416,12 @@ class SipJsCard extends LitElement {
             case "scene":
                 service = "turn_on";
                 break;
+            case "lock":
+                service = "unlock";
+            break;
+                case "lock":
+                service = "open";
+                break;
             default:
                 console.log("No supported service");
                 return;
