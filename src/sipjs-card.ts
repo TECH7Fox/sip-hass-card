@@ -419,7 +419,10 @@ class SipJsCard extends LitElement {
             case "light":
                 service = "toggle";
                 break;
-            case "homeassistant":
+            case "switch":
+                service = "toggle";
+                break;
+            case "inpput_boolean":
                 service = "toggle";
                 break;
             default:
