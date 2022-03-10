@@ -416,6 +416,12 @@ class SipJsCard extends LitElement {
             case "scene":
                 service = "turn_on";
                 break;
+            case "light":
+                service = "toggle";
+                break;
+            case "homeassistant":
+                service = "toggle";
+                break;
             default:
                 console.log("No supported service");
                 return;
