@@ -418,8 +418,8 @@ class SipJsCard extends LitElement {
                 break;
             case "lock":
                 service = "unlock";
-            break;
-                case "lock":
+                break;
+            case "lock":
                 service = "open";
                 break;
             default:
