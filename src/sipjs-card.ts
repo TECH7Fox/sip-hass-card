@@ -79,9 +79,9 @@ class SipJsCard extends LitElement {
             }
             video {
                 display: block;
-                height: auto;
+                height: 100%;
                 width: 100%;
-                background-color: dimgray;
+                background-color: #2b2b2b;
             }
             .box {
                 /* start paper-font-common-nowrap style */
@@ -119,6 +119,35 @@ class SipJsCard extends LitElement {
             }
             ha-dialog {
                 --dialog-content-padding: 0;
+                --dialog-surface-position: static;
+                --dialog-content-position: static;
+            }
+            @media all and (min-width: 451px) and (min-height: 501px) {
+                ha-dialog {
+                    --mdc-dialog-max-width: 90vw;
+                }
+                .content {
+                    width: 352px;
+                }
+                ha-header-bar {
+                    width: 400px;
+                }
+                .main-title {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    cursor: default;
+                }
+                ha-dialog[data-domain="camera"] .content,
+                ha-dialog[data-domain="camera"] ha-header-bar {
+                    width: auto;
+                }
+                :host([large]) .content {
+                    width: calc(90vw - 48px);
+                }
+                :host([large]) ha-dialog[data-domain="camera"] .content,
+                :host([large]) ha-header-bar {
+                    width: 90vw;
+                }
             }
             .box, ha-icon {
                 display: flex;
