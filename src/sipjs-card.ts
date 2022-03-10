@@ -422,7 +422,7 @@ class SipJsCard extends LitElement {
             case "switch":
                 service = "toggle";
                 break;
-            case "inpput_boolean":
+            case "input_boolean":
                 service = "toggle";
                 break;
             default:
