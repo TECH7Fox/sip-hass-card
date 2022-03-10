@@ -137,15 +137,17 @@ class SipJsCard extends LitElement {
                     text-overflow: ellipsis;
                     cursor: default;
                 }
-                ha-dialog[data-domain="camera"] .content,
-                ha-dialog[data-domain="camera"] ha-header-bar {
+                ha-dialog .content,
+                ha-dialog ha-header-bar,
+                ha-dialog .box {
                     width: auto;
                 }
                 :host([large]) .content {
                     width: calc(90vw - 48px);
                 }
-                :host([large]) ha-dialog[data-domain="camera"] .content,
-                :host([large]) ha-header-bar {
+                :host([large]) ha-dialog .content,
+                :host([large]) ha-header-bar,
+                :host([large]) .box {
                     width: 90vw;
                 }
             }
