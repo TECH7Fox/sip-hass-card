@@ -1,19 +1,17 @@
-// @ts-nocheck
-
 import {
     LitElement,
     html,
     css,
 } from "lit";
-
-import {
-    customElement
-} from 'lit/decorators.js';
+import { customElement } from 'lit/decorators.js';
 
 @customElement('sipjs-card-editor')
 export class SipJsCardEditor extends LitElement {
+    _config: any;
+    hass: any;
+    _rowEditor: any;
 
-    setConfig(config) {
+    setConfig(config: any) {
         this._config = config;
     }
 
@@ -24,13 +22,17 @@ export class SipJsCardEditor extends LitElement {
         };
     }
 
-    configChanged(newConfig) {   
+    configChanged(newConfig: any) {   
         const event = new Event("config-changed", {
             bubbles: true,
             composed: true
         });
-        event.detail = {config: newConfig};
+        (event as any).detail = {config: newConfig};
         this.dispatchEvent(event);
+    }
+    dispatchEvent(event: Event) {
+        throw new Error("Method not implemented.");
+        return false; // Fix ts error
     }
 
     render() {
@@ -40,9 +42,10 @@ export class SipJsCardEditor extends LitElement {
 
         if (this._rowEditor) {
             var ent = this._config[this._rowEditor.key][this._rowEditor.index];
+            var rowEditor;
             switch (this._rowEditor.key) {
                 case "extensions":
-                    var rowEditor = html`
+                    rowEditor = html`
                         <ha-entity-picker
                             .hass="${this.hass}"
                             .label="${"Person"}"
@@ -110,7 +113,7 @@ export class SipJsCardEditor extends LitElement {
                     `;
                     break;
                 case "custom":
-                    var rowEditor = html`
+                    rowEditor = html`
                         <paper-input
                             .label=${"Name"}
                             .index="${this._rowEditor.index}"
@@ -161,7 +164,7 @@ export class SipJsCardEditor extends LitElement {
                     `;
                     break;
                 case "dtmfs":
-                    var rowEditor = html`
+                    rowEditor = html`
                         <paper-input
                             .label=${"Name"}
                             .index="${this._rowEditor.index}"
@@ -192,7 +195,7 @@ export class SipJsCardEditor extends LitElement {
                     `;
                     break;
                 case "buttons":
-                    var rowEditor = html`
+                    rowEditor = html`
                         <paper-input
                             .label=${"Name"}
                             .index="${this._rowEditor.index}"
@@ -312,7 +315,7 @@ export class SipJsCardEditor extends LitElement {
                 ></paper-input>
                 <div class="entities">
                     <h3>Extensions (required)</h3>
-                    ${this._config.extensions ? this._config.extensions.map((ent, index) => {
+                    ${this._config.extensions ? this._config.extensions.map((ent: { person: any; }, index: any) => {
                         return html`
                             <div class="entity">
                                 <ha-entity-picker
@@ -357,7 +360,7 @@ export class SipJsCardEditor extends LitElement {
                 </div>
                 <div class="entities">
                     <h3>Custom</h3>
-                    ${this._config.custom ? this._config.custom.map((ent, index) => {
+                    ${this._config.custom ? this._config.custom.map((ent: { name: any; }, index: any) => {
                         return html`
                             <div class="entity">
                                 <paper-input
@@ -398,7 +401,7 @@ export class SipJsCardEditor extends LitElement {
                 </div>
                 <div class="entities">
                     <h3>DTMF's</h3>
-                    ${this._config.dtmfs ? this._config.dtmfs.map((ent, index) => {
+                    ${this._config.dtmfs ? this._config.dtmfs.map((ent: { name: any; }, index: any) => {
                         return html`
                             <div class="entity">
                                 <paper-input
@@ -439,7 +442,7 @@ export class SipJsCardEditor extends LitElement {
                 </div>
                 <div class="entities">
                     <h3>Buttons</h3>
-                    ${this._config.buttons ? this._config.buttons.map((ent, index) => {
+                    ${this._config.buttons ? this._config.buttons.map((ent: { name: any; }, index: any) => {
                         return html`
                             <div class="entity">
                                 <paper-input
@@ -482,7 +485,7 @@ export class SipJsCardEditor extends LitElement {
         `;
     }
 
-    private _valueChanged(ev): void {
+    private _valueChanged(ev: { target: any; }): void {
         if (!this._config || !this.hass) {
             return;
         }
@@ -503,8 +506,11 @@ export class SipJsCardEditor extends LitElement {
         this._rowEditor = undefined;
         this.requestUpdate();
     }
+    requestUpdate() {
+        throw new Error("Method not implemented.");
+    }
 
-    private _addRow(ev): void {
+    private _addRow(ev: { target: { value: string | null; configKey: any; configValue: any; }; }): void {
         if (ev.target.value == "") {
             return;
         }
@@ -522,7 +528,7 @@ export class SipJsCardEditor extends LitElement {
         this.requestUpdate();
     }
 
-    private _removeRow(ev): void {
+    private _removeRow(ev: { currentTarget: any; }): void {
         var key = (ev.currentTarget as any).configKey;
         var index = (ev.currentTarget as any).index;
         var array = Object.assign([], this._config[key]);
@@ -535,7 +541,7 @@ export class SipJsCardEditor extends LitElement {
         this.requestUpdate();
     }
 
-    private _editRow(ev): void {
+    private _editRow(ev: { currentTarget: any; }): void {
         var key = (ev.currentTarget as any).configKey;
         const index = (ev.currentTarget as any).index;
         this._rowEditor = {
@@ -545,7 +551,7 @@ export class SipJsCardEditor extends LitElement {
         this.requestUpdate();
     }
 
-    private _editArray(ev): void {
+    private _editArray(ev: { target: { configKey: any; index: any; configValue: any; value: any; }; }): void {
         var key = ev.target.configKey;
         var index = ev.target.index;
         var array = Object.assign([], this._config[key]);

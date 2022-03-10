@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import { Web } from "sip.js/lib/index.js";
 import {
   LitElement,
@@ -8,20 +6,29 @@ import {
   unsafeCSS
 } from "lit";
 import "./editor";
+import { customElement } from "lit/decorators.js";
 
+@customElement('sipjs-card')
 class SipJsCard extends LitElement {
-    simpleUser: Web.SimpleUser;
+    simpleUser: any;
     user: any;
     config: any;
     hass: any;
     timerElement: any;
     renderRoot: any;
-    intervalId: number;
+    popup: boolean = false;
+    currentCamera: any;
+    intervalId!: number;
 
     static get properties() {
         return {
             hass: {},
-            config: {}
+            config: {},
+            popup: {
+                type: Boolean
+            },
+            timerElement: {},
+            currentCamera: {}
         };
     }
 
@@ -72,9 +79,9 @@ class SipJsCard extends LitElement {
             }
             video {
                 display: block;
-                height: auto;
+                height: 100%;
                 width: 100%;
-                background-color: dimgray;
+                background-color: #2b2b2b;
             }
             .box {
                 /* start paper-font-common-nowrap style */
@@ -112,6 +119,37 @@ class SipJsCard extends LitElement {
             }
             ha-dialog {
                 --dialog-content-padding: 0;
+                --dialog-surface-position: static;
+                --dialog-content-position: static;
+            }
+            @media all and (min-width: 451px) and (min-height: 501px) {
+                ha-dialog {
+                    --mdc-dialog-max-width: 90vw;
+                }
+                .content {
+                    width: 352px;
+                }
+                ha-header-bar {
+                    width: 400px;
+                }
+                .main-title {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    cursor: default;
+                }
+                ha-dialog .content,
+                ha-dialog ha-header-bar,
+                ha-dialog .box {
+                    width: auto;
+                }
+                :host([large]) .content {
+                    width: calc(90vw - 48px);
+                }
+                :host([large]) ha-dialog .content,
+                :host([large]) ha-header-bar,
+                :host([large]) .box {
+                    width: 90vw;
+                }
             }
             .box, ha-icon {
                 display: flex;
@@ -148,15 +186,12 @@ class SipJsCard extends LitElement {
 
     closePopup() {
         this.popup = false;
-        super.update();
     }
 
     openPopup() {
-        // Temp solution! Otherwise won't open dialog again.
         this.popup = false;
-        super.update();
+        super.performUpdate();
         this.popup = true;
-        super.update();
     }
 
     // allow-exoplayer
@@ -211,7 +246,7 @@ class SipJsCard extends LitElement {
                         </div>
                         <div class="row">
                             ${this.config.dtmfs ?  
-                                this.config.dtmfs.map(dtmf => {
+                                this.config.dtmfs.map((dtmf: { signal: any; name: any; icon: any; }) => {
                                     return html `
                                         <ha-icon-button 
                                             @click="${() => this._sendDTMF(dtmf.signal)}"
@@ -222,7 +257,7 @@ class SipJsCard extends LitElement {
                                 }) : ""
                             }
                             ${this.config.buttons ?  
-                                this.config.buttons.map(button => {
+                                this.config.buttons.map((button: { entity: any; name: any; icon: any; }) => {
                                     return html `
                                         <ha-icon-button 
                                             @click="${() => this._button(button.entity)}"
@@ -253,7 +288,7 @@ class SipJsCard extends LitElement {
                 </h1>
                 <div class="wrapper">
 
-                    ${this.config.extensions.map(extension => {
+                    ${this.config.extensions.map((extension: { entity: string | number; person: string | number; icon: any; name: any; extension: any; camera: any; }) => {
                         var stateObj = this.hass.states[extension.entity];
                         var isMe = (this.hass.user.id == this.hass.states[extension.person].attributes.user_id);
                         if (isMe) {
@@ -275,7 +310,7 @@ class SipJsCard extends LitElement {
                     })}
 
                     ${this.config.custom ?
-                        this.config.custom.map(custom => {
+                        this.config.custom.map((custom: { entity: string | number; icon: any; name: any; number: any; camera: any; }) => {
                             var stateObj = this.hass.states[custom.entity];
                             return html`
                                 <div class="flex">
@@ -302,7 +337,7 @@ class SipJsCard extends LitElement {
         this.connect();
     }
 
-    setConfig(config) {
+    setConfig(config: { server: any; port: any; extensions: any; }) {
         if (!config.server) {
             throw new Error("You need to define a server!");
         }
@@ -345,7 +380,7 @@ class SipJsCard extends LitElement {
         return this.config.extensions.length + 1;
     }
 
-    private ring(tone) {
+    private ring(tone: string) {
         var toneAudio = this.renderRoot.querySelector('#toneAudio');
         if (this.config[tone]) {
             toneAudio.src = this.config[tone];
@@ -356,19 +391,19 @@ class SipJsCard extends LitElement {
         }
     }
 
-    private setName(text) {
+    private setName(text: string) {
         this.renderRoot.querySelector('#name').innerHTML = text;
     }
 
-    private setTitle(text) {
+    private setTitle(text: any) {
         this.renderRoot.querySelector('#title').innerHTML = text;
     }
 
-    private setExtension(text) {
+    private setExtension(text: any) {
         this.renderRoot.querySelector('#extension').innerHTML = text;
     }
 
-    async _call(extension, camera) {
+    async _call(extension: string | null, camera: any) {
         this.ring("ringbacktone");
         this.setName("Calling...");
         this.currentCamera = (camera ? camera : undefined);
@@ -397,11 +432,11 @@ class SipJsCard extends LitElement {
 
     }
 
-    async _sendDTMF(signal) {
+    async _sendDTMF(signal: any) {
         await this.simpleUser.sendDTMF(signal);
     }
 
-    async _button(entity) {
+    async _button(entity: string) {
         const domain = entity.split(".")[0];
         let service;
         console.log(domain);
@@ -458,8 +493,8 @@ class SipJsCard extends LitElement {
         };
 
         if (this.config.video) {
-            options.media.remote.video = this.renderRoot.querySelector('#remoteVideo');
-            options.media.constraints.video = true;
+            options!.media!.remote!.video = this.renderRoot.querySelector('#remoteVideo');
+            options!.media!.constraints!.video = true;
         }
         
         this.simpleUser = new Web.SimpleUser("wss://" + this.config.server + ":" + this.config.port + "/ws", options);
@@ -472,12 +507,12 @@ class SipJsCard extends LitElement {
         this.simpleUser.delegate = {
             onCallReceived: async () => {
                 var extension = this.simpleUser.session.remoteIdentity.uri.normal.user;
-                this.config.extensions.forEach(element => {
+                this.config.extensions.forEach((element: { extension: any; camera: boolean; }) => {
                     if (element.extension == extension) {
                         this.currentCamera = (element.camera ? element.camera : undefined);
                     }
                 });
-                this.config.custom.forEach(element => {
+                this.config.custom.forEach((element: { number: any; camera: boolean; }) => {
                     if (element.number == extension) {
                         this.currentCamera = (element.camera ? element.camera : undefined);
                     }
@@ -506,13 +541,13 @@ class SipJsCard extends LitElement {
                     this.setName("On Call");
                 }
                 var time = new Date();
-                this.intervalId = window.setInterval(function(){
-                    var delta = Math.abs(new Date() - time) / 1000;
+                this.intervalId = window.setInterval(function(this: any): void {
+                    var delta = Math.abs(new Date().getTime() - time.getTime()) / 1000;
                     var minutes = Math.floor(delta / 60) % 60;
                     delta -= minutes * 60;
                     var seconds = delta % 60;
-                    this.timerElement.innerHTML =  (minutes + ":" + Math.round(seconds)).split(':').map(e => `0${e}`.slice(-2)).join(':');
-                  }.bind(this), 1000);
+                    this.timerElement.innerHTML = (minutes + ":" + Math.round(seconds)).split(':').map(e => `0${e}`.slice(-2)).join(':');
+                }.bind(this), 1000);
             },
             onCallHangup: () => {
                 this.ring("pause");
@@ -526,14 +561,14 @@ class SipJsCard extends LitElement {
 
         var urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('call')) {
-            this._call(urlParams.get('call'));
+            this._call(urlParams.get('call'), undefined); // TODO: Add camera here or in the _call function itself.
             this.openPopup();
         }
     }
 }
-customElements.define('sipjs-card', SipJsCard);
-window.customCards = window.customCards || [];
-window.customCards.push({
+ 
+(window as any).customCards = (window as any).customCards || [];
+(window as any).customCards.push({
     type: "sipjs-card",
     name: "SIP Card",
     preview: false,
