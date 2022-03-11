@@ -129,7 +129,7 @@ class SipJsCard extends LitElement {
                 .content {
                     width: 352px;
                 }
-                ha-header-bar {
+                ha-header-bar, .box {
                     width: 400px;
                 }
                 .main-title {
