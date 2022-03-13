@@ -19,6 +19,7 @@ class SipJsCard extends LitElement {
     popup: boolean = false;
     currentCamera: any;
     intervalId!: number;
+    error: any = null;
 
     static get properties() {
         return {
@@ -139,6 +140,11 @@ class SipJsCard extends LitElement {
                 height: auto;
                 width: 100%;
                 display: block;
+            }
+
+            .card-header {
+                display: flex;
+                justify-content: space-between;
             }
 
             .mdc-dialog__surface {
@@ -311,10 +317,17 @@ class SipJsCard extends LitElement {
             
             <ha-card @click="${this.openPopup}">
                 <h1 class="card-header">
-                    <span id="title" class="name">Unknown person</span>
-                    <span id="extension" class="extension">Offline</span>
+                    <span id="title" class="name">Unknown</span>
+                    <span id="extension" class="extension">None</span>
                 </h1>
                 <div class="wrapper">
+
+                    ${(this.error !== null) ? html`
+                        <ha-alert alert-type="error" .title=${this.error.title}>
+                            ${this.error.message}
+                        </ha-alert>
+                        ` : ''
+                    }
 
                     ${this.config.extensions.map((extension: { entity: string | number; person: string | number; icon: any; name: any; extension: any; camera: any; }) => {
                         var stateObj = this.hass.states[extension.entity];
@@ -501,6 +514,14 @@ class SipJsCard extends LitElement {
     
     async connect() {
         this.timerElement = this.renderRoot.querySelector('#time');
+        if (this.user == undefined) {
+            this.error = {
+                title: "Person not configured!",
+                message: "There is no extension configured for this person."
+            }
+            this.requestUpdate();
+            throw new Error("Person not configured!");
+        }
         this.setTitle((this.config.custom_title !== "") ? this.config.custom_title : this.user.name);
 
         var options: Web.SimpleUserOptions = {
@@ -527,10 +548,30 @@ class SipJsCard extends LitElement {
         
         this.simpleUser = new Web.SimpleUser("wss://" + this.config.server + ":" + this.config.port + "/ws", options);
         
-        await this.simpleUser.connect();
-
-        await this.simpleUser.register();
         this.setExtension(this.user.extension);
+
+        try {
+            await this.simpleUser.connect();   
+        } catch (error) {
+            this.error = {
+                title: "Can't connect!",
+                message: error
+            }
+            this.requestUpdate();
+            throw new Error("Can't connect: " + error);
+        }
+
+        try {
+            await this.simpleUser.register();
+        } catch (error) {
+            this.error = {
+                title: "Can't register!",
+                message: error
+            }
+            this.requestUpdate();
+            throw new Error("Can't register: " + error);
+        }
+
 
         this.simpleUser.delegate = {
             onCallReceived: async () => {
