@@ -7,6 +7,8 @@ import {
 } from "lit";
 import "./editor";
 import { customElement } from "lit/decorators.js";
+import "./audioVisualizer";
+import { AudioVisualizer } from "./audioVisualizer";
 
 @customElement('sipjs-card')
 class SipJsCard extends LitElement {
@@ -233,6 +235,16 @@ class SipJsCard extends LitElement {
                 --mdc-dialog-content-ink-color: var(--primary-text-color);
                 --justify-action-buttons: space-between;
             }
+
+            #audioVisualizer div {
+                display: inline-block;
+                width: 3px;
+                height: 100px;
+                margin: 0 7px;
+                background: currentColor;
+                transform: scaleY( .5 );
+                opacity: .25;
+            }
         `;
     }
 
@@ -273,8 +285,8 @@ class SipJsCard extends LitElement {
                             .stateObj=${this.hass.states[this.currentCamera]}
                         ></ha-camera-stream>
                     ` : html`
+                        <div id="audioVisualizer"></div>
                         <video id="remoteVideo"></video>
-                        <div class="visualizer-container"></div>
                     `}
                     <audio id="remoteAudio" style="display:none"></audio>
                     <audio id="toneAudio" style="display:none" loop controls></audio>
@@ -575,18 +587,48 @@ class SipJsCard extends LitElement {
     }
     
     async connect() {
-        const NBR_OF_BARS = 10;
-        const visualizerContainer = this.renderRoot.querySelector(".visualizer-container");
 
-        // Create a set of pre-defined bars
-        for( let i = 0; i < NBR_OF_BARS; i++ ) {
+        const visualMainElement: any = this.renderRoot.querySelector( '#audioVisualizer' );
+        const visualValueCount = 16;
+        let visualElements: any;
+        const createDOMElements = () => {
+          let i;
+          for ( i = 0; i < visualValueCount; ++i ) {
+            const elm = document.createElement( 'div' );
+            visualMainElement!.appendChild( elm );
+          }     
 
-            const bar = document.createElement("DIV");
-            bar.setAttribute("id", "bar" + i);
-            bar.setAttribute("class", "visualizer-bar");
-            visualizerContainer.appendChild(bar);
+          visualElements = this.renderRoot.querySelectorAll( '#audioVisualizer div' );
+        };
 
-        }
+        createDOMElements();
+        //const mediaStream = await this.simpleUser.session.sessionDescriptionHandler.peerConnection.getLocalStreams()[0];
+  
+        const init = () => {
+          // Creating initial DOM elements
+          const audioContext = new AudioContext();
+          const initDOM = () => {
+            visualMainElement!.innerHTML = '';
+            createDOMElements();
+          };
+          initDOM();
+        
+          // Swapping values around for a better visual effect
+          const dataMap: any = { 0: 15, 1: 10, 2: 8, 3: 9, 4: 6, 5: 5, 6: 2, 7: 1, 8: 0, 9: 4, 10: 3, 11: 7, 12: 11, 13: 12, 14: 13, 15: 14 };
+          const processFrame = ( data: any ) => {
+            const values: any = Object.values( data );
+            let i;
+            for ( i = 0; i < visualValueCount; ++i ) {
+              const value = values[ dataMap[ i ] ] / 255;
+              const elmStyles = visualElements[ i ].style;
+              elmStyles.transform = `scaleY( ${ value } )`;
+              elmStyles.opacity = Math.max( .25, value );
+            }
+          };
+          const a = new AudioVisualizer( audioContext, processFrame, false );
+        };
+
+        init();
 
         this.timerElement = this.renderRoot.querySelector('#time');
         if (this.user == undefined) {
@@ -686,7 +728,6 @@ class SipJsCard extends LitElement {
                 }
                 var time = new Date();
                 this.intervalId = window.setInterval(function(this: any): void {
-                    this.audioVisualizer();
                     var delta = Math.abs(new Date().getTime() - time.getTime()) / 1000;
                     var minutes = Math.floor(delta / 60) % 60;
                     delta -= minutes * 60;
