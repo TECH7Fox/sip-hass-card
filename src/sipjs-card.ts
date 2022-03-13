@@ -310,7 +310,7 @@ class SipJsCard extends LitElement {
         this.connect();
     }
 
-    setConfig(config: { server: any; port: any; extensions: any; }) {
+    setConfig(config: { server: any; port: any; extensions: any; }): void {
         if (!config.server) {
             throw new Error("You need to define a server!");
         }

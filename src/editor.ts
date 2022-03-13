@@ -6,12 +6,12 @@ import {
 import { customElement } from 'lit/decorators.js';
 
 @customElement('sipjs-card-editor')
-export class SipJsCardEditor extends LitElement {
+class SipJsCardEditor extends LitElement {
     _config: any;
     hass: any;
     _rowEditor: any;
 
-    setConfig(config: any) {
+    setConfig(config: any): void {
         this._config = config;
     }
 
@@ -505,9 +505,6 @@ export class SipJsCardEditor extends LitElement {
     private _goBack(): void {
         this._rowEditor = undefined;
         this.requestUpdate();
-    }
-    requestUpdate() {
-        throw new Error("Method not implemented.");
     }
 
     private _addRow(ev: { target: { value: string | null; configKey: any; configValue: any; }; }): void {
