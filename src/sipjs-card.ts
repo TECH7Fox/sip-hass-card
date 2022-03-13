@@ -80,10 +80,11 @@ class SipJsCard extends LitElement {
             video {
                 display: block;
                 height: auto;
-                width: 100%;
+                width: 90vw;
                 background-color: #2b2b2b;
             }
             .box {
+                position: absolute;
                 /* start paper-font-common-nowrap style */
                 white-space: nowrap;
                 overflow: hidden;
@@ -116,14 +117,6 @@ class SipJsCard extends LitElement {
                 transition: filter 0.2s linear 0s;
                 width: 80vw;
             }
-            ha-dialog {
-                --dialog-content-padding: 0;
-                --dialog-surface-position: static;
-                --dialog-content-position: static;
-            }
-            ha-dialog .content {
-                width: 100%;
-            }
             .box, ha-icon {
                 display: flex;
                 align-items: center;
@@ -134,9 +127,6 @@ class SipJsCard extends LitElement {
             .hangup-btn {
                 color: var(--label-badge-red);
             }
-            ha-dialog {
-                --mdc-dialog-max-width: 80vw;
-            }
             #time, .title {
                 margin-right: 8px;
                 display: flex;
@@ -145,14 +135,81 @@ class SipJsCard extends LitElement {
             .extension {
                 color: gray;
             }
-            .card-header {
-                display: flex;
-                justify-content: space-between;
-            }
             ha-camera-stream {
-                height: 100%;
+                height: auto;
                 width: 100%;
                 display: block;
+            }
+
+            .mdc-dialog__surface {
+                position: relative;
+                display: flex;
+                flex-direction: column;
+                flex-grow: 0;
+                flex-shrink: 0;
+                box-sizing: border-box;
+                max-width: 100%;
+                max-height: 100%;
+                pointer-events: auto;
+                overflow-y: auto;
+            }
+
+            .mdc-dialog__container {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-around;
+                box-sizing: border-box;
+                height: 100%;
+                transform: scale(0.8);
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            ha-dialog[data-domain="camera"] {
+                --dialog-content-padding: 0;
+            }
+            
+            @media (min-width: 451px) and (min-height: 501px) {
+                ha-dialog {
+                    --mdc-dialog-max-width: 90vw !important;
+                }
+                ha-dialog[data-domain="camera"] .content, ha-dialog[data-domain="camera"] ha-header-bar {
+                    width: auto;
+                }
+            }
+
+            @media all and (max-width: 450px), all and (max-height: 500px) {
+                ha-dialog {
+                  --mdc-dialog-min-width: calc(
+                    100vw - env(safe-area-inset-right) - env(safe-area-inset-left)
+                  );
+                  --mdc-dialog-max-width: calc(
+                    100vw - env(safe-area-inset-right) - env(safe-area-inset-left)
+                  );
+                  --mdc-dialog-min-height: 100%;
+                  --mdc-dialog-max-height: 100%;
+                  --mdc-shape-medium: 0px;
+                  --vertial-align-dialog: flex-end;
+                }
+                video {
+                    width: 100vw;
+                    margin-top: 50%;
+                    transform: translateY(50%);
+                }
+            }
+
+            ha-dialog {
+                --dialog-surface-position: static;
+                /* --dialog-content-position: static; */
+            }
+
+            ha-dialog {
+                --mdc-dialog-min-width: 400px;
+                --mdc-dialog-max-width: 600px;
+                --mdc-dialog-heading-ink-color: var(--primary-text-color);
+                --mdc-dialog-content-ink-color: var(--primary-text-color);
+                --justify-action-buttons: space-between;
             }
         `;
     }
@@ -177,7 +234,7 @@ class SipJsCard extends LitElement {
                     --mdc-icon-size: ${this.config.button_size ? unsafeCSS(this.config.button_size - 25) : css`23`}px;
                 }
             </style>
-            <ha-dialog id="phone" ?open=${this.popup} hideactions>
+            <ha-dialog id="phone" ?open=${this.popup} hideactions data-domain="camera">
                 <div slot="heading" class="heading">
                     <ha-header-bar>
                         <ha-icon-button slot="navigationIcon" dialogaction="cancel"></ha-icon-button>
@@ -186,20 +243,18 @@ class SipJsCard extends LitElement {
                     </ha-header-bar>
                 </div>
                 <div class="content">
-                    <div class="container">
-                        ${this.currentCamera !== undefined ? html`
-                            <ha-camera-stream
-                                allow-exoplayer
-                                muted
-                                .hass=${this.hass}
-                                .stateObj=${this.hass.states[this.currentCamera]}
-                            ></ha-camera-stream>
-                        ` : html`
-                            <video id="remoteVideo"></video>
-                        `}
-                        <audio id="remoteAudio" style="display:none"></audio>
-                        <audio id="toneAudio" style="display:none" loop controls></audio>
-                    </div>
+                    ${this.currentCamera !== undefined ? html`
+                        <ha-camera-stream
+                            allow-exoplayer
+                            muted
+                            .hass=${this.hass}
+                            .stateObj=${this.hass.states[this.currentCamera]}
+                        ></ha-camera-stream>
+                    ` : html`
+                        <video id="remoteVideo"></video>
+                    `}
+                    <audio id="remoteAudio" style="display:none"></audio>
+                    <audio id="toneAudio" style="display:none" loop controls></audio>
                     <div class="box">
                         <div class="row">
                             <ha-icon-button 

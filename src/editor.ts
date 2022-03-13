@@ -30,10 +30,6 @@ class SipJsCardEditor extends LitElement {
         (event as any).detail = {config: newConfig};
         this.dispatchEvent(event);
     }
-    dispatchEvent(event: Event) {
-        throw new Error("Method not implemented.");
-        return false; // Fix ts error
-    }
 
     render() {
         if (!this._config || !this.hass) {
