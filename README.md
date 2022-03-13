@@ -15,7 +15,6 @@ This is very much still work in progress, and these are the things i want to add
  * Fix video on android companion app
  * Translations
  * Better errror logging
- * Mute function
  * Audio visualizer when there is no video 
 
 **Asterisk add-on**
