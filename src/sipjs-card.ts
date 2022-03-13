@@ -390,21 +390,24 @@ class SipJsCard extends LitElement {
     }
 
     async audioVisualizer() {
-        const remoteMedia: any = await this.simpleUser.session.sessionDescriptionHandler.peerConnection.getLocalStreams()[0];
+
+        // trying to recreate this: https://codepen.io/lumio/pen/WJNPQN
+
+        var remoteMedia = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        //var remoteMedia: any = await this.simpleUser.session.sessionDescriptionHandler.peerConnection.getLocalStreams()[0];
         console.log(remoteMedia);
+        // var tracks = remoteMedia.getAudioTracks();
+        // console.log(tracks[0]);
         var ctx = new AudioContext();
         var audioSource = ctx.createMediaStreamSource(remoteMedia);
         var analayzer = ctx.createAnalyser();
         audioSource.connect(analayzer);
-        audioSource.connect(ctx.destination);
+        analayzer.smoothingTimeConstant = 0.5;
+        analayzer.fftSize = 32;
 
         const frequencyData = new Uint8Array(analayzer.frequencyBinCount);
         analayzer.getByteFrequencyData(frequencyData);
         console.log("frequencyData", frequencyData);
-
-        
-        // Update our frequency data array with the latest frequency data
-        analayzer.getByteFrequencyData(frequencyData);
 
         const NBR_OF_BARS = 10;
 
