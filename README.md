@@ -14,7 +14,6 @@ This is very much still work in progress, and these are the things i want to add
  * Include default ringtones
  * Fix video on android companion app
  * Translations
- * Audio visualizer when there is no video 
 
 **Asterisk add-on**
 This card works with the [Asterisk add-on](https://github.com/TECH7Fox/Asterisk-add-on), which is very easy to set up, with just some clicks!
