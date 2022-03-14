@@ -22,6 +22,7 @@ class SipJsCard extends LitElement {
     currentCamera: any;
     intervalId!: number;
     error: any = null;
+    audioVisualizer: any;
 
     static get properties() {
         return {
@@ -408,51 +409,6 @@ class SipJsCard extends LitElement {
         `;
     }
 
-    async audioVisualizer() {
-
-        // trying to recreate this: https://codepen.io/lumio/pen/WJNPQN
-
-        var remoteMedia = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-        //var remoteMedia: any = await this.simpleUser.session.sessionDescriptionHandler.peerConnection.getLocalStreams()[0];
-        console.log(remoteMedia);
-        // var tracks = remoteMedia.getAudioTracks();
-        // console.log(tracks[0]);
-        var ctx = new AudioContext();
-        var audioSource = ctx.createMediaStreamSource(remoteMedia);
-        var analayzer = ctx.createAnalyser();
-        audioSource.connect(analayzer);
-        analayzer.smoothingTimeConstant = 0.5;
-        analayzer.fftSize = 32;
-
-        const frequencyData = new Uint8Array(analayzer.frequencyBinCount);
-        analayzer.getByteFrequencyData(frequencyData);
-        console.log("frequencyData", frequencyData);
-
-        const NBR_OF_BARS = 10;
-
-        for( let i = 0; i < NBR_OF_BARS; i++ ) {
-
-            // Since the frequency data array is 1024 in length, we don't want to fetch
-            // the first NBR_OF_BARS of values, but try and grab frequencies over the whole spectrum
-            const index = (i + 10) * 2;
-            // fd is a frequency value between 0 and 255
-            const fd = frequencyData[index];
-
-            // Fetch the bar DIV element
-            const bar = this.renderRoot.querySelector("#bar" + i);
-            if( !bar ) {
-                continue;
-            }
-
-            // If fd is undefined, default to 0, then make sure fd is at least 4
-            // This will make make a quiet frequency at least 4px high for visual effects
-            const barHeight = Math.max(4, fd || 0);
-            bar.style.height = barHeight + "px";
-
-        }
-
-    }
-
     firstUpdated() {
         this.popup = false;
         this.currentCamera = undefined;
@@ -608,8 +564,7 @@ class SipJsCard extends LitElement {
           visualElements = this.renderRoot.querySelectorAll( '#audioVisualizer div' );
         };
 
-        createDOMElements();
-        //const mediaStream = await this.simpleUser.session.sessionDescriptionHandler.peerConnection.getLocalStreams()[0];
+        // createDOMElements();
   
         const init = () => {
           // Creating initial DOM elements
@@ -626,16 +581,14 @@ class SipJsCard extends LitElement {
             const values: any = Object.values( data );
             let i;
             for ( i = 0; i < visualValueCount; ++i ) {
-              const value = values[ dataMap[ i ] ] / 255;
+              const value = (values[ dataMap[ i ] ] / 255);// + 0.025;
               const elmStyles = visualElements[ i ].style;
               elmStyles.transform = `scaleY( ${ value } )`;
               elmStyles.opacity = Math.max( .25, value );
             }
           };
-          const a = new AudioVisualizer( audioContext, processFrame, false );
+          this.audioVisualizer = new AudioVisualizer( audioContext, processFrame, this.simpleUser.session.sessionDescriptionHandler.peerConnection.getRemoteStreams()[0] );
         };
-
-        init();
 
         this.timerElement = this.renderRoot.querySelector('#time');
         if (this.user == undefined) {
@@ -726,8 +679,8 @@ class SipJsCard extends LitElement {
 
             },
             onCallAnswered: () => {
+                init();
                 this.ring("pause");
-                console.log(this.simpleUser.session);
                 if (this.simpleUser.session._assertedIdentity) {
                     this.setName(this.simpleUser.session._assertedIdentity._displayName);
                 } else {
@@ -743,6 +696,8 @@ class SipJsCard extends LitElement {
                 }.bind(this), 1000);
             },
             onCallHangup: () => {
+                this.audioVisualizer.stop();
+                visualMainElement!.innerHTML = '';
                 this.ring("pause");
                 this.setName("Idle");
                 clearInterval(this.intervalId);
