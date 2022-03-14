@@ -551,43 +551,40 @@ class SipJsCard extends LitElement {
     
     async connect() {
 
-        const visualMainElement: any = this.renderRoot.querySelector( '#audioVisualizer' );
+        const visualMainElement: any = this.renderRoot.querySelector('#audioVisualizer');
         const visualValueCount = 16;
         let visualElements: any;
         const createDOMElements = () => {
-          let i;
-          for ( i = 0; i < visualValueCount; ++i ) {
-            const elm = document.createElement( 'div' );
-            visualMainElement!.appendChild( elm );
-          }     
-
-          visualElements = this.renderRoot.querySelectorAll( '#audioVisualizer div' );
-        };
-
-        // createDOMElements();
-  
-        const init = () => {
-          // Creating initial DOM elements
-          const audioContext = new AudioContext();
-          const initDOM = () => {
-            visualMainElement!.innerHTML = '';
-            createDOMElements();
-          };
-          initDOM();
-        
-          // Swapping values around for a better visual effect
-          const dataMap: any = { 0: 15, 1: 10, 2: 8, 3: 9, 4: 6, 5: 5, 6: 2, 7: 1, 8: 0, 9: 4, 10: 3, 11: 7, 12: 11, 13: 12, 14: 13, 15: 14 };
-          const processFrame = ( data: any ) => {
-            const values: any = Object.values( data );
             let i;
             for ( i = 0; i < visualValueCount; ++i ) {
-              const value = (values[ dataMap[ i ] ] / 255);// + 0.025;
-              const elmStyles = visualElements[ i ].style;
-              elmStyles.transform = `scaleY( ${ value } )`;
-              elmStyles.opacity = Math.max( .25, value );
-            }
-          };
-          this.audioVisualizer = new AudioVisualizer( audioContext, processFrame, this.simpleUser.session.sessionDescriptionHandler.peerConnection.getRemoteStreams()[0] );
+                const elm = document.createElement( 'div' );
+                visualMainElement!.appendChild( elm );
+            }     
+
+            visualElements = this.renderRoot.querySelectorAll('#audioVisualizer div');
+        };
+
+        const init = () => {
+            const audioContext = new AudioContext();
+            const initDOM = () => {
+                visualMainElement!.innerHTML = '';
+                createDOMElements();
+            };
+            initDOM();
+        
+            // Swapping values around for a better visual effect
+            const dataMap: any = { 0: 15, 1: 10, 2: 8, 3: 9, 4: 6, 5: 5, 6: 2, 7: 1, 8: 0, 9: 4, 10: 3, 11: 7, 12: 11, 13: 12, 14: 13, 15: 14 };
+            const processFrame = ( data: any ) => {
+                const values: any = Object.values( data );
+                let i;
+                for ( i = 0; i < visualValueCount; ++i ) {
+                    const value = (values[ dataMap[ i ] ] / 255);// + 0.025;
+                    const elmStyles = visualElements[ i ].style;
+                    elmStyles.transform = `scaleY( ${ value } )`;
+                    elmStyles.opacity = Math.max( .25, value );
+                }   
+            };
+            this.audioVisualizer = new AudioVisualizer( audioContext, processFrame, this.simpleUser.session.sessionDescriptionHandler.peerConnection.getRemoteStreams()[0] );
         };
 
         this.timerElement = this.renderRoot.querySelector('#time');
