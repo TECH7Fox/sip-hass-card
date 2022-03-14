@@ -84,7 +84,7 @@ class SipJsCard extends LitElement {
             video {
                 display: block;
                 height: 80vh;
-                width: 80vw;
+                width: 100%;
                 background-color: #2b2b2b;
             }
             .visualizer-container {
@@ -194,44 +194,15 @@ class SipJsCard extends LitElement {
             ha-dialog[data-domain="camera"] {
                 --dialog-content-padding: 0;
             }
-            
-            @media (min-width: 451px) and (min-height: 501px) {
-                ha-dialog {
-                    --mdc-dialog-max-width: 90vw !important;
-                }
-                ha-dialog[data-domain="camera"] .content, ha-dialog[data-domain="camera"] ha-header-bar {
-                    width: auto;
-                }
-            }
 
-            @media all and (max-width: 450px), all and (max-height: 500px) {
-                ha-dialog {
-                  --mdc-dialog-min-width: calc(
-                    100vw - env(safe-area-inset-right) - env(safe-area-inset-left)
-                  );
-                  --mdc-dialog-max-width: calc(
-                    100vw - env(safe-area-inset-right) - env(safe-area-inset-left)
-                  );
-                  --mdc-dialog-min-height: 100%;
-                  --mdc-dialog-max-height: 100%;
-                  --mdc-shape-medium: 0px;
-                  --vertial-align-dialog: flex-end;
-                }
-                video {
-                    width: 100vw;
-                    margin-top: 50%;
-                    transform: translateY(50%);
-                }
+            ha-dialog[data-domain="camera"] .content, ha-dialog[data-domain="camera"] ha-header-bar {
+                width: auto;
             }
 
             ha-dialog {
                 --dialog-surface-position: static;
-                /* --dialog-content-position: static; */
-            }
-
-            ha-dialog {
+                --mdc-dialog-max-width: 90vw !important;
                 --mdc-dialog-min-width: 400px;
-                --mdc-dialog-max-width: 600px;
                 --mdc-dialog-heading-ink-color: var(--primary-text-color);
                 --mdc-dialog-content-ink-color: var(--primary-text-color);
                 --justify-action-buttons: space-between;
