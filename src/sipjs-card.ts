@@ -7,6 +7,8 @@ import {
 } from "lit";
 import "./editor";
 import { customElement } from "lit/decorators.js";
+import "./audioVisualizer";
+import { AudioVisualizer } from "./audioVisualizer";
 
 @customElement('sipjs-card')
 class SipJsCard extends LitElement {
@@ -20,6 +22,7 @@ class SipJsCard extends LitElement {
     currentCamera: any;
     intervalId!: number;
     error: any = null;
+    audioVisualizer: any;
 
     static get properties() {
         return {
@@ -80,9 +83,25 @@ class SipJsCard extends LitElement {
             }
             video {
                 display: block;
-                height: auto;
-                width: 90vw;
+                height: 80vh;
+                width: 80vw;
                 background-color: #2b2b2b;
+            }
+            .visualizer-container {
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                top: 0;
+                display: flex;
+                align-items: center;
+            }
+            .visualizer-bar {
+                display: inline-block;
+                background: white;
+                margin: 0 2px;
+                width: 25px;
+                min-height: 5px;
             }
             .box {
                 position: absolute;
@@ -217,6 +236,23 @@ class SipJsCard extends LitElement {
                 --mdc-dialog-content-ink-color: var(--primary-text-color);
                 --justify-action-buttons: space-between;
             }
+
+            #audioVisualizer {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+
+            #audioVisualizer div {
+                display: inline-block;
+                width: 3px;
+                height: 100px;
+                margin: 0 7px;
+                background: currentColor;
+                transform: scaleY( .5 );
+                opacity: .25;
+            }
         `;
     }
 
@@ -257,6 +293,7 @@ class SipJsCard extends LitElement {
                             .stateObj=${this.hass.states[this.currentCamera]}
                         ></ha-camera-stream>
                     ` : html`
+                        <div id="audioVisualizer"></div>
                         <video id="remoteVideo"></video>
                     `}
                     <audio id="remoteAudio" style="display:none"></audio>
@@ -513,6 +550,43 @@ class SipJsCard extends LitElement {
     }
     
     async connect() {
+
+        const visualMainElement: any = this.renderRoot.querySelector('#audioVisualizer');
+        const visualValueCount = 16;
+        let visualElements: any;
+        const createDOMElements = () => {
+            let i;
+            for ( i = 0; i < visualValueCount; ++i ) {
+                const elm = document.createElement( 'div' );
+                visualMainElement!.appendChild( elm );
+            }     
+
+            visualElements = this.renderRoot.querySelectorAll('#audioVisualizer div');
+        };
+
+        const init = () => {
+            const audioContext = new AudioContext();
+            const initDOM = () => {
+                visualMainElement!.innerHTML = '';
+                createDOMElements();
+            };
+            initDOM();
+        
+            // Swapping values around for a better visual effect
+            const dataMap: any = { 0: 15, 1: 10, 2: 8, 3: 9, 4: 6, 5: 5, 6: 2, 7: 1, 8: 0, 9: 4, 10: 3, 11: 7, 12: 11, 13: 12, 14: 13, 15: 14 };
+            const processFrame = ( data: any ) => {
+                const values: any = Object.values( data );
+                let i;
+                for ( i = 0; i < visualValueCount; ++i ) {
+                    const value = (values[ dataMap[ i ] ] / 255);// + 0.025;
+                    const elmStyles = visualElements[ i ].style;
+                    elmStyles.transform = `scaleY( ${ value } )`;
+                    elmStyles.opacity = Math.max( .25, value );
+                }   
+            };
+            this.audioVisualizer = new AudioVisualizer( audioContext, processFrame, this.simpleUser.session.sessionDescriptionHandler.peerConnection.getRemoteStreams()[0] );
+        };
+
         this.timerElement = this.renderRoot.querySelector('#time');
         if (this.user == undefined) {
             this.error = {
@@ -602,8 +676,10 @@ class SipJsCard extends LitElement {
 
             },
             onCallAnswered: () => {
+                if (!this.config.video && this.currentCamera == undefined) {
+                    init();
+                }
                 this.ring("pause");
-                console.log(this.simpleUser.session);
                 if (this.simpleUser.session._assertedIdentity) {
                     this.setName(this.simpleUser.session._assertedIdentity._displayName);
                 } else {
@@ -619,6 +695,10 @@ class SipJsCard extends LitElement {
                 }.bind(this), 1000);
             },
             onCallHangup: () => {
+                if (!this.config.video && this.currentCamera == undefined) {
+                    this.audioVisualizer.stop();
+                }
+                visualMainElement!.innerHTML = '';
                 this.ring("pause");
                 this.setName("Idle");
                 clearInterval(this.intervalId);

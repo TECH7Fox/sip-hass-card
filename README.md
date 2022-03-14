@@ -14,7 +14,6 @@ This is very much still work in progress, and these are the things i want to add
  * Include default ringtones
  * Fix video on android companion app
  * Translations
- * Better errror logging
  * Audio visualizer when there is no video 
 
 **Asterisk add-on**
