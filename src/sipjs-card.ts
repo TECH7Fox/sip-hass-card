@@ -676,7 +676,9 @@ class SipJsCard extends LitElement {
 
             },
             onCallAnswered: () => {
-                init();
+                if (!this.config.video && this.currentCamera == undefined) {
+                    init();
+                }
                 this.ring("pause");
                 if (this.simpleUser.session._assertedIdentity) {
                     this.setName(this.simpleUser.session._assertedIdentity._displayName);
@@ -693,7 +695,9 @@ class SipJsCard extends LitElement {
                 }.bind(this), 1000);
             },
             onCallHangup: () => {
-                this.audioVisualizer.stop();
+                if (!this.config.video && this.currentCamera == undefined) {
+                    this.audioVisualizer.stop();
+                }
                 visualMainElement!.innerHTML = '';
                 this.ring("pause");
                 this.setName("Idle");
