@@ -7,14 +7,13 @@ With this card you can make and receive calls to other HA clients and other sip 
 
 The card supports video, DTMF signals, custom icons, custom names, status entities and camera entities.
 
-![image](https://user-images.githubusercontent.com/32220029/149833763-6a74bae6-bc6e-4207-97c8-b430123fa3c3.png)
+![image](https://user-images.githubusercontent.com/32220029/158247719-0c568186-bee5-4490-9678-58f5d3860c51.png)
 
 ## Roadmap
 This is very much still work in progress, and these are the things i want to add in the near future.
  * Include default ringtones
  * Fix video on android companion app
  * Translations
- * Audio visualizer when there is no video 
 
 **Asterisk add-on**
 This card works with the [Asterisk add-on](https://github.com/TECH7Fox/Asterisk-add-on), which is very easy to set up, with just some clicks!
