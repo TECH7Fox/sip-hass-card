@@ -82,8 +82,8 @@ class SipJsCard extends LitElement {
             }
             video {
                 display: block;
-                height: auto;
-                width: 90vw;
+                height: 80vh;
+                width: 80vw;
                 background-color: #2b2b2b;
             }
             .visualizer-container {
@@ -234,6 +234,13 @@ class SipJsCard extends LitElement {
                 --mdc-dialog-heading-ink-color: var(--primary-text-color);
                 --mdc-dialog-content-ink-color: var(--primary-text-color);
                 --justify-action-buttons: space-between;
+            }
+
+            #audioVisualizer {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
             }
 
             #audioVisualizer div {

@@ -31,7 +31,6 @@ export class AudioVisualizer {
       const renderFrame = () => {
         this.analyser.getByteFrequencyData( frequencyData );
         processFrame( frequencyData );
-        console.log(frequencyData);
 
         requestAnimationFrame( renderFrame );
       };
