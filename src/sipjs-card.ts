@@ -586,15 +586,17 @@ class SipJsCard extends LitElement {
             password: this.user.secret,
             register: true
         };
-        var ua = new UA(configuration);
+
+        this.sipPhone = new UA(configuration);
 
         this.setExtension(this.user.extension);
-
-        this.sipPhone?.start();
 
         this.sipCallOptions = { 
             'mediaConstraints': { 'audio': true, 'video': this.config.video } 
         };
+
+        this.sipPhone?.start();
+
     
         this.sipPhone?.on("registered", () => console.log('SIPPhone Registered with SIP Server'));
         this.sipPhone?.on("unregistered", () => console.log('SIPPhone Unregistered with SIP Server'));
