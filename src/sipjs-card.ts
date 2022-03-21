@@ -1,6 +1,6 @@
 import { UA, WebSocketInterface } from "jssip/lib/JsSIP";
 import { RTCSessionEvent } from "jssip/lib/UA";
-import { EndEvent, PeerConnectionEvent, IncomingEvent, OutgoingEvent, RTCSession, SessionDirection } from "jssip/lib/RTCSession";
+import { EndEvent, PeerConnectionEvent, IncomingEvent, OutgoingEvent, RTCSession } from "jssip/lib/RTCSession";
 
 import {
   LitElement,
@@ -467,7 +467,7 @@ class SipJsCard extends LitElement {
         this.setName("Calling...");
         this.currentCamera = (camera ? camera : undefined);
         if (this.sipPhone) {
-            this.sipPhoneSession = this.sipPhone.call("sip:" + extension + "@" + this.config.server, this.sipCallOptions);
+            this.sipPhone.call("sip:" + extension + "@" + this.config.server, this.sipCallOptions);
         }
     }
 
@@ -564,7 +564,9 @@ class SipJsCard extends LitElement {
                     elmStyles.opacity = Math.max( .25, value );
                 }   
             };
-            this.audioVisualizer = new AudioVisualizer( audioContext, processFrame, this.sipPhoneSession?.connection.getRemoteStreams()[0] );
+
+            let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
+            this.audioVisualizer = new AudioVisualizer( audioContext, processFrame, remoteAudio.srcObject );
         };
 
         this.timerElement = this.renderRoot.querySelector('#time');
@@ -597,22 +599,35 @@ class SipJsCard extends LitElement {
 
         this.sipPhone?.start();
 
-    
         this.sipPhone?.on("registered", () => console.log('SIPPhone Registered with SIP Server'));
         this.sipPhone?.on("unregistered", () => console.log('SIPPhone Unregistered with SIP Server'));
         this.sipPhone?.on("registrationFailed", () => console.log('SIPPhone Failed Registeration with SIP Server'));
         this.sipPhone?.on("newRTCSession", (event: RTCSessionEvent) => {
             if (this.sipPhoneSession !== null ) {
                 event.session.terminate();
-                // TODO: reset this.sipPhoneSession in failed event?
-                this.sipPhoneSession = null;
                 return;
             }
+
+            console.log('newRTCSession!');
 
             this.sipPhoneSession = event.session;
 
             this.sipPhoneSession.on("confirmed", () => console.log('Incoming - call confirmed'));
-            this.sipPhoneSession.on("failed", () =>{console.log('Incoming - call failed');});
+
+            this.sipPhoneSession.on("failed", () =>{
+                console.log('Incoming - call failed');
+                if (!this.config.video && this.currentCamera == undefined) {
+                    this.audioVisualizer.stop();
+                }
+                visualMainElement!.innerHTML = '';
+                this.ring("pause");
+                this.setName("Idle");
+                clearInterval(this.intervalId);
+                this.timerElement.innerHTML = "00:00";
+                this.currentCamera = undefined;
+                this.closePopup();
+                this.sipPhoneSession = null;
+            });
 
             this.sipPhoneSession.on("ended", (event: EndEvent) => {
                 if (!this.config.video && this.currentCamera == undefined) {
@@ -625,6 +640,7 @@ class SipJsCard extends LitElement {
                 this.timerElement.innerHTML = "00:00";
                 this.currentCamera = undefined;
                 this.closePopup();
+                this.sipPhoneSession = null;
             });
 
             this.sipPhoneSession.on("accepted", (event: IncomingEvent | OutgoingEvent) => {
@@ -647,21 +663,26 @@ class SipJsCard extends LitElement {
                 }.bind(this), 1000);
             });
             
+             //Note: peerconnection seems to never fire for outgoing calls
             this.sipPhoneSession.on("peerconnection", (event: PeerConnectionEvent) => {
-                this.sipPhoneSession?.connection.addEventListener("track", (event) => {
-                    console.log('Incoming - adding audio track')
-                    let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
-                    remoteAudio.srcObject = event.streams[0];
-                    remoteAudio.play();
-                    if (this.config.video) {
-                        let remoteVideo = this.renderRoot.querySelector('#remoteVideo');
-                        remoteVideo.srcObject = event.streams[1];
-                        remoteVideo.play();
-                    }
-                })
+                console.log('peerconnection!');
             });
 
-            if (this.sipPhoneSession.direction == SessionDirection.INCOMING) {
+            this.sipPhoneSession?.connection.addEventListener("track", (event: RTCTrackEvent): void => {
+                console.log('Track Event!')
+                let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
+                remoteAudio.srcObject = event.streams[0];
+                remoteAudio.play();
+                if (this.config.video) {
+                    let remoteVideo = this.renderRoot.querySelector('#remoteVideo');
+                    remoteVideo.srcObject = event.streams[0];
+                    remoteVideo.play();
+                }
+            });
+
+            // Typescript types for enums seem to be broken for JsSIP.
+            // See: https://github.com/versatica/JsSIP/issues/750
+            if (this.sipPhoneSession.direction === 'incoming') {
                 var extension = this.sipPhoneSession.remote_identity.uri.user;
                 this.config.extensions.forEach((element: { extension: any; camera: boolean; }) => {
                     if (element.extension == extension) {
@@ -687,7 +708,7 @@ class SipJsCard extends LitElement {
                     this.setName("Incoming Call"); 
                 }
             }
-            else if (this.sipPhoneSession.direction == SessionDirection.OUTGOING) {
+            else if (this.sipPhoneSession.direction === 'outgoing') {
             }
             else {
             }
