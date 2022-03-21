@@ -1,4 +1,7 @@
-import { Web } from "sip.js/lib/index.js";
+import { UA, WebSocketInterface } from "jssip/lib/JsSIP";
+import { RTCSessionEvent } from "jssip/lib/UA";
+import { EndEvent, PeerConnectionEvent, IncomingEvent, OutgoingEvent, RTCSession, SessionDirection } from "jssip/lib/RTCSession";
+
 import {
   LitElement,
   html,
@@ -12,7 +15,9 @@ import { AudioVisualizer } from "./audioVisualizer";
 
 @customElement('sipjs-card')
 class SipJsCard extends LitElement {
-    simpleUser: any;
+    sipPhone: UA | undefined;
+    sipPhoneSession: RTCSession | null;
+    sipCallOptions: any;
     user: any;
     config: any;
     hass: any;
@@ -23,6 +28,11 @@ class SipJsCard extends LitElement {
     intervalId!: number;
     error: any = null;
     audioVisualizer: any;
+
+    constructor() {
+        super();
+        this.sipPhoneSession = null;
+    }
 
     static get properties() {
         return {
@@ -456,33 +466,32 @@ class SipJsCard extends LitElement {
         this.ring("ringbacktone");
         this.setName("Calling...");
         this.currentCamera = (camera ? camera : undefined);
-        await this.simpleUser.call("sip:" + extension + "@" + this.config.server);
+        if (this.sipPhone) {
+            this.sipPhoneSession = this.sipPhone.call("sip:" + extension + "@" + this.config.server, this.sipCallOptions);
+        }
     }
 
     async _answer() {
-        await this.simpleUser.answer();
+        this.sipPhoneSession?.answer();
     }
 
     async _hangup() {
-        await this.simpleUser.hangup();
+        this.sipPhoneSession?.terminate();
     }
 
     async _toggleMute() {
-        const pc: any = this.simpleUser.session.sessionDescriptionHandler.peerConnection
-        pc.getSenders().forEach((stream: any) => {
-            stream.track.enabled = !stream.track.enabled;
-            console.log(stream.track.enabled);
-            if (stream.track.enabled) {
-                this.renderRoot.querySelector('#mute-icon').icon = "hass:microphone";
-            } else {
-                this.renderRoot.querySelector('#mute-icon').icon = "hass:microphone-off";
-            }
-        });
-
+        if (this.sipPhoneSession?.isMuted) {
+            this.sipPhoneSession?.unmute();
+            this.renderRoot.querySelector('#mute-icon').icon = "hass:microphone";
+        }
+        else {
+            this.sipPhoneSession?.mute();
+            this.renderRoot.querySelector('#mute-icon').icon = "hass:microphone-off";
+        }
     }
 
     async _sendDTMF(signal: any) {
-        await this.simpleUser.sendDTMF(signal);
+        this.sipPhoneSession?.sendDTMF(signal);
     }
 
     async _button(entity: string) {
@@ -555,7 +564,7 @@ class SipJsCard extends LitElement {
                     elmStyles.opacity = Math.max( .25, value );
                 }   
             };
-            this.audioVisualizer = new AudioVisualizer( audioContext, processFrame, this.simpleUser.session.sessionDescriptionHandler.peerConnection.getRemoteStreams()[0] );
+            this.audioVisualizer = new AudioVisualizer( audioContext, processFrame, this.sipPhoneSession?.connection.getRemoteStreams()[0] );
         };
 
         this.timerElement = this.renderRoot.querySelector('#time');
@@ -569,58 +578,89 @@ class SipJsCard extends LitElement {
         }
         this.setTitle((this.config.custom_title !== "") ? this.config.custom_title : this.user.name);
 
-        var options: Web.SimpleUserOptions = {
-            aor: "sip:" + this.user.extension + "@" + this.config.server,
-            media: {
-                constraints: {
-                    audio: true,
-                    video: false
-                },
-                remote: {
-                    audio: this.renderRoot.querySelector("#remoteAudio"),
-                }
-            },
-            userAgentOptions: {
-                authorizationUsername: this.user.extension,
-                authorizationPassword: this.user.secret,
-            }
+        var socket = new WebSocketInterface("wss://" + this.config.server + ":" + this.config.port + "/ws");
+        var configuration = {
+            sockets : [ socket ],
+            uri     : "sip:" + this.user.extension + "@" + this.config.server,
+            authorization_user: this.user.extension,
+            password: this.user.secret,
+            register: true
         };
+        var ua = new UA(configuration);
 
-        if (this.config.video) {
-            options!.media!.remote!.video = this.renderRoot.querySelector('#remoteVideo');
-            options!.media!.constraints!.video = true;
-        }
-        
-        this.simpleUser = new Web.SimpleUser("wss://" + this.config.server + ":" + this.config.port + "/ws", options);
-        
         this.setExtension(this.user.extension);
 
-        try {
-            await this.simpleUser.connect();   
-        } catch (error) {
-            this.error = {
-                title: "Can't connect!",
-                message: error
+        this.sipPhone?.start();
+
+        this.sipCallOptions = { 
+            'mediaConstraints': { 'audio': true, 'video': this.config.video } 
+        };
+    
+        this.sipPhone?.on("registered", () => console.log('SIPPhone Registered with SIP Server'));
+        this.sipPhone?.on("unregistered", () => console.log('SIPPhone Unregistered with SIP Server'));
+        this.sipPhone?.on("registrationFailed", () => console.log('SIPPhone Failed Registeration with SIP Server'));
+        this.sipPhone?.on("newRTCSession", (event: RTCSessionEvent) => {
+            if (this.sipPhoneSession !== null ) {
+                event.session.terminate();
+                // TODO: reset this.sipPhoneSession in failed event?
+                this.sipPhoneSession = null;
+                return;
             }
-            this.requestUpdate();
-            throw new Error("Can't connect: " + error);
-        }
 
-        try {
-            await this.simpleUser.register();
-        } catch (error) {
-            this.error = {
-                title: "Can't register!",
-                message: error
-            }
-            this.requestUpdate();
-            throw new Error("Can't register: " + error);
-        }
+            this.sipPhoneSession = event.session;
 
+            this.sipPhoneSession.on("confirmed", () => console.log('Incoming - call confirmed'));
+            this.sipPhoneSession.on("failed", () =>{console.log('Incoming - call failed');});
 
-        this.simpleUser.delegate = {
-            onCallReceived: async () => {
-                var extension = this.simpleUser.session.remoteIdentity.uri.normal.user;
+            this.sipPhoneSession.on("ended", (event: EndEvent) => {
+                if (!this.config.video && this.currentCamera == undefined) {
+                    this.audioVisualizer.stop();
+                }
+                visualMainElement!.innerHTML = '';
+                this.ring("pause");
+                this.setName("Idle");
+                clearInterval(this.intervalId);
+                this.timerElement.innerHTML = "00:00";
+                this.currentCamera = undefined;
+                this.closePopup();
+            });
+
+            this.sipPhoneSession.on("accepted", (event: IncomingEvent | OutgoingEvent) => {
+                if (!this.config.video && this.currentCamera == undefined) {
+                    init();
+                }
+                this.ring("pause");
+                if (this.sipPhoneSession?.remote_identity) {
+                    this.setName(this.sipPhoneSession?.remote_identity.display_name);
+                } else {
+                    this.setName("On Call");
+                }
+                var time = new Date();
+                this.intervalId = window.setInterval(function(this: any): void {
+                    var delta = Math.abs(new Date().getTime() - time.getTime()) / 1000;
+                    var minutes = Math.floor(delta / 60) % 60;
+                    delta -= minutes * 60;
+                    var seconds = delta % 60;
+                    this.timerElement.innerHTML = (minutes + ":" + Math.round(seconds)).split(':').map(e => `0${e}`.slice(-2)).join(':');
+                }.bind(this), 1000);
+            });
+            
+            this.sipPhoneSession.on("peerconnection", (event: PeerConnectionEvent) => {
+                this.sipPhoneSession?.connection.addEventListener("track", (event) => {
+                    console.log('Incoming - adding audio track')
+                    let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
+                    remoteAudio.srcObject = event.streams[0];
+                    remoteAudio.play();
+                    if (this.config.video) {
+                        let remoteVideo = this.renderRoot.querySelector('#remoteVideo');
+                        remoteVideo.srcObject = event.streams[1];
+                        remoteVideo.play();
+                    }
+                })
+            });
+
+            if (this.sipPhoneSession.direction == SessionDirection.INCOMING) {
+                var extension = this.sipPhoneSession.remote_identity.uri.user;
                 this.config.extensions.forEach((element: { extension: any; camera: boolean; }) => {
                     if (element.extension == extension) {
                         this.currentCamera = (element.camera ? element.camera : undefined);
@@ -633,51 +673,23 @@ class SipJsCard extends LitElement {
                 });
                 this.openPopup();
                 if (this.config.auto_answer) {
-                    await this.simpleUser.answer();
+                    this.sipPhoneSession.answer(this.sipCallOptions);
                     return;
                 }
 
                 this.ring("ringtone");
 
-                if (this.simpleUser.session._assertedIdentity) {
-                    this.setName("Incoming Call From " + this.simpleUser.session._assertedIdentity._displayName);
+                if (this.sipPhoneSession.remote_identity) {
+                    this.setName("Incoming Call From " + this.sipPhoneSession.remote_identity.display_name);
                 } else {
                     this.setName("Incoming Call"); 
                 }
-
-            },
-            onCallAnswered: () => {
-                if (!this.config.video && this.currentCamera == undefined) {
-                    init();
-                }
-                this.ring("pause");
-                if (this.simpleUser.session._assertedIdentity) {
-                    this.setName(this.simpleUser.session._assertedIdentity._displayName);
-                } else {
-                    this.setName("On Call");
-                }
-                var time = new Date();
-                this.intervalId = window.setInterval(function(this: any): void {
-                    var delta = Math.abs(new Date().getTime() - time.getTime()) / 1000;
-                    var minutes = Math.floor(delta / 60) % 60;
-                    delta -= minutes * 60;
-                    var seconds = delta % 60;
-                    this.timerElement.innerHTML = (minutes + ":" + Math.round(seconds)).split(':').map(e => `0${e}`.slice(-2)).join(':');
-                }.bind(this), 1000);
-            },
-            onCallHangup: () => {
-                if (!this.config.video && this.currentCamera == undefined) {
-                    this.audioVisualizer.stop();
-                }
-                visualMainElement!.innerHTML = '';
-                this.ring("pause");
-                this.setName("Idle");
-                clearInterval(this.intervalId);
-                this.timerElement.innerHTML = "00:00";
-                this.currentCamera = undefined;
-                this.closePopup();
             }
-        };
+            else if (this.sipPhoneSession.direction == SessionDirection.OUTGOING) {
+            }
+            else {
+            }
+        });
 
         var urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('call')) {
