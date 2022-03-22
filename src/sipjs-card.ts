@@ -486,22 +486,22 @@ class SipJsCard extends LitElement {
 
     async _toggleMuteAudio() {
         if (this.sipPhoneSession?.isMuted().audio) {
-            this.sipPhoneSession?.unmute();
+            this.sipPhoneSession?.unmute({ video: false, audio: true });
             this.renderRoot.querySelector('#muteaudio-icon').icon = "hass:microphone";
         }
         else {
-            this.sipPhoneSession?.mute();
+            this.sipPhoneSession?.mute({ video: false, audio: true });
             this.renderRoot.querySelector('#muteaudio-icon').icon = "hass:microphone-off";
         }
     }
 
     async _toggleMuteVideo() {
         if (this.sipPhoneSession?.isMuted().video) {
-            this.sipPhoneSession?.unmute();
+            this.sipPhoneSession?.unmute({ video:true, audio: false });
             this.renderRoot.querySelector('#mutevideo-icon').icon = "hass:video";
         }
         else {
-            this.sipPhoneSession?.mute();
+            this.sipPhoneSession?.mute({ video:true, audio: false });
             this.renderRoot.querySelector('#mutevideo-icon').icon = "hass:video-off";
         }
     }
