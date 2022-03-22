@@ -291,9 +291,14 @@ class SipJsCard extends LitElement {
                         </div>
                         <div class="row">
                             <ha-icon-button
-                                .label=${"Mute"}
+                                .label=${"Mute audio"}
                                 @click="${this._toggleMuteAudio}"
-                                ><ha-icon id="mute-icon" icon="hass:microphone"></ha-icon>
+                                ><ha-icon id="muteaudio-icon" icon="hass:microphone"></ha-icon>
+                            </ha-icon-button>
+                            <ha-icon-button
+                                .label=${"Mute video"}
+                                @click="${this._toggleMuteVideo}"
+                                ><ha-icon id="mutevideo-icon" icon="hass:video"></ha-icon>
                             </ha-icon-button>
                         </div>
                         <div class="row">
@@ -482,22 +487,22 @@ class SipJsCard extends LitElement {
     async _toggleMuteAudio() {
         if (this.sipPhoneSession?.isMuted().audio) {
             this.sipPhoneSession?.unmute();
-            this.renderRoot.querySelector('#mute-icon').icon = "hass:microphone";
+            this.renderRoot.querySelector('#muteaudio-icon').icon = "hass:microphone";
         }
         else {
             this.sipPhoneSession?.mute();
-            this.renderRoot.querySelector('#mute-icon').icon = "hass:microphone-off";
+            this.renderRoot.querySelector('#muteaudio-icon').icon = "hass:microphone-off";
         }
     }
 
     async _toggleMuteVideo() {
         if (this.sipPhoneSession?.isMuted().video) {
             this.sipPhoneSession?.unmute();
-            //this.renderRoot.querySelector('#mute-icon').icon = "hass:microphone";
+            this.renderRoot.querySelector('#mutevideo-icon').icon = "hass:video";
         }
         else {
             this.sipPhoneSession?.mute();
-            //this.renderRoot.querySelector('#mute-icon').icon = "hass:microphone-off";
+            this.renderRoot.querySelector('#mutevideo-icon').icon = "hass:video-off";
         }
     }
 
@@ -607,6 +612,8 @@ class SipJsCard extends LitElement {
         this.sipCallOptions = {
             'mediaConstraints': { 'audio': true, 'video': this.config.video }
         };
+
+        this.renderRoot.querySelector('#mutevideo-icon').icon = this.config.video ? "hass:video" : "hass:video-off";
 
         this.sipPhone?.start();
 
