@@ -292,7 +292,7 @@ class SipJsCard extends LitElement {
                         <div class="row">
                             <ha-icon-button
                                 .label=${"Mute"}
-                                @click="${this._toggleMute}"
+                                @click="${this._toggleMuteAudio}"
                                 ><ha-icon id="mute-icon" icon="hass:microphone"></ha-icon>
                             </ha-icon-button>
                         </div>
@@ -479,14 +479,25 @@ class SipJsCard extends LitElement {
         this.sipPhoneSession?.terminate();
     }
 
-    async _toggleMute() {
-        if (this.sipPhoneSession?.isMuted) {
+    async _toggleMuteAudio() {
+        if (this.sipPhoneSession?.isMuted().audio) {
             this.sipPhoneSession?.unmute();
             this.renderRoot.querySelector('#mute-icon').icon = "hass:microphone";
         }
         else {
             this.sipPhoneSession?.mute();
             this.renderRoot.querySelector('#mute-icon').icon = "hass:microphone-off";
+        }
+    }
+
+    async _toggleMuteVideo() {
+        if (this.sipPhoneSession?.isMuted().video) {
+            this.sipPhoneSession?.unmute();
+            //this.renderRoot.querySelector('#mute-icon').icon = "hass:microphone";
+        }
+        else {
+            this.sipPhoneSession?.mute();
+            //this.renderRoot.querySelector('#mute-icon').icon = "hass:microphone-off";
         }
     }
 
@@ -599,23 +610,25 @@ class SipJsCard extends LitElement {
 
         this.sipPhone?.start();
 
-        this.sipPhone?.on("registered", () => console.log('SIPPhone Registered with SIP Server'));
-        this.sipPhone?.on("unregistered", () => console.log('SIPPhone Unregistered with SIP Server'));
-        this.sipPhone?.on("registrationFailed", () => console.log('SIPPhone Failed Registeration with SIP Server'));
+        this.sipPhone?.on("registered", () => console.log('SIP-Card Registered with SIP Server'));
+        this.sipPhone?.on("unregistered", () => console.log('SIP-Card Unregistered with SIP Server'));
+        this.sipPhone?.on("registrationFailed", () => console.log('SIP-Card Failed Registeration with SIP Server'));
         this.sipPhone?.on("newRTCSession", (event: RTCSessionEvent) => {
             if (this.sipPhoneSession !== null ) {
                 event.session.terminate();
                 return;
             }
 
-            console.log('newRTCSession!');
+            console.log('Call: newRTCSession: Originator: ' + event.originator);
 
             this.sipPhoneSession = event.session;
 
-            this.sipPhoneSession.on("confirmed", () => console.log('Incoming - call confirmed'));
+            this.sipPhoneSession.on("confirmed", (event: IncomingEvent | OutgoingEvent) => {
+                console.log('Call confirmed. Originator: ' + event.originator);
+            });
 
-            this.sipPhoneSession.on("failed", () =>{
-                console.log('Incoming - call failed');
+            this.sipPhoneSession.on("failed", (event: EndEvent) =>{
+                console.log('Call failed. Originator: ' + event.originator);
                 if (!this.config.video && this.currentCamera == undefined) {
                     this.audioVisualizer?.stop();
                 }
@@ -630,6 +643,7 @@ class SipJsCard extends LitElement {
             });
 
             this.sipPhoneSession.on("ended", (event: EndEvent) => {
+                console.log('Call ended. Originator: ' + event.originator);
                 if (!this.config.video && this.currentCamera == undefined) {
                     this.audioVisualizer.stop();
                 }
@@ -644,6 +658,7 @@ class SipJsCard extends LitElement {
             });
 
             this.sipPhoneSession.on("accepted", (event: IncomingEvent | OutgoingEvent) => {
+                console.log('Call accepted. Originator: ' + event.originator);
                 if (!this.config.video && this.currentCamera == undefined) {
                     init();
                 }
@@ -679,9 +694,9 @@ class SipJsCard extends LitElement {
                 });
 
                 this.sipPhoneSession.on("peerconnection", (event: PeerConnectionEvent) => {
-                    console.log('peerconnection!');
+                    console.log('Call: peerconnection(incoming)');
                     this.sipPhoneSession?.connection.addEventListener("track", (event: RTCTrackEvent): void => {
-                        console.log('Track Event!')
+                        console.log('Call: peerconnection: mediatrack event');
                         let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
                         remoteAudio.srcObject = event.streams[0];
                         remoteAudio.play();
@@ -710,10 +725,10 @@ class SipJsCard extends LitElement {
             else if (this.sipPhoneSession.direction === 'outgoing') {
                 //Note: peerconnection seems to never fire for outgoing calls
                 this.sipPhoneSession.on("peerconnection", (event: PeerConnectionEvent) => {
-                    console.log('peerconnection(outgoing)!');
+                    console.log('Call: peerconnection(outgoing)');
                 });
                 this.sipPhoneSession?.connection.addEventListener("track", (event: RTCTrackEvent): void => {
-                    console.log('Track Event!')
+                    console.log('Call: mediatrack event');
                     let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
                     remoteAudio.srcObject = event.streams[0];
                     remoteAudio.play();
