@@ -281,7 +281,7 @@ class SipJsCard extends LitElement {
                     <audio id="toneAudio" style="display:none" loop controls></audio>
                     <div class="box">
                         <div class="row">
-                            <ha-icon-button 
+                            <ha-icon-button
                                 class="accept-btn"
                                 .label=${"Accept Call"}
                                 @click="${this._answer}"
@@ -297,10 +297,10 @@ class SipJsCard extends LitElement {
                             </ha-icon-button>
                         </div>
                         <div class="row">
-                            ${this.config.dtmfs ?  
+                            ${this.config.dtmfs ?
                                 this.config.dtmfs.map((dtmf: { signal: any; name: any; icon: any; }) => {
                                     return html `
-                                        <ha-icon-button 
+                                        <ha-icon-button
                                             @click="${() => this._sendDTMF(dtmf.signal)}"
                                             .label="${dtmf.name}"
                                             ><ha-icon icon="${dtmf.icon}"></ha-icon>
@@ -308,10 +308,10 @@ class SipJsCard extends LitElement {
                                     `;
                                 }) : ""
                             }
-                            ${this.config.buttons ?  
+                            ${this.config.buttons ?
                                 this.config.buttons.map((button: { entity: any; name: any; icon: any; }) => {
                                     return html `
-                                        <ha-icon-button 
+                                        <ha-icon-button
                                             @click="${() => this._button(button.entity)}"
                                             .label="${button.name}"
                                             ><ha-icon icon="${button.icon}"></ha-icon>
@@ -322,7 +322,7 @@ class SipJsCard extends LitElement {
                         </div>
                         <div class="row">
                             <span id="time">00:00</span>
-                            <ha-icon-button 
+                            <ha-icon-button
                                 class="hangup-btn"
                                 .label=${"Decline Call"}
                                 @click="${this._hangup}"
@@ -332,7 +332,7 @@ class SipJsCard extends LitElement {
                     </div>
                 </div>
             </ha-dialog>
-            
+
             <ha-card @click="${this.openPopup}">
                 <h1 class="card-header">
                     <span id="title" class="name">Unknown</span>
@@ -384,7 +384,7 @@ class SipJsCard extends LitElement {
                             `;
                         }) : ""
                     }
-              
+
                 </div>
             </ha-card>
         `;
@@ -498,7 +498,7 @@ class SipJsCard extends LitElement {
         const domain = entity.split(".")[0];
         let service;
         console.log(domain);
-        
+
         switch(domain) {
             case "script":
                 service = "turn_on";
@@ -528,7 +528,7 @@ class SipJsCard extends LitElement {
             entity_id: entity
         });
     }
-    
+
     async connect() {
 
         const visualMainElement: any = this.renderRoot.querySelector('#audioVisualizer');
@@ -539,7 +539,7 @@ class SipJsCard extends LitElement {
             for ( i = 0; i < visualValueCount; ++i ) {
                 const elm = document.createElement( 'div' );
                 visualMainElement!.appendChild( elm );
-            }     
+            }
 
             visualElements = this.renderRoot.querySelectorAll('#audioVisualizer div');
         };
@@ -551,7 +551,7 @@ class SipJsCard extends LitElement {
                 createDOMElements();
             };
             initDOM();
-        
+
             // Swapping values around for a better visual effect
             const dataMap: any = { 0: 15, 1: 10, 2: 8, 3: 9, 4: 6, 5: 5, 6: 2, 7: 1, 8: 0, 9: 4, 10: 3, 11: 7, 12: 11, 13: 12, 14: 13, 15: 14 };
             const processFrame = ( data: any ) => {
@@ -562,7 +562,7 @@ class SipJsCard extends LitElement {
                     const elmStyles = visualElements[ i ].style;
                     elmStyles.transform = `scaleY( ${ value } )`;
                     elmStyles.opacity = Math.max( .25, value );
-                }   
+                }
             };
 
             let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
@@ -593,8 +593,8 @@ class SipJsCard extends LitElement {
 
         this.setExtension(this.user.extension);
 
-        this.sipCallOptions = { 
-            'mediaConstraints': { 'audio': true, 'video': this.config.video } 
+        this.sipCallOptions = {
+            'mediaConstraints': { 'audio': true, 'video': this.config.video }
         };
 
         this.sipPhone?.start();
@@ -617,7 +617,7 @@ class SipJsCard extends LitElement {
             this.sipPhoneSession.on("failed", () =>{
                 console.log('Incoming - call failed');
                 if (!this.config.video && this.currentCamera == undefined) {
-                    this.audioVisualizer.stop();
+                    this.audioVisualizer?.stop();
                 }
                 visualMainElement!.innerHTML = '';
                 this.ring("pause");
@@ -662,23 +662,6 @@ class SipJsCard extends LitElement {
                     this.timerElement.innerHTML = (minutes + ":" + Math.round(seconds)).split(':').map(e => `0${e}`.slice(-2)).join(':');
                 }.bind(this), 1000);
             });
-            
-             //Note: peerconnection seems to never fire for outgoing calls
-            this.sipPhoneSession.on("peerconnection", (event: PeerConnectionEvent) => {
-                console.log('peerconnection!');
-            });
-
-            this.sipPhoneSession?.connection.addEventListener("track", (event: RTCTrackEvent): void => {
-                console.log('Track Event!')
-                let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
-                remoteAudio.srcObject = event.streams[0];
-                remoteAudio.play();
-                if (this.config.video) {
-                    let remoteVideo = this.renderRoot.querySelector('#remoteVideo');
-                    remoteVideo.srcObject = event.streams[0];
-                    remoteVideo.play();
-                }
-            });
 
             // Typescript types for enums seem to be broken for JsSIP.
             // See: https://github.com/versatica/JsSIP/issues/750
@@ -694,6 +677,22 @@ class SipJsCard extends LitElement {
                         this.currentCamera = (element.camera ? element.camera : undefined);
                     }
                 });
+
+                this.sipPhoneSession.on("peerconnection", (event: PeerConnectionEvent) => {
+                    console.log('peerconnection!');
+                    this.sipPhoneSession?.connection.addEventListener("track", (event: RTCTrackEvent): void => {
+                        console.log('Track Event!')
+                        let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
+                        remoteAudio.srcObject = event.streams[0];
+                        remoteAudio.play();
+                        if (this.config.video) {
+                            let remoteVideo = this.renderRoot.querySelector('#remoteVideo');
+                            remoteVideo.srcObject = event.streams[0];
+                            remoteVideo.play();
+                        }
+                    });
+                });
+
                 this.openPopup();
                 if (this.config.auto_answer) {
                     this.sipPhoneSession.answer(this.sipCallOptions);
@@ -705,10 +704,25 @@ class SipJsCard extends LitElement {
                 if (this.sipPhoneSession.remote_identity) {
                     this.setName("Incoming Call From " + this.sipPhoneSession.remote_identity.display_name);
                 } else {
-                    this.setName("Incoming Call"); 
+                    this.setName("Incoming Call");
                 }
             }
             else if (this.sipPhoneSession.direction === 'outgoing') {
+                //Note: peerconnection seems to never fire for outgoing calls
+                this.sipPhoneSession.on("peerconnection", (event: PeerConnectionEvent) => {
+                    console.log('peerconnection(outgoing)!');
+                });
+                this.sipPhoneSession?.connection.addEventListener("track", (event: RTCTrackEvent): void => {
+                    console.log('Track Event!')
+                    let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
+                    remoteAudio.srcObject = event.streams[0];
+                    remoteAudio.play();
+                    if (this.config.video) {
+                        let remoteVideo = this.renderRoot.querySelector('#remoteVideo');
+                        remoteVideo.srcObject = event.streams[0];
+                        remoteVideo.play();
+                    }
+                });
             }
             else {
             }
@@ -721,7 +735,7 @@ class SipJsCard extends LitElement {
         }
     }
 }
- 
+
 (window as any).customCards = (window as any).customCards || [];
 (window as any).customCards.push({
     type: "sipjs-card",
