@@ -610,7 +610,12 @@ class SipJsCard extends LitElement {
         this.setExtension(this.user.extension);
 
         this.sipCallOptions = {
-            'mediaConstraints': { 'audio': true, 'video': this.config.video }
+            'mediaConstraints': { 'audio': true, 'video': this.config.video },
+            'pcConfig': {
+                'iceServers': [
+                  { 'urls': ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }
+                ]
+            }
         };
 
         this.renderRoot.querySelector('#mutevideo-icon').icon = this.config.video ? "hass:video" : "hass:video-off";
@@ -703,11 +708,13 @@ class SipJsCard extends LitElement {
                 this.sipPhoneSession.on("peerconnection", (event: PeerConnectionEvent) => {
                     console.log('Call: peerconnection(incoming)');
                     this.sipPhoneSession?.connection.addEventListener("track", (event: RTCTrackEvent): void => {
-                        console.log('Call: peerconnection: mediatrack event');
-                        let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
-                        remoteAudio.srcObject = event.streams[0];
-                        remoteAudio.play();
-                        if (this.config.video) {
+                        console.log('Call: peerconnection: mediatrack event: kind: ' + event.track.kind);
+                        if (event.track.kind == "audio") {
+                            let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
+                            remoteAudio.srcObject = event.streams[0];
+                            remoteAudio.play();
+                        }
+                        if (this.config.video && event.track.kind == "video") {
                             let remoteVideo = this.renderRoot.querySelector('#remoteVideo');
                             remoteVideo.srcObject = event.streams[0];
                             remoteVideo.play();
@@ -735,16 +742,18 @@ class SipJsCard extends LitElement {
                     console.log('Call: peerconnection(outgoing)');
                 });
                 this.sipPhoneSession?.connection.addEventListener("track", (event: RTCTrackEvent): void => {
-                    console.log('Call: mediatrack event');
-                    let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
-                    remoteAudio.srcObject = event.streams[0];
-                    remoteAudio.play();
-                    if (this.config.video) {
+                    console.log('Call: mediatrack event: kind: ' + event.track.kind);
+                    if (event.track.kind == "audio") {
+                        let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
+                        remoteAudio.srcObject = event.streams[0];
+                        remoteAudio.play();
+                    }
+                    if (this.config.video && event.track.kind == "video") {
                         let remoteVideo = this.renderRoot.querySelector('#remoteVideo');
                         remoteVideo.srcObject = event.streams[0];
                         remoteVideo.play();
                     }
-                });
+            });
             }
             else {
             }
