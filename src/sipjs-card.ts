@@ -1,6 +1,6 @@
 import { UA, WebSocketInterface } from "jssip/lib/JsSIP";
 import { RTCSessionEvent } from "jssip/lib/UA";
-import { EndEvent, PeerConnectionEvent, IncomingEvent, OutgoingEvent, RTCSession } from "jssip/lib/RTCSession";
+import { EndEvent, PeerConnectionEvent, IncomingEvent, OutgoingEvent, IceCandidateEvent, RTCSession } from "jssip/lib/RTCSession";
 
 import {
   LitElement,
@@ -688,6 +688,23 @@ class SipJsCard extends LitElement {
                     var seconds = delta % 60;
                     this.timerElement.innerHTML = (minutes + ":" + Math.round(seconds)).split(':').map(e => `0${e}`.slice(-2)).join(':');
                 }.bind(this), 1000);
+            });
+
+            var iceCandidateTimeout: NodeJS.Timeout | null = null;
+            this.sipPhoneSession.on("icecandidate", (event: IceCandidateEvent) => {
+                if (event.candidate.candidate === "") {
+                    console.log('ICE: candidate gathering complete.');
+                }
+                else {
+                    console.log('ICE: candidate: ' + event.candidate.candidate);
+                }
+                if (iceCandidateTimeout != null) {
+                    clearTimeout(iceCandidateTimeout);
+                }
+                iceCandidateTimeout = setTimeout(() => {
+                    console.log('ICE: stop candidate gathering due to application timeout.');
+                    event.ready();
+                }, 5000);
             });
 
             // Typescript types for enums seem to be broken for JsSIP.
