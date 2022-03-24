@@ -275,7 +275,7 @@ class SipJsCard extends LitElement {
                         ></ha-camera-stream>
                     ` : html`
                         <div id="audioVisualizer"></div>
-                        <video id="remoteVideo"></video>
+                        <video webkit-playsinline playsinline id="remoteVideo"></video>
                     `}
                     <audio id="remoteAudio" style="display:none"></audio>
                     <audio id="toneAudio" style="display:none" loop controls></audio>
