@@ -649,6 +649,26 @@ class SipJsCard extends LitElement {
 
             this.sipPhoneSession = event.session;
 
+            this.sipPhoneSession.on('getusermediafailed', function(DOMError) {
+                console.log('getUserMedia() failed: ' + DOMError);
+            });
+
+            this.sipPhoneSession.on('peerconnection:createofferfailed', function(DOMError) {
+                console.log('createOffer() failed: ' + DOMError);
+            });
+
+            this.sipPhoneSession.on('peerconnection:createanswerfailed', function (DOMError) {
+                console.log('createAnswer() failed: ' + DOMError);
+            });
+
+            this.sipPhoneSession.on('peerconnection:setlocaldescriptionfailed', function (DOMError) {
+                console.log('setLocalDescription() failed: ' + DOMError);
+            });
+
+            this.sipPhoneSession.on('peerconnection:setremotedescriptionfailed', function (DOMError) {
+                console.log('setRemoteDescription() failed: ' + DOMError);
+            });
+
             this.sipPhoneSession.on("confirmed", (event: IncomingEvent | OutgoingEvent) => {
                 console.log('Call confirmed. Originator: ' + event.originator);
             });
