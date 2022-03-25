@@ -610,13 +610,27 @@ class SipJsCard extends LitElement {
         this.setExtension(this.user.extension);
 
         this.sipCallOptions = {
-            'mediaConstraints': { 'audio': true, 'video': this.config.video },
-            'pcConfig': {
-                'iceServers': [
-                  { 'urls': ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }
-                ]
+            mediaConstraints: { audio: true, video: this.config.video },
+            pcConfig: this.config.iceConfig // we just use the config that directly comes from the YAML config in the YAML card config.
+            /* EXAMPLE config
+            {
+                iceCandidatePoolSize: 0,   //  prefetched ICE candidate pool. The default value is 0 (meaning no candidate prefetching will occur).
+                iceTransportPolicy: 'all', // 'relay' is also allowed, i.e. only candidates from TURN-servers
+                iceServers: [
+                    {
+                        // Google STUN servers
+                        urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'],
+                        //credentialType: 'password',
+                        //username: 'myusername',
+                        //credential: 'mypassword'
+                    }
+                ],
+                rtcpMuxPolicy: 'require' // RTP and RTCP will be muxed
             }
+            */
         };
+
+        console.log('ICE config: ' + JSON.stringify(this.sipCallOptions.pcConfig, null, 2));
 
         this.renderRoot.querySelector('#mutevideo-icon').icon = this.config.video ? "hass:video" : "hass:video-off";
 
@@ -691,6 +705,14 @@ class SipJsCard extends LitElement {
             });
 
             var iceCandidateTimeout: NodeJS.Timeout | null = null;
+            var iceTimeout = 5;
+            if (this.config.iceTimeout !== null && this.config.iceTimeout !== undefined)
+            {
+                iceTimeout = this.config.iceTimeout;
+            }
+
+            console.log('ICE gathering timeout: ' + iceTimeout + " seconds");
+
             this.sipPhoneSession.on("icecandidate", (event: IceCandidateEvent) => {
                 if (event.candidate.candidate === "") {
                     console.log('ICE: candidate gathering complete.');
@@ -704,7 +726,7 @@ class SipJsCard extends LitElement {
                 iceCandidateTimeout = setTimeout(() => {
                     console.log('ICE: stop candidate gathering due to application timeout.');
                     event.ready();
-                }, 5000);
+                }, iceTimeout * 1000);
             });
 
             // Typescript types for enums seem to be broken for JsSIP.
