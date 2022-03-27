@@ -1,4 +1,7 @@
-import { Web } from "sip.js/lib/index.js";
+import { UA, WebSocketInterface } from "jssip/lib/JsSIP";
+import { RTCSessionEvent } from "jssip/lib/UA";
+import { EndEvent, PeerConnectionEvent, IncomingEvent, OutgoingEvent, IceCandidateEvent, RTCSession } from "jssip/lib/RTCSession";
+
 import {
   LitElement,
   html,
@@ -12,7 +15,9 @@ import { AudioVisualizer } from "./audioVisualizer";
 
 @customElement('sipjs-card')
 class SipJsCard extends LitElement {
-    simpleUser: any;
+    sipPhone: UA | undefined;
+    sipPhoneSession: RTCSession | null;
+    sipCallOptions: any;
     user: any;
     config: any;
     hass: any;
@@ -23,6 +28,11 @@ class SipJsCard extends LitElement {
     intervalId!: number;
     error: any = null;
     audioVisualizer: any;
+
+    constructor() {
+        super();
+        this.sipPhoneSession = null;
+    }
 
     static get properties() {
         return {
@@ -265,13 +275,13 @@ class SipJsCard extends LitElement {
                         ></ha-camera-stream>
                     ` : html`
                         <div id="audioVisualizer"></div>
-                        <video id="remoteVideo"></video>
+                        <video webkit-playsinline playsinline id="remoteVideo"></video>
                     `}
                     <audio id="remoteAudio" style="display:none"></audio>
                     <audio id="toneAudio" style="display:none" loop controls></audio>
                     <div class="box">
                         <div class="row">
-                            <ha-icon-button 
+                            <ha-icon-button
                                 class="accept-btn"
                                 .label=${"Accept Call"}
                                 @click="${this._answer}"
@@ -281,16 +291,21 @@ class SipJsCard extends LitElement {
                         </div>
                         <div class="row">
                             <ha-icon-button
-                                .label=${"Mute"}
-                                @click="${this._toggleMute}"
-                                ><ha-icon id="mute-icon" icon="hass:microphone"></ha-icon>
+                                .label=${"Mute audio"}
+                                @click="${this._toggleMuteAudio}"
+                                ><ha-icon id="muteaudio-icon" icon="hass:microphone"></ha-icon>
+                            </ha-icon-button>
+                            <ha-icon-button
+                                .label=${"Mute video"}
+                                @click="${this._toggleMuteVideo}"
+                                ><ha-icon id="mutevideo-icon" icon="hass:video"></ha-icon>
                             </ha-icon-button>
                         </div>
                         <div class="row">
-                            ${this.config.dtmfs ?  
+                            ${this.config.dtmfs ?
                                 this.config.dtmfs.map((dtmf: { signal: any; name: any; icon: any; }) => {
                                     return html `
-                                        <ha-icon-button 
+                                        <ha-icon-button
                                             @click="${() => this._sendDTMF(dtmf.signal)}"
                                             .label="${dtmf.name}"
                                             ><ha-icon icon="${dtmf.icon}"></ha-icon>
@@ -298,10 +313,10 @@ class SipJsCard extends LitElement {
                                     `;
                                 }) : ""
                             }
-                            ${this.config.buttons ?  
+                            ${this.config.buttons ?
                                 this.config.buttons.map((button: { entity: any; name: any; icon: any; }) => {
                                     return html `
-                                        <ha-icon-button 
+                                        <ha-icon-button
                                             @click="${() => this._button(button.entity)}"
                                             .label="${button.name}"
                                             ><ha-icon icon="${button.icon}"></ha-icon>
@@ -312,7 +327,7 @@ class SipJsCard extends LitElement {
                         </div>
                         <div class="row">
                             <span id="time">00:00</span>
-                            <ha-icon-button 
+                            <ha-icon-button
                                 class="hangup-btn"
                                 .label=${"Decline Call"}
                                 @click="${this._hangup}"
@@ -322,7 +337,7 @@ class SipJsCard extends LitElement {
                     </div>
                 </div>
             </ha-dialog>
-            
+
             <ha-card @click="${this.openPopup}">
                 <h1 class="card-header">
                     <span id="title" class="name">Unknown</span>
@@ -374,7 +389,7 @@ class SipJsCard extends LitElement {
                             `;
                         }) : ""
                     }
-              
+
                 </div>
             </ha-card>
         `;
@@ -456,40 +471,50 @@ class SipJsCard extends LitElement {
         this.ring("ringbacktone");
         this.setName("Calling...");
         this.currentCamera = (camera ? camera : undefined);
-        await this.simpleUser.call("sip:" + extension + "@" + this.config.server);
+        if (this.sipPhone) {
+            this.sipPhone.call("sip:" + extension + "@" + this.config.server, this.sipCallOptions);
+        }
     }
 
     async _answer() {
-        await this.simpleUser.answer();
+        this.sipPhoneSession?.answer();
     }
 
     async _hangup() {
-        await this.simpleUser.hangup();
+        this.sipPhoneSession?.terminate();
     }
 
-    async _toggleMute() {
-        const pc: any = this.simpleUser.session.sessionDescriptionHandler.peerConnection
-        pc.getSenders().forEach((stream: any) => {
-            stream.track.enabled = !stream.track.enabled;
-            console.log(stream.track.enabled);
-            if (stream.track.enabled) {
-                this.renderRoot.querySelector('#mute-icon').icon = "hass:microphone";
-            } else {
-                this.renderRoot.querySelector('#mute-icon').icon = "hass:microphone-off";
-            }
-        });
+    async _toggleMuteAudio() {
+        if (this.sipPhoneSession?.isMuted().audio) {
+            this.sipPhoneSession?.unmute({ video: false, audio: true });
+            this.renderRoot.querySelector('#muteaudio-icon').icon = "hass:microphone";
+        }
+        else {
+            this.sipPhoneSession?.mute({ video: false, audio: true });
+            this.renderRoot.querySelector('#muteaudio-icon').icon = "hass:microphone-off";
+        }
+    }
 
+    async _toggleMuteVideo() {
+        if (this.sipPhoneSession?.isMuted().video) {
+            this.sipPhoneSession?.unmute({ video:true, audio: false });
+            this.renderRoot.querySelector('#mutevideo-icon').icon = "hass:video";
+        }
+        else {
+            this.sipPhoneSession?.mute({ video:true, audio: false });
+            this.renderRoot.querySelector('#mutevideo-icon').icon = "hass:video-off";
+        }
     }
 
     async _sendDTMF(signal: any) {
-        await this.simpleUser.sendDTMF(signal);
+        this.sipPhoneSession?.sendDTMF(signal);
     }
 
     async _button(entity: string) {
         const domain = entity.split(".")[0];
         let service;
         console.log(domain);
-        
+
         switch(domain) {
             case "script":
                 service = "turn_on";
@@ -519,7 +544,7 @@ class SipJsCard extends LitElement {
             entity_id: entity
         });
     }
-    
+
     async connect() {
 
         const visualMainElement: any = this.renderRoot.querySelector('#audioVisualizer');
@@ -530,7 +555,7 @@ class SipJsCard extends LitElement {
             for ( i = 0; i < visualValueCount; ++i ) {
                 const elm = document.createElement( 'div' );
                 visualMainElement!.appendChild( elm );
-            }     
+            }
 
             visualElements = this.renderRoot.querySelectorAll('#audioVisualizer div');
         };
@@ -542,7 +567,7 @@ class SipJsCard extends LitElement {
                 createDOMElements();
             };
             initDOM();
-        
+
             // Swapping values around for a better visual effect
             const dataMap: any = { 0: 15, 1: 10, 2: 8, 3: 9, 4: 6, 5: 5, 6: 2, 7: 1, 8: 0, 9: 4, 10: 3, 11: 7, 12: 11, 13: 12, 14: 13, 15: 14 };
             const processFrame = ( data: any ) => {
@@ -553,9 +578,11 @@ class SipJsCard extends LitElement {
                     const elmStyles = visualElements[ i ].style;
                     elmStyles.transform = `scaleY( ${ value } )`;
                     elmStyles.opacity = Math.max( .25, value );
-                }   
+                }
             };
-            this.audioVisualizer = new AudioVisualizer( audioContext, processFrame, this.simpleUser.session.sessionDescriptionHandler.peerConnection.getRemoteStreams()[0] );
+
+            let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
+            this.audioVisualizer = new AudioVisualizer( audioContext, processFrame, remoteAudio.srcObject );
         };
 
         this.timerElement = this.renderRoot.querySelector('#time');
@@ -569,90 +596,121 @@ class SipJsCard extends LitElement {
         }
         this.setTitle((this.config.custom_title !== "") ? this.config.custom_title : this.user.name);
 
-        var options: Web.SimpleUserOptions = {
-            aor: "sip:" + this.user.extension + "@" + this.config.server,
-            media: {
-                constraints: {
-                    audio: true,
-                    video: false
-                },
-                remote: {
-                    audio: this.renderRoot.querySelector("#remoteAudio"),
-                }
-            },
-            userAgentOptions: {
-                authorizationUsername: this.user.extension,
-                authorizationPassword: this.user.secret,
-            }
+        var socket = new WebSocketInterface("wss://" + this.config.server + ":" + this.config.port + "/ws");
+        var configuration = {
+            sockets : [ socket ],
+            uri     : "sip:" + this.user.extension + "@" + this.config.server,
+            authorization_user: this.user.extension,
+            password: this.user.secret,
+            register: true
         };
 
-        if (this.config.video) {
-            options!.media!.remote!.video = this.renderRoot.querySelector('#remoteVideo');
-            options!.media!.constraints!.video = true;
-        }
-        
-        this.simpleUser = new Web.SimpleUser("wss://" + this.config.server + ":" + this.config.port + "/ws", options);
-        
+        this.sipPhone = new UA(configuration);
+
         this.setExtension(this.user.extension);
 
-        try {
-            await this.simpleUser.connect();   
-        } catch (error) {
-            this.error = {
-                title: "Can't connect!",
-                message: error
-            }
-            this.requestUpdate();
-            throw new Error("Can't connect: " + error);
-        }
-
-        try {
-            await this.simpleUser.register();
-        } catch (error) {
-            this.error = {
-                title: "Can't register!",
-                message: error
-            }
-            this.requestUpdate();
-            throw new Error("Can't register: " + error);
-        }
-
-
-        this.simpleUser.delegate = {
-            onCallReceived: async () => {
-                var extension = this.simpleUser.session.remoteIdentity.uri.normal.user;
-                this.config.extensions.forEach((element: { extension: any; camera: boolean; }) => {
-                    if (element.extension == extension) {
-                        this.currentCamera = (element.camera ? element.camera : undefined);
+        this.sipCallOptions = {
+            mediaConstraints: { audio: true, video: this.config.video },
+            pcConfig: this.config.iceConfig // we just use the config that directly comes from the YAML config in the YAML card config.
+            /* EXAMPLE config
+            {
+                iceCandidatePoolSize: 0,   //  prefetched ICE candidate pool. The default value is 0 (meaning no candidate prefetching will occur).
+                iceTransportPolicy: 'all', // 'relay' is also allowed, i.e. only candidates from TURN-servers
+                iceServers: [
+                    {
+                        // Google STUN servers
+                        urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'],
+                        //credentialType: 'password',
+                        //username: 'myusername',
+                        //credential: 'mypassword'
                     }
-                });
-                this.config.custom.forEach((element: { number: any; camera: boolean; }) => {
-                    if (element.number == extension) {
-                        this.currentCamera = (element.camera ? element.camera : undefined);
-                    }
-                });
-                this.openPopup();
-                if (this.config.auto_answer) {
-                    await this.simpleUser.answer();
-                    return;
+                ],
+                rtcpMuxPolicy: 'require' // RTP and RTCP will be muxed
+            }
+            */
+        };
+
+        console.log('ICE config: ' + JSON.stringify(this.sipCallOptions.pcConfig, null, 2));
+
+        this.renderRoot.querySelector('#mutevideo-icon').icon = this.config.video ? "hass:video" : "hass:video-off";
+
+        this.sipPhone?.start();
+
+        this.sipPhone?.on("registered", () => console.log('SIP-Card Registered with SIP Server'));
+        this.sipPhone?.on("unregistered", () => console.log('SIP-Card Unregistered with SIP Server'));
+        this.sipPhone?.on("registrationFailed", () => console.log('SIP-Card Failed Registeration with SIP Server'));
+        this.sipPhone?.on("newRTCSession", (event: RTCSessionEvent) => {
+            if (this.sipPhoneSession !== null ) {
+                event.session.terminate();
+                return;
+            }
+
+            console.log('Call: newRTCSession: Originator: ' + event.originator);
+
+            this.sipPhoneSession = event.session;
+
+            this.sipPhoneSession.on('getusermediafailed', function(DOMError) {
+                console.log('getUserMedia() failed: ' + DOMError);
+            });
+
+            this.sipPhoneSession.on('peerconnection:createofferfailed', function(DOMError) {
+                console.log('createOffer() failed: ' + DOMError);
+            });
+
+            this.sipPhoneSession.on('peerconnection:createanswerfailed', function (DOMError) {
+                console.log('createAnswer() failed: ' + DOMError);
+            });
+
+            this.sipPhoneSession.on('peerconnection:setlocaldescriptionfailed', function (DOMError) {
+                console.log('setLocalDescription() failed: ' + DOMError);
+            });
+
+            this.sipPhoneSession.on('peerconnection:setremotedescriptionfailed', function (DOMError) {
+                console.log('setRemoteDescription() failed: ' + DOMError);
+            });
+
+            this.sipPhoneSession.on("confirmed", (event: IncomingEvent | OutgoingEvent) => {
+                console.log('Call confirmed. Originator: ' + event.originator);
+            });
+
+            this.sipPhoneSession.on("failed", (event: EndEvent) =>{
+                console.log('Call failed. Originator: ' + event.originator);
+                if (!this.config.video && this.currentCamera == undefined) {
+                    this.audioVisualizer?.stop();
                 }
+                visualMainElement!.innerHTML = '';
+                this.ring("pause");
+                this.setName("Idle");
+                clearInterval(this.intervalId);
+                this.timerElement.innerHTML = "00:00";
+                this.currentCamera = undefined;
+                this.closePopup();
+                this.sipPhoneSession = null;
+            });
 
-                this.ring("ringtone");
-
-                if (this.simpleUser.session._assertedIdentity) {
-                    this.setName("Incoming Call From " + this.simpleUser.session._assertedIdentity._displayName);
-                } else {
-                    this.setName("Incoming Call"); 
+            this.sipPhoneSession.on("ended", (event: EndEvent) => {
+                console.log('Call ended. Originator: ' + event.originator);
+                if (!this.config.video && this.currentCamera == undefined) {
+                    this.audioVisualizer.stop();
                 }
+                visualMainElement!.innerHTML = '';
+                this.ring("pause");
+                this.setName("Idle");
+                clearInterval(this.intervalId);
+                this.timerElement.innerHTML = "00:00";
+                this.currentCamera = undefined;
+                this.closePopup();
+                this.sipPhoneSession = null;
+            });
 
-            },
-            onCallAnswered: () => {
+            this.sipPhoneSession.on("accepted", (event: IncomingEvent | OutgoingEvent) => {
+                console.log('Call accepted. Originator: ' + event.originator);
                 if (!this.config.video && this.currentCamera == undefined) {
                     init();
                 }
                 this.ring("pause");
-                if (this.simpleUser.session._assertedIdentity) {
-                    this.setName(this.simpleUser.session._assertedIdentity._displayName);
+                if (this.sipPhoneSession?.remote_identity) {
+                    this.setName(this.sipPhoneSession?.remote_identity.display_name);
                 } else {
                     this.setName("On Call");
                 }
@@ -664,20 +722,101 @@ class SipJsCard extends LitElement {
                     var seconds = delta % 60;
                     this.timerElement.innerHTML = (minutes + ":" + Math.round(seconds)).split(':').map(e => `0${e}`.slice(-2)).join(':');
                 }.bind(this), 1000);
-            },
-            onCallHangup: () => {
-                if (!this.config.video && this.currentCamera == undefined) {
-                    this.audioVisualizer.stop();
-                }
-                visualMainElement!.innerHTML = '';
-                this.ring("pause");
-                this.setName("Idle");
-                clearInterval(this.intervalId);
-                this.timerElement.innerHTML = "00:00";
-                this.currentCamera = undefined;
-                this.closePopup();
+            });
+
+            var iceCandidateTimeout: NodeJS.Timeout | null = null;
+            var iceTimeout = 5;
+            if (this.config.iceTimeout !== null && this.config.iceTimeout !== undefined)
+            {
+                iceTimeout = this.config.iceTimeout;
             }
-        };
+
+            console.log('ICE gathering timeout: ' + iceTimeout + " seconds");
+
+            this.sipPhoneSession.on("icecandidate", (event: IceCandidateEvent) => {
+                if (event.candidate.candidate === "") {
+                    console.log('ICE: candidate gathering complete.');
+                }
+                else {
+                    console.log('ICE: candidate: ' + event.candidate.candidate);
+                }
+                if (iceCandidateTimeout != null) {
+                    clearTimeout(iceCandidateTimeout);
+                }
+                iceCandidateTimeout = setTimeout(() => {
+                    console.log('ICE: stop candidate gathering due to application timeout.');
+                    event.ready();
+                }, iceTimeout * 1000);
+            });
+
+            // Typescript types for enums seem to be broken for JsSIP.
+            // See: https://github.com/versatica/JsSIP/issues/750
+            if (this.sipPhoneSession.direction === 'incoming') {
+                var extension = this.sipPhoneSession.remote_identity.uri.user;
+                this.config.extensions.forEach((element: { extension: any; camera: boolean; }) => {
+                    if (element.extension == extension) {
+                        this.currentCamera = (element.camera ? element.camera : undefined);
+                    }
+                });
+                this.config.custom.forEach((element: { number: any; camera: boolean; }) => {
+                    if (element.number == extension) {
+                        this.currentCamera = (element.camera ? element.camera : undefined);
+                    }
+                });
+
+                this.sipPhoneSession.on("peerconnection", (event: PeerConnectionEvent) => {
+                    console.log('Call: peerconnection(incoming)');
+                    this.sipPhoneSession?.connection.addEventListener("track", (event: RTCTrackEvent): void => {
+                        console.log('Call: peerconnection: mediatrack event: kind: ' + event.track.kind);
+                        if (event.track.kind == "audio") {
+                            let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
+                            remoteAudio.srcObject = event.streams[0];
+                            remoteAudio.play();
+                        }
+                        if (this.config.video && event.track.kind == "video") {
+                            let remoteVideo = this.renderRoot.querySelector('#remoteVideo');
+                            remoteVideo.srcObject = event.streams[0];
+                            remoteVideo.play();
+                        }
+                    });
+                });
+
+                this.openPopup();
+                if (this.config.auto_answer) {
+                    this.sipPhoneSession.answer(this.sipCallOptions);
+                    return;
+                }
+
+                this.ring("ringtone");
+
+                if (this.sipPhoneSession.remote_identity) {
+                    this.setName("Incoming Call From " + this.sipPhoneSession.remote_identity.display_name);
+                } else {
+                    this.setName("Incoming Call");
+                }
+            }
+            else if (this.sipPhoneSession.direction === 'outgoing') {
+                //Note: peerconnection seems to never fire for outgoing calls
+                this.sipPhoneSession.on("peerconnection", (event: PeerConnectionEvent) => {
+                    console.log('Call: peerconnection(outgoing)');
+                });
+                this.sipPhoneSession?.connection.addEventListener("track", (event: RTCTrackEvent): void => {
+                    console.log('Call: mediatrack event: kind: ' + event.track.kind);
+                    if (event.track.kind == "audio") {
+                        let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
+                        remoteAudio.srcObject = event.streams[0];
+                        remoteAudio.play();
+                    }
+                    if (this.config.video && event.track.kind == "video") {
+                        let remoteVideo = this.renderRoot.querySelector('#remoteVideo');
+                        remoteVideo.srcObject = event.streams[0];
+                        remoteVideo.play();
+                    }
+            });
+            }
+            else {
+            }
+        });
 
         var urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('call')) {
@@ -686,7 +825,7 @@ class SipJsCard extends LitElement {
         }
     }
 }
- 
+
 (window as any).customCards = (window as any).customCards || [];
 (window as any).customCards.push({
     type: "sipjs-card",
