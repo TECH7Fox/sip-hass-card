@@ -546,45 +546,6 @@ class SipJsCard extends LitElement {
     }
 
     async connect() {
-
-        const visualMainElement: any = this.renderRoot.querySelector('#audioVisualizer');
-        const visualValueCount = 16;
-        let visualElements: any;
-        const createDOMElements = () => {
-            let i;
-            for ( i = 0; i < visualValueCount; ++i ) {
-                const elm = document.createElement( 'div' );
-                visualMainElement!.appendChild( elm );
-            }
-
-            visualElements = this.renderRoot.querySelectorAll('#audioVisualizer div');
-        };
-
-        const init = () => {
-            const audioContext = new AudioContext();
-            const initDOM = () => {
-                visualMainElement!.innerHTML = '';
-                createDOMElements();
-            };
-            initDOM();
-
-            // Swapping values around for a better visual effect
-            const dataMap: any = { 0: 15, 1: 10, 2: 8, 3: 9, 4: 6, 5: 5, 6: 2, 7: 1, 8: 0, 9: 4, 10: 3, 11: 7, 12: 11, 13: 12, 14: 13, 15: 14 };
-            const processFrame = ( data: any ) => {
-                const values: any = Object.values( data );
-                let i;
-                for ( i = 0; i < visualValueCount; ++i ) {
-                    const value = (values[ dataMap[ i ] ] / 255);// + 0.025;
-                    const elmStyles = visualElements[ i ].style;
-                    elmStyles.transform = `scaleY( ${ value } )`;
-                    elmStyles.opacity = Math.max( .25, value );
-                }
-            };
-
-            let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
-            this.audioVisualizer = new AudioVisualizer( audioContext, processFrame, remoteAudio.srcObject );
-        };
-
         this.timerElement = this.renderRoot.querySelector('#time');
         if (this.user == undefined) {
             this.error = {
@@ -676,9 +637,9 @@ class SipJsCard extends LitElement {
             this.sipPhoneSession.on("failed", (event: EndEvent) =>{
                 console.log('Call failed. Originator: ' + event.originator);
                 if (!this.config.video && this.currentCamera == undefined) {
-                    this.audioVisualizer?.stop();
+                    this.audioVisualizer.stop();
+                    this.renderRoot.querySelector('#audioVisualizer').innerHTML = '';
                 }
-                visualMainElement!.innerHTML = '';
                 this.ring("pause");
                 this.setName("Idle");
                 clearInterval(this.intervalId);
@@ -692,8 +653,8 @@ class SipJsCard extends LitElement {
                 console.log('Call ended. Originator: ' + event.originator);
                 if (!this.config.video && this.currentCamera == undefined) {
                     this.audioVisualizer.stop();
+                    this.renderRoot.querySelector('#audioVisualizer').innerHTML = '';
                 }
-                visualMainElement!.innerHTML = '';
                 this.ring("pause");
                 this.setName("Idle");
                 clearInterval(this.intervalId);
@@ -706,7 +667,8 @@ class SipJsCard extends LitElement {
             this.sipPhoneSession.on("accepted", (event: IncomingEvent | OutgoingEvent) => {
                 console.log('Call accepted. Originator: ' + event.originator);
                 if (!this.config.video && this.currentCamera == undefined) {
-                    init();
+                    let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
+                    this.audioVisualizer = new AudioVisualizer(this.renderRoot, remoteAudio.srcObject, 16);
                 }
                 this.ring("pause");
                 if (this.sipPhoneSession?.remote_identity) {
