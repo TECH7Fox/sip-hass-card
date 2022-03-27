@@ -1,4 +1,4 @@
-# HA-SIP
+# sip-hass-card
 **A SIP client inside home assistant!**
 
 With this card you can make and receive calls to other HA clients and other sip devices, so you can use it as for example an intercom.

@@ -13,14 +13,14 @@ jobs:
       - uses: actions/checkout@v1
       - name: Build the file
         run: |
-          cd /home/runner/work/HA-SIP/HA-SIP/
+          cd /home/runner/work/sip-hass-card/sip-hass-card/
           npm ci
           npm run build
       - name: Upload zip to release
         uses: svenstaro/upload-release-action@v1-release
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: /home/runner/work/HA-SIP/HA-SIP/dist/sipjs-card.js
+          file: /home/runner/work/sip-hass-card/sip-hass-card/dist/sipjs-card.js
           asset_name: sipjs-card.js
           tag: ${{ github.ref }}
           overwrite: true
