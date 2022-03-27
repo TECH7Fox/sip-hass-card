@@ -420,9 +420,14 @@ class SipJsCard extends LitElement {
 
     static getStubConfig() {
         return {
-            server: "192.168.178.0.1",
+            server: "192.168.0.10",
             port: "8089",
             button_size: "48",
+            state_color: false,
+            auto_answer: false,
+            hide_me: true,
+            custom_title: '',
+            video: false,
             custom: [
                 {
                     name: 'Custom1',
@@ -436,7 +441,8 @@ class SipJsCard extends LitElement {
                     signal: 1,
                     icon: 'mdi:door'
                 }
-            ]
+            ],
+            iceTimeout: 5
         };
     }
 

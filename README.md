@@ -10,7 +10,8 @@ The card supports video, DTMF signals, custom icons, custom names, status entiti
 ![image](https://user-images.githubusercontent.com/32220029/158247719-0c568186-bee5-4490-9678-58f5d3860c51.png)
 
 ## Roadmap
-This is very much still work in progress, and these are the things i want to add in the near future.
+This is still work in progress, and these are the things i want to add in the near future.
+ * Improve styling (hard because custom cards can't use all ha elements)
  * Include default ringtones
  * Fix video on android companion app
  * Translations
@@ -43,13 +44,96 @@ The entire card is configurable from the editor.
 set your ringtones to play when calling/being called.
 `/local` is your `www` folder in config. Example: `/local/ringtone.mp3` = `/config/www/ringtone.mp3`.
 
-### Auto call
+### Auto Call
 You can put `?call=<number>` behind the URL to auto call that number when the card loads. Useful for notifications.
+
+### Ice Options
+You can set ICE options for external use. These settings are not (yet) configurable with the card editor, so you will
+need to set them in the code editor. Don't set `iceConfig` if you don't want to use ICE.
+
+Here is a example:
+
+```
+iceTimeout: 5
+iceConfig:
+  iceCandidatePoolSize: 0
+  iceTransportPolicy: all
+  iceServers:
+    - urls:
+        - stun:stun.l.google.com:19302
+        - stun:stun1.l.google.com:19302
+  rtcpMuxPolicy: require
+```
+
+### Card Configuration
+
+Everything (expect ICE) is configurable with the card editor.
+But for people that are configuring it with YAML, here is a example:
+
+```
+type: custom:sipjs-card
+server: 192.168.0.10
+port: '8089'
+video: false
+ringtone: /local/asterisk/ringtone.mp3
+button_size: '62'
+custom:
+  - name: Doorbell
+    number: '007'
+    icon: mdi:doorbell
+    camera: 'camera.doorbell'
+  - name: Jordy deskphone
+    number: '008'
+    icon: mdi:deskphone
+    camera: ''
+dtmfs:
+  - name: Door
+    signal: '1'
+    icon: mdi:door
+extensions:
+  - person: person.person1
+    name: Test person
+    extension: '101'
+    secret: 1234
+    icon: mdi:person
+    entity: binary_sensor.myphone
+    camera: ''
+  - person: person.jordy
+    name: Jordy PC
+    extension: '100'
+    secret: 1234
+    icon: mdi:monitor
+  - person: person.tablet
+    name: Tablet
+    extension: '102'
+    secret: 1234
+    icon: mdi:tablet
+state_color: false 
+ringbacktone: /local/asterisk/backtone.mp3
+auto_answer: false
+buttons:
+  - name: 'Garage Door'
+    icon: mdi:garage
+    entity: switch.garagedoor
+custom_title: ''
+hide_me: true
+iceTimeout: 3 # Default is 5 seconds
+iceConfig: # Remove if you don't want to use ICE
+  iceCandidatePoolSize: 0
+  iceTransportPolicy: all
+  iceServers:
+    - urls:
+        - stun:stun.l.google.com:19302
+        - stun:stun1.l.google.com:19302
+  rtcpMuxPolicy: require
+```
 
 ## Troubleshooting
 Most problems is because your PBX server is not configured correct, or your certificate is not accepted.
 To accept the certificate for Asterisk/FreePBX go to `https://<host>:8089/ws` and click continue.
-To see how to configure FreePBX go to: https://github.com/TECH7Fox/HA-SIP/wiki/Setup-FreePBX
+To see how to configure FreePBX go to: https://github.com/TECH7Fox/sip-hass-card/wiki/Setup-FreePBX
+
+[Here is the main wiki](https://github.com/TECH7Fox/asterisk-hass-addons/wiki)
 
 Android companion app 2022.2 required for speaker + audio permissions.
 
