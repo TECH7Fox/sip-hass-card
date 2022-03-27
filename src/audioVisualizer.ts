@@ -36,7 +36,6 @@ export class AudioVisualizer {
         const dataMap: any = { 0: 15, 1: 10, 2: 8, 3: 9, 4: 6, 5: 5, 6: 2, 7: 1, 8: 0, 9: 4, 10: 3, 11: 7, 12: 11, 13: 12, 14: 13, 15: 14 };
         const values: any = Object.values( data );
         let i;
-        console.log(this.visualValueCount);
         for ( i = 0; i < this.visualValueCount; ++i ) {
             const value = (values[ dataMap[ i ] ] / 255);// + 0.025;
             const elmStyles = this.visualElements[ i ].style;

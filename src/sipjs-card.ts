@@ -545,6 +545,21 @@ class SipJsCard extends LitElement {
         });
     }
 
+    endCall() {
+        if (!this.config.video && this.currentCamera == undefined && this.audioVisualizer !== undefined) {
+            this.audioVisualizer.stop();
+            this.renderRoot.querySelector('#audioVisualizer').innerHTML = '';
+            this.audioVisualizer = undefined;
+        }
+        this.ring("pause");
+        this.setName("Idle");
+        clearInterval(this.intervalId);
+        this.timerElement.innerHTML = "00:00";
+        this.currentCamera = undefined;
+        this.closePopup();
+        this.sipPhoneSession = null;
+    }
+
     async connect() {
         this.timerElement = this.renderRoot.querySelector('#time');
         if (this.user == undefined) {
@@ -636,32 +651,12 @@ class SipJsCard extends LitElement {
 
             this.sipPhoneSession.on("failed", (event: EndEvent) =>{
                 console.log('Call failed. Originator: ' + event.originator);
-                if (!this.config.video && this.currentCamera == undefined) {
-                    this.audioVisualizer.stop();
-                    this.renderRoot.querySelector('#audioVisualizer').innerHTML = '';
-                }
-                this.ring("pause");
-                this.setName("Idle");
-                clearInterval(this.intervalId);
-                this.timerElement.innerHTML = "00:00";
-                this.currentCamera = undefined;
-                this.closePopup();
-                this.sipPhoneSession = null;
+                this.endCall();
             });
 
             this.sipPhoneSession.on("ended", (event: EndEvent) => {
                 console.log('Call ended. Originator: ' + event.originator);
-                if (!this.config.video && this.currentCamera == undefined) {
-                    this.audioVisualizer.stop();
-                    this.renderRoot.querySelector('#audioVisualizer').innerHTML = '';
-                }
-                this.ring("pause");
-                this.setName("Idle");
-                clearInterval(this.intervalId);
-                this.timerElement.innerHTML = "00:00";
-                this.currentCamera = undefined;
-                this.closePopup();
-                this.sipPhoneSession = null;
+                this.endCall();
             });
 
             this.sipPhoneSession.on("accepted", (event: IncomingEvent | OutgoingEvent) => {
