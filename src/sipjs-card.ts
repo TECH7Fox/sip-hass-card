@@ -712,6 +712,33 @@ class SipJsCard extends LitElement {
                 }, iceTimeout * 1000);
             });
 
+            let gotRemoteTrack = (event: RTCTrackEvent): void => {
+                console.log('Call: peerconnection: mediatrack event: kind: ' + event.track.kind);
+
+                let stream: MediaStream | null = null;
+                if (event.streams) {
+                    console.log('Call: peerconnection: mediatrack event: number of associated streams: ' + event.streams.length + ' - using first stream');
+                    stream = event.streams[0];
+                }
+                else {
+                    console.log('Call: peerconnection: mediatrack event: no associated stream. Creating stream...');
+                    if (!stream) {
+                        stream = new MediaStream();
+                    }
+                    stream.addTrack(event.track);
+                }
+
+                let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
+                remoteAudio.srcObject = stream;
+                remoteAudio.play();
+
+                if (this.config.video) {
+                    let remoteVideo = this.renderRoot.querySelector('#remoteVideo');
+                    remoteVideo.srcObject = stream;
+                    remoteVideo.play();
+                }
+            }
+
             // Typescript types for enums seem to be broken for JsSIP.
             // See: https://github.com/versatica/JsSIP/issues/750
             if (this.sipPhoneSession.direction === 'incoming') {
@@ -729,19 +756,8 @@ class SipJsCard extends LitElement {
 
                 this.sipPhoneSession.on("peerconnection", (event: PeerConnectionEvent) => {
                     console.log('Call: peerconnection(incoming)');
-                    this.sipPhoneSession?.connection.addEventListener("track", (event: RTCTrackEvent): void => {
-                        console.log('Call: peerconnection: mediatrack event: kind: ' + event.track.kind);
-                        if (event.track.kind == "audio") {
-                            let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
-                            remoteAudio.srcObject = event.streams[0];
-                            remoteAudio.play();
-                        }
-                        if (this.config.video && event.track.kind == "video") {
-                            let remoteVideo = this.renderRoot.querySelector('#remoteVideo');
-                            remoteVideo.srcObject = event.streams[0];
-                            remoteVideo.play();
-                        }
-                    });
+
+                    event.peerconnection.addEventListener("track", gotRemoteTrack);
                 });
 
                 this.openPopup();
@@ -763,21 +779,11 @@ class SipJsCard extends LitElement {
                 this.sipPhoneSession.on("peerconnection", (event: PeerConnectionEvent) => {
                     console.log('Call: peerconnection(outgoing)');
                 });
-                this.sipPhoneSession?.connection.addEventListener("track", (event: RTCTrackEvent): void => {
-                    console.log('Call: mediatrack event: kind: ' + event.track.kind);
-                    if (event.track.kind == "audio") {
-                        let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
-                        remoteAudio.srcObject = event.streams[0];
-                        remoteAudio.play();
-                    }
-                    if (this.config.video && event.track.kind == "video") {
-                        let remoteVideo = this.renderRoot.querySelector('#remoteVideo');
-                        remoteVideo.srcObject = event.streams[0];
-                        remoteVideo.play();
-                    }
-            });
+
+                this.sipPhoneSession?.connection.addEventListener("track", gotRemoteTrack);
             }
             else {
+                console.log('Call: direction was neither incoming or outgoing!');
             }
         });
 
