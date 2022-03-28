@@ -698,7 +698,7 @@ class SipJsCard extends LitElement {
             console.log('ICE gathering timeout: ' + iceTimeout + " seconds");
 
             this.sipPhoneSession.on("icecandidate", (event: IceCandidateEvent) => {
-                    console.log('ICE: candidate: ' + event.candidate.candidate);
+                console.log('ICE: candidate: ' + event.candidate.candidate);
 
                 if (iceCandidateTimeout != null) {
                     clearTimeout(iceCandidateTimeout);
@@ -741,7 +741,7 @@ class SipJsCard extends LitElement {
 
                 let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
                 if (event.track.kind === 'audio' && remoteAudio.srcObject != stream) {
-                remoteAudio.srcObject = stream;
+                    remoteAudio.srcObject = stream;
                     try {
                         await remoteAudio.play();
                     }
@@ -750,7 +750,7 @@ class SipJsCard extends LitElement {
                     }
                 }
 
-                    let remoteVideo = this.renderRoot.querySelector('#remoteVideo');
+                let remoteVideo = this.renderRoot.querySelector('#remoteVideo');
                 if (this.config.video && event.track.kind === 'video' && remoteVideo.srcObject != stream) {
                     remoteVideo.srcObject = stream;
                     try {
