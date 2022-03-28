@@ -722,6 +722,8 @@ class SipJsCard extends LitElement {
                     }
                 }
             };
+
+            let gotRemoteTrack = async (event: RTCTrackEvent): Promise<void> => {
                 console.log('Call: peerconnection: mediatrack event: kind: ' + event.track.kind);
 
                 let stream: MediaStream | null = null;
@@ -738,13 +740,25 @@ class SipJsCard extends LitElement {
                 }
 
                 let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
+                if (event.track.kind === 'audio' && remoteAudio.srcObject != stream) {
                 remoteAudio.srcObject = stream;
-                remoteAudio.play();
+                    try {
+                        await remoteAudio.play();
+                    }
+                    catch (err) {
+                        console.log('Error starting audio playback: ' + err);
+                    }
+                }
 
-                if (this.config.video) {
                     let remoteVideo = this.renderRoot.querySelector('#remoteVideo');
+                if (this.config.video && event.track.kind === 'video' && remoteVideo.srcObject != stream) {
                     remoteVideo.srcObject = stream;
-                    remoteVideo.play();
+                    try {
+                        await remoteVideo.play()
+                    }
+                    catch (err) {
+                        console.log('Error starting video playback: ' + err);
+                    }
                 }
             }
 
