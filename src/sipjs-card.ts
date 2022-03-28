@@ -698,22 +698,30 @@ class SipJsCard extends LitElement {
             console.log('ICE gathering timeout: ' + iceTimeout + " seconds");
 
             this.sipPhoneSession.on("icecandidate", (event: IceCandidateEvent) => {
-                if (event.candidate.candidate === "") {
-                    console.log('ICE: candidate gathering complete.');
-                }
-                else {
                     console.log('ICE: candidate: ' + event.candidate.candidate);
-                }
+
                 if (iceCandidateTimeout != null) {
                     clearTimeout(iceCandidateTimeout);
                 }
+
                 iceCandidateTimeout = setTimeout(() => {
                     console.log('ICE: stop candidate gathering due to application timeout.');
                     event.ready();
                 }, iceTimeout * 1000);
             });
 
-            let gotRemoteTrack = (event: RTCTrackEvent): void => {
+            let handleIceGatheringStateChangeEent = (event: any): void => {
+                let connection = event.target;
+
+                console.log('ICE: gathering state changed: ' + connection.iceGatheringState);
+
+                if (connection.iceGatheringState === 'complete') {
+                    console.log('ICE: candidate gathering complete. Cancelling ICE application timeout timer...');
+                    if (iceCandidateTimeout != null) {
+                        clearTimeout(iceCandidateTimeout);
+                    }
+                }
+            };
                 console.log('Call: peerconnection: mediatrack event: kind: ' + event.track.kind);
 
                 let stream: MediaStream | null = null;
@@ -759,6 +767,7 @@ class SipJsCard extends LitElement {
                     console.log('Call: peerconnection(incoming)');
 
                     event.peerconnection.addEventListener("track", gotRemoteTrack);
+                    event.peerconnection.addEventListener("icegatheringstatechange", handleIceGatheringStateChangeEent);
                 });
 
                 this.openPopup();
@@ -781,7 +790,8 @@ class SipJsCard extends LitElement {
                     console.log('Call: peerconnection(outgoing)');
                 });
 
-                this.sipPhoneSession?.connection.addEventListener("track", gotRemoteTrack);
+                this.sipPhoneSession.connection.addEventListener("track", gotRemoteTrack);
+                this.sipPhoneSession.connection.addEventListener("icegatheringstatechange", handleIceGatheringStateChangeEent);
             }
             else {
                 console.log('Call: direction was neither incoming or outgoing!');
