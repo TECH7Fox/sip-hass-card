@@ -710,7 +710,7 @@ class SipJsCard extends LitElement {
                 }, iceTimeout * 1000);
             });
 
-            let handleIceGatheringStateChangeEent = (event: any): void => {
+            let handleIceGatheringStateChangeEvent = (event: any): void => {
                 let connection = event.target;
 
                 console.log('ICE: gathering state changed: ' + connection.iceGatheringState);
@@ -723,7 +723,7 @@ class SipJsCard extends LitElement {
                 }
             };
 
-            let gotRemoteTrack = async (event: RTCTrackEvent): Promise<void> => {
+            let handleRemoteTrackEvent = async (event: RTCTrackEvent): Promise<void> => {
                 console.log('Call: peerconnection: mediatrack event: kind: ' + event.track.kind);
 
                 let stream: MediaStream | null = null;
@@ -780,8 +780,8 @@ class SipJsCard extends LitElement {
                 this.sipPhoneSession.on("peerconnection", (event: PeerConnectionEvent) => {
                     console.log('Call: peerconnection(incoming)');
 
-                    event.peerconnection.addEventListener("track", gotRemoteTrack);
-                    event.peerconnection.addEventListener("icegatheringstatechange", handleIceGatheringStateChangeEent);
+                    event.peerconnection.addEventListener("track", handleRemoteTrackEvent);
+                    event.peerconnection.addEventListener("icegatheringstatechange", handleIceGatheringStateChangeEvent);
                 });
 
                 this.openPopup();
@@ -804,8 +804,8 @@ class SipJsCard extends LitElement {
                     console.log('Call: peerconnection(outgoing)');
                 });
 
-                this.sipPhoneSession.connection.addEventListener("track", gotRemoteTrack);
-                this.sipPhoneSession.connection.addEventListener("icegatheringstatechange", handleIceGatheringStateChangeEent);
+                this.sipPhoneSession.connection.addEventListener("track", handleRemoteTrackEvent);
+                this.sipPhoneSession.connection.addEventListener("icegatheringstatechange", handleIceGatheringStateChangeEvent);
             }
             else {
                 console.log('Call: direction was neither incoming or outgoing!');
