@@ -593,6 +593,7 @@ class SipJsCard extends LitElement {
 
         this.sipCallOptions = {
             mediaConstraints: { audio: true, video: this.config.video },
+            rtcOfferConstraints: { offerToReceiveAudio: true, offerToReceiveVideo: this.config.video },
             pcConfig: this.config.iceConfig // we just use the config that directly comes from the YAML config in the YAML card config.
             /* EXAMPLE config
             {
@@ -697,20 +698,69 @@ class SipJsCard extends LitElement {
             console.log('ICE gathering timeout: ' + iceTimeout + " seconds");
 
             this.sipPhoneSession.on("icecandidate", (event: IceCandidateEvent) => {
-                if (event.candidate.candidate === "") {
-                    console.log('ICE: candidate gathering complete.');
-                }
-                else {
-                    console.log('ICE: candidate: ' + event.candidate.candidate);
-                }
+                console.log('ICE: candidate: ' + event.candidate.candidate);
+
                 if (iceCandidateTimeout != null) {
                     clearTimeout(iceCandidateTimeout);
                 }
+
                 iceCandidateTimeout = setTimeout(() => {
                     console.log('ICE: stop candidate gathering due to application timeout.');
                     event.ready();
                 }, iceTimeout * 1000);
             });
+
+            let handleIceGatheringStateChangeEvent = (event: any): void => {
+                let connection = event.target;
+
+                console.log('ICE: gathering state changed: ' + connection.iceGatheringState);
+
+                if (connection.iceGatheringState === 'complete') {
+                    console.log('ICE: candidate gathering complete. Cancelling ICE application timeout timer...');
+                    if (iceCandidateTimeout != null) {
+                        clearTimeout(iceCandidateTimeout);
+                    }
+                }
+            };
+
+            let handleRemoteTrackEvent = async (event: RTCTrackEvent): Promise<void> => {
+                console.log('Call: peerconnection: mediatrack event: kind: ' + event.track.kind);
+
+                let stream: MediaStream | null = null;
+                if (event.streams) {
+                    console.log('Call: peerconnection: mediatrack event: number of associated streams: ' + event.streams.length + ' - using first stream');
+                    stream = event.streams[0];
+                }
+                else {
+                    console.log('Call: peerconnection: mediatrack event: no associated stream. Creating stream...');
+                    if (!stream) {
+                        stream = new MediaStream();
+                    }
+                    stream.addTrack(event.track);
+                }
+
+                let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
+                if (event.track.kind === 'audio' && remoteAudio.srcObject != stream) {
+                    remoteAudio.srcObject = stream;
+                    try {
+                        await remoteAudio.play();
+                    }
+                    catch (err) {
+                        console.log('Error starting audio playback: ' + err);
+                    }
+                }
+
+                let remoteVideo = this.renderRoot.querySelector('#remoteVideo');
+                if (this.config.video && event.track.kind === 'video' && remoteVideo.srcObject != stream) {
+                    remoteVideo.srcObject = stream;
+                    try {
+                        await remoteVideo.play()
+                    }
+                    catch (err) {
+                        console.log('Error starting video playback: ' + err);
+                    }
+                }
+            }
 
             // Typescript types for enums seem to be broken for JsSIP.
             // See: https://github.com/versatica/JsSIP/issues/750
@@ -729,19 +779,9 @@ class SipJsCard extends LitElement {
 
                 this.sipPhoneSession.on("peerconnection", (event: PeerConnectionEvent) => {
                     console.log('Call: peerconnection(incoming)');
-                    this.sipPhoneSession?.connection.addEventListener("track", (event: RTCTrackEvent): void => {
-                        console.log('Call: peerconnection: mediatrack event: kind: ' + event.track.kind);
-                        if (event.track.kind == "audio") {
-                            let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
-                            remoteAudio.srcObject = event.streams[0];
-                            remoteAudio.play();
-                        }
-                        if (this.config.video && event.track.kind == "video") {
-                            let remoteVideo = this.renderRoot.querySelector('#remoteVideo');
-                            remoteVideo.srcObject = event.streams[0];
-                            remoteVideo.play();
-                        }
-                    });
+
+                    event.peerconnection.addEventListener("track", handleRemoteTrackEvent);
+                    event.peerconnection.addEventListener("icegatheringstatechange", handleIceGatheringStateChangeEvent);
                 });
 
                 this.openPopup();
@@ -763,21 +803,12 @@ class SipJsCard extends LitElement {
                 this.sipPhoneSession.on("peerconnection", (event: PeerConnectionEvent) => {
                     console.log('Call: peerconnection(outgoing)');
                 });
-                this.sipPhoneSession?.connection.addEventListener("track", (event: RTCTrackEvent): void => {
-                    console.log('Call: mediatrack event: kind: ' + event.track.kind);
-                    if (event.track.kind == "audio") {
-                        let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
-                        remoteAudio.srcObject = event.streams[0];
-                        remoteAudio.play();
-                    }
-                    if (this.config.video && event.track.kind == "video") {
-                        let remoteVideo = this.renderRoot.querySelector('#remoteVideo');
-                        remoteVideo.srcObject = event.streams[0];
-                        remoteVideo.play();
-                    }
-            });
+
+                this.sipPhoneSession.connection.addEventListener("track", handleRemoteTrackEvent);
+                this.sipPhoneSession.connection.addEventListener("icegatheringstatechange", handleIceGatheringStateChangeEvent);
             }
             else {
+                console.log('Call: direction was neither incoming or outgoing!');
             }
         });
 
