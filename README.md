@@ -129,7 +129,7 @@ iceConfig: # Remove if you don't want to use ICE
 ```
 
 ## Wiki
-You can find more information on the [SIP-HASS Docs](tech7fox.github.io/sip-hass-docs/).
+You can find more information on the [SIP-HASS Docs](https://tech7fox.github.io/sip-hass-docs/).
 
 ## Troubleshooting
 Most problems is because your PBX server is not configured correct, or your certificate is not accepted.
