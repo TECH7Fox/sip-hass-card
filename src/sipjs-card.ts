@@ -686,7 +686,7 @@ class SipJsCard extends LitElement {
 	});
         this.sipPhone?.on("registrationFailed", () => {
 		console.log('SIP-Card Failed Registeration with SIP Server');
-		this.renderRoot.querySelector('.extension').style.color = 'red';
+		this.renderRoot.querySelector('.extension').style.color = 'var(--mdc-theme-error, #db4437)';
 	});
         this.sipPhone?.on("newRTCSession", (event: RTCSessionEvent) => {
             if (this.sipPhoneSession !== null ) {
