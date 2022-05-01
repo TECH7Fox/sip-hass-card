@@ -128,12 +128,13 @@ iceConfig: # Remove if you don't want to use ICE
   rtcpMuxPolicy: require
 ```
 
+## Wiki
+You can find more information on the [SIP-HASS Docs](https://tech7fox.github.io/sip-hass-docs/).
+
 ## Troubleshooting
 Most problems is because your PBX server is not configured correct, or your certificate is not accepted.
 To accept the certificate for Asterisk/FreePBX go to `https://<host>:8089/ws` and click continue.
-To see how to configure FreePBX go to: https://github.com/TECH7Fox/sip-hass-card/wiki/Setup-FreePBX
-
-[Here is the main wiki](https://github.com/TECH7Fox/asterisk-hass-addons/wiki)
+To see how to configure FreePBX go to the [FreePBX guide](https://tech7fox.github.io/sip-hass-docs/docs/card/guides/freepbx).
 
 Android companion app 2022.2 required for speaker + audio permissions.
 
