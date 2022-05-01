@@ -676,9 +676,18 @@ class SipJsCard extends LitElement {
 
         this.sipPhone?.start();
 
-        this.sipPhone?.on("registered", () => console.log('SIP-Card Registered with SIP Server'));
-        this.sipPhone?.on("unregistered", () => console.log('SIP-Card Unregistered with SIP Server'));
-        this.sipPhone?.on("registrationFailed", () => console.log('SIP-Card Failed Registeration with SIP Server'));
+        this.sipPhone?.on("registered", () => {
+		console.log('SIP-Card Registered with SIP Server');
+		this.renderRoot.querySelector('.extension').style.color = 'gray';
+	});
+        this.sipPhone?.on("unregistered", () => {
+		console.log('SIP-Card Unregistered with SIP Server');
+		this.renderRoot.querySelector('.extension').style.color = 'blue';
+	});
+        this.sipPhone?.on("registrationFailed", () => {
+		console.log('SIP-Card Failed Registeration with SIP Server');
+		this.renderRoot.querySelector('.extension').style.color = 'red';
+	});
         this.sipPhone?.on("newRTCSession", (event: RTCSessionEvent) => {
             if (this.sipPhoneSession !== null ) {
                 event.session.terminate();
