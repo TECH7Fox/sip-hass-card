@@ -682,7 +682,7 @@ class SipJsCard extends LitElement {
 	});
         this.sipPhone?.on("unregistered", () => {
 		console.log('SIP-Card Unregistered with SIP Server');
-		this.renderRoot.querySelector('.extension').style.color = 'blue';
+		this.renderRoot.querySelector('.extension').style.color = 'var(--mdc-theme-primary, #03a9f4)';
 	});
         this.sipPhone?.on("registrationFailed", () => {
 		console.log('SIP-Card Failed Registeration with SIP Server');
