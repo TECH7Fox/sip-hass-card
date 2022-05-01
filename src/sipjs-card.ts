@@ -223,6 +223,7 @@ class SipJsCard extends LitElement {
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
+                white-space: nowrap;
             }
 
             #audioVisualizer div {
@@ -233,6 +234,57 @@ class SipJsCard extends LitElement {
                 background: currentColor;
                 transform: scaleY( .5 );
                 opacity: .25;
+            }
+            ha-header-bar {
+                --mdc-theme-on-primary: var(--primary-text-color);
+                --mdc-theme-primary: var(--mdc-theme-surface);
+                flex-shrink: 0;
+                display: block;
+            }
+            .content {
+                outline: none;
+            }
+            @media all and (max-width: 450px), all and (max-height: 500px) {
+                ha-header-bar {
+                    --mdc-theme-primary: var(--app-header-background-color);
+                    --mdc-theme-on-primary: var(--app-header-text-color, white);
+                    border-bottom: none;
+                }
+            }
+            .heading {
+                border-bottom: 1px solid
+                    var(--mdc-dialog-scroll-divider-color, rgba(0, 0, 0, 0.12));
+            }
+            :host([large]) ha-dialog[data-domain="camera"] .content,
+            :host([large]) ha-header-bar {
+                width: 90vw;
+            }
+            @media (max-width: 450px), (max-height: 500px) {
+                ha-dialog {
+                    --mdc-dialog-min-width: calc( 100vw - env(safe-area-inset-right) - env(safe-area-inset-left) );
+                    --mdc-dialog-max-width: calc( 100vw - env(safe-area-inset-right) - env(safe-area-inset-left) );
+                    --mdc-dialog-min-height: 94%;
+                    --mdc-dialog-max-height: 94%;
+                    --vertial-align-dialog: flex-end;
+                    --ha-dialog-border-radius: 0px;
+                }
+            }
+
+            .header-text {
+                -webkit-font-smoothing: antialiased;
+                font-family: var(--mdc-typography-headline6-font-family, var(--mdc-typography-font-family, Roboto, sans-serif));
+                font-size: var(--mdc-typography-headline6-font-size, 1.25rem);
+                line-height: var(--mdc-typography-headline6-line-height, 2rem);
+                font-weight: var(--mdc-typography-headline6-font-weight, 500);
+                letter-spacing: var(--mdc-typography-headline6-letter-spacing, 0.0125em);
+                text-decoration: var(--mdc-typography-headline6-text-decoration, inherit);
+                text-transform: var(--mdc-typography-headline6-text-transform, inherit);
+                padding-left: 20px;
+                padding-right: 0px;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                overflow: hidden;
+                z-index: 1;
             }
         `;
     }
@@ -257,15 +309,22 @@ class SipJsCard extends LitElement {
                     --mdc-icon-size: ${this.config.button_size ? unsafeCSS(this.config.button_size - 25) : css`23`}px;
                 }
             </style>
-            <ha-dialog id="phone" ?open=${this.popup} hideactions data-domain="camera">
+            <ha-dialog id="phone" ?open=${this.popup} hideactions data-domain="camera"
+                defaultAction="ignore"
+                .heading=${html`Phone`}>
                 <div slot="heading" class="heading">
                     <ha-header-bar>
-                        <ha-icon-button slot="navigationIcon" dialogaction="cancel"></ha-icon-button>
-                        <div slot="title" class="main-title" title="Call">Call</div>
-                        <ha-icon-button slot="actionItems"></ha-icon-button>
+                        <ha-icon-button
+                            style="--mdc-icon-button-size: 48px; --mdc-icon-size: 23px;"
+                            slot="navigationIcon"
+                            dialogAction="cancel"
+                            ><ha-icon icon="mdi:window-close"></ha-icon>
+                        </ha-icon-button>
+                        <span slot="title" id="name" class="header-text">Idle</span>
+                        <span slot="actionItems" id="time" class="header-text">00:00</span>
                     </ha-header-bar>
                 </div>
-                <div class="content">
+                <div class="content"> 
                     ${this.currentCamera !== undefined ? html`
                         <ha-camera-stream
                             allow-exoplayer
@@ -275,7 +334,7 @@ class SipJsCard extends LitElement {
                         ></ha-camera-stream>
                     ` : html`
                         <div id="audioVisualizer"></div>
-                        <video poster="noposter" webkit-playsinline playsinline id="remoteVideo"></video>
+                        <video poster="noposter" playsinline id="remoteVideo"></video>
                     `}
                     <audio id="remoteAudio" style="display:none"></audio>
                     <audio id="toneAudio" style="display:none" loop controls></audio>
@@ -287,7 +346,6 @@ class SipJsCard extends LitElement {
                                 @click="${this._answer}"
                                 ><ha-icon icon="hass:phone"></ha-icon>
                             </ha-icon-button>
-                            <span id="name" class="title">Idle</span>
                         </div>
                         <div class="row">
                             <ha-icon-button
@@ -326,7 +384,6 @@ class SipJsCard extends LitElement {
                             }
                         </div>
                         <div class="row">
-                            <span id="time">00:00</span>
                             <ha-icon-button
                                 class="hangup-btn"
                                 .label=${"Decline Call"}
