@@ -219,11 +219,12 @@ class SipJsCard extends LitElement {
             }
 
             #audioVisualizer {
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
+                min-height: 20em;
                 white-space: nowrap;
+                align-items: center;
+                display: flex;
+                justify-content: center;
+                background: var(--card-background-color);
             }
 
             #audioVisualizer div {
@@ -333,8 +334,8 @@ class SipJsCard extends LitElement {
                             .stateObj=${this.hass.states[this.currentCamera]}
                         ></ha-camera-stream>
                     ` : html`
-                        <div id="audioVisualizer"></div>
-                        <video poster="noposter" playsinline id="remoteVideo"></video>
+                        <div id="audioVisualizer" style="display:${this.config.video ? "none": "flex"}"></div>
+                        <video poster="noposter" style="display:${this.config.video ? "block": "none"}" playsinline id="remoteVideo"></video>
                         <audio id="remoteAudio" style="display:none"></audio>
                     `}
                     <div class="box">
@@ -352,7 +353,7 @@ class SipJsCard extends LitElement {
                                 @click="${this._toggleMuteAudio}"
                                 ><ha-icon id="muteaudio-icon" icon="hass:microphone"></ha-icon>
                             </ha-icon-button>
-                            <ha-icon-button
+                            <ha-icon-button style="display:${this.config.video ? "block": "none"}"
                                 .label=${"Mute video"}
                                 @click="${this._toggleMuteVideo}"
                                 ><ha-icon id="mutevideo-icon" icon="${this.config.video ? "hass:video" : "hass:video-off"}"></ha-icon>
