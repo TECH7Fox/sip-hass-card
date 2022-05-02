@@ -21,13 +21,16 @@ class SipJsCard extends LitElement {
     user: any;
     config: any;
     hass: any;
-    timerElement: any;
+    timerElement: string = "00:00";
     renderRoot: any;
     popup: boolean = false;
     currentCamera: any;
     intervalId!: number;
     error: any = null;
     audioVisualizer: any;
+    callStatus: string = "Idle";
+    user_extension: string = "None";
+    card_title: string = "Unknown";
 
     constructor() {
         super();
@@ -93,7 +96,7 @@ class SipJsCard extends LitElement {
             }
             video {
                 display: block;
-                height: 80vh;
+                height: auto;
                 width: 100%;
                 background-color: #2b2b2b;
             }
@@ -114,7 +117,6 @@ class SipJsCard extends LitElement {
                 min-height: 5px;
             }
             .box {
-                position: absolute;
                 /* start paper-font-common-nowrap style */
                 white-space: nowrap;
                 overflow: hidden;
@@ -290,11 +292,11 @@ class SipJsCard extends LitElement {
     }
 
     closePopup() {
+        super.performUpdate();
         this.popup = false;
     }
 
     openPopup() {
-        this.popup = false;
         super.performUpdate();
         this.popup = true;
     }
@@ -303,25 +305,28 @@ class SipJsCard extends LitElement {
 
     render() {
         return html`
-            <style>
-                ha-icon-button {
-                    --mdc-icon-button-size: ${this.config.button_size ? unsafeCSS(this.config.button_size) : css`48`}px;
-                    --mdc-icon-size: ${this.config.button_size ? unsafeCSS(this.config.button_size - 25) : css`23`}px;
-                }
-            </style>
-            <ha-dialog id="phone" ?open=${this.popup} hideactions data-domain="camera"
-                defaultAction="ignore"
-                .heading=${html`Phone`}>
+            <audio id="remoteAudio" style="display:none"></audio>
+            <audio id="toneAudio" style="display:none" loop controls></audio>
+            ${this.popup ? html`
+                <audio id="remoteAudio" style="display:none"></audio>
+                <audio id="toneAudio" style="display:none" loop controls></audio>
+                <style>
+                    ha-icon-button {
+                        --mdc-icon-button-size: ${this.config.button_size ? unsafeCSS(this.config.button_size) : css`48`}px;
+                        --mdc-icon-size: ${this.config.button_size ? unsafeCSS(this.config.button_size - 25) : css`23`}px;
+                    }
+                </style>
                 <div slot="heading" class="heading">
                     <ha-header-bar>
                         <ha-icon-button
                             style="--mdc-icon-button-size: 48px; --mdc-icon-size: 23px;"
+                            @click="${() => this.closePopup()}"
                             slot="navigationIcon"
                             dialogAction="cancel"
                             ><ha-icon icon="mdi:window-close"></ha-icon>
                         </ha-icon-button>
-                        <span slot="title" id="name" class="header-text">Idle</span>
-                        <span slot="actionItems" id="time" class="header-text">00:00</span>
+                        <span slot="title" id="name" class="header-text">${this.callStatus}</span>
+                        <span slot="actionItems" id="time" class="header-text">${this.timerElement}</span>
                     </ha-header-bar>
                 </div>
                 <div class="content"> 
@@ -336,8 +341,6 @@ class SipJsCard extends LitElement {
                         <div id="audioVisualizer"></div>
                         <video poster="noposter" playsinline id="remoteVideo"></video>
                     `}
-                    <audio id="remoteAudio" style="display:none"></audio>
-                    <audio id="toneAudio" style="display:none" loop controls></audio>
                     <div class="box">
                         <div class="row">
                             <ha-icon-button
@@ -356,7 +359,7 @@ class SipJsCard extends LitElement {
                             <ha-icon-button
                                 .label=${"Mute video"}
                                 @click="${this._toggleMuteVideo}"
-                                ><ha-icon id="mutevideo-icon" icon="hass:video"></ha-icon>
+                                ><ha-icon id="mutevideo-icon" icon="${this.config.video ? "hass:video" : "hass:video-off"}"></ha-icon>
                             </ha-icon-button>
                         </div>
                         <div class="row">
@@ -393,63 +396,65 @@ class SipJsCard extends LitElement {
                         </div>
                     </div>
                 </div>
-            </ha-dialog>
-
-            <ha-card @click="${this.openPopup}">
-                <h1 class="card-header">
-                    <span id="title" class="name">Unknown</span>
-                    <span id="extension" class="extension">None</span>
-                </h1>
-                <div class="wrapper">
-
-                    ${(this.error !== null) ? html`
-                        <ha-alert alert-type="error" .title=${this.error.title}>
-                            ${this.error.message}
-                        </ha-alert>
-                        ` : ''
-                    }
-
-                    ${this.config.extensions.map((extension: { entity: string | number; person: string | number; icon: any; name: any; extension: any; camera: any; }) => {
-                        var stateObj = this.hass.states[extension.entity];
-                        var isMe = (this.hass.user.id == this.hass.states[extension.person].attributes.user_id);
-                        if (isMe) {
-                            this.user = extension;
+            ` : html`
+                <audio id="remoteAudio" style="display:none"></audio>
+                <audio id="toneAudio" style="display:none" loop controls></audio>
+                <ha-card @click="${this.openPopup}">
+                    <h1 class="card-header">
+                        <span id="title" class="name">${this.getTitle()}</span>
+                        <span id="extension" class="extension">${this.user_extension}</span>
+                    </h1>
+                    <div class="wrapper">
+                        ${(this.error !== null) ? html`
+                            <ha-alert alert-type="error" .title=${this.error.title}>
+                                ${this.error.message}
+                            </ha-alert>
+                            ` : ''
                         }
-                        if (!(isMe && this.config.hide_me)) {
-                            return html`
-                                <div class="flex">
-                                    <state-badge
-                                        .stateObj=${stateObj}
-                                        .overrideIcon=${extension.icon}
-                                        .stateColor=${this.config.state_color}
-                                    ></state-badge>
-                                    <div class="info">${extension.name}</div>
-                                    <mwc-button @click="${() => this._call(extension.extension, extension.camera)}">CALL</mwc-button>
-                                </div>
-                            `;
+
+                        ${this.config.extensions.map((extension: { entity: string | number; person: string | number; icon: any; name: any; extension: any; camera: any; }) => {
+                            var stateObj = this.hass.states[extension.entity];
+                            var isMe = (this.hass.user.id == this.hass.states[extension.person].attributes.user_id);
+                            if (isMe) {
+                                this.user = extension;
+                                this.user_extension = extension.extension;
+                            }
+                            if (!(isMe && this.config.hide_me)) {
+                                return html`
+                                    <div class="flex">
+                                        <state-badge
+                                            .stateObj=${stateObj}
+                                            .overrideIcon=${extension.icon}
+                                            .stateColor=${this.config.state_color}
+                                        ></state-badge>
+                                        <div class="info">${extension.name}</div>
+                                        <mwc-button @click="${() => this._call(extension.extension, extension.camera)}">CALL</mwc-button>
+                                    </div>
+                                `;
+                            }
+                        })}
+
+                        ${this.config.custom ?
+                            this.config.custom.map((custom: { entity: string | number; icon: any; name: any; number: any; camera: any; }) => {
+                                var stateObj = this.hass.states[custom.entity];
+                                return html`
+                                    <div class="flex">
+                                        <state-badge
+                                            .stateObj=${stateObj}
+                                            .overrideIcon=${custom.icon}
+                                            .stateColor=${this.config.state_color}
+                                        ></state-badge>
+                                        <div class="info">${custom.name}</div>
+                                        <mwc-button @click="${() => this._call(custom.number, custom.camera)}">CALL</mwc-button>
+                                    </div>
+                                `;
+                            }) : ""
                         }
-                    })}
 
-                    ${this.config.custom ?
-                        this.config.custom.map((custom: { entity: string | number; icon: any; name: any; number: any; camera: any; }) => {
-                            var stateObj = this.hass.states[custom.entity];
-                            return html`
-                                <div class="flex">
-                                    <state-badge
-                                        .stateObj=${stateObj}
-                                        .overrideIcon=${custom.icon}
-                                        .stateColor=${this.config.state_color}
-                                    ></state-badge>
-                                    <div class="info">${custom.name}</div>
-                                    <mwc-button @click="${() => this._call(custom.number, custom.camera)}">CALL</mwc-button>
-                                </div>
-                            `;
-                        }) : ""
-                    }
-
-                </div>
-            </ha-card>
-        `;
+                    </div>
+                </ha-card>
+            `}
+        `
     }
 
     firstUpdated() {
@@ -518,21 +523,23 @@ class SipJsCard extends LitElement {
         }
     }
 
-    private setName(text: string) {
-        this.renderRoot.querySelector('#name').innerHTML = text;
+    private setCallStatus(text: string) {
+        this.callStatus = text;
     }
 
-    private setTitle(text: any) {
-        this.renderRoot.querySelector('#title').innerHTML = text;
-    }
-
-    private setExtension(text: any) {
-        this.renderRoot.querySelector('#extension').innerHTML = text;
+    private getTitle() {
+        if (this.config.custom_title != "") {
+            return this.config.custom_title;
+        } else if (this.user !== undefined && this.user.name !== undefined) {
+            return this.user.name;
+        } else {
+            return "Undefined";
+        }
     }
 
     async _call(extension: string | null, camera: any) {
         this.ring("ringbacktone");
-        this.setName("Calling...");
+        this.setCallStatus("Calling...");
         this.currentCamera = (camera ? camera : undefined);
         if (this.sipPhone) {
             this.sipPhone.call("sip:" + extension + "@" + this.config.server, this.sipCallOptions);
@@ -615,16 +622,16 @@ class SipJsCard extends LitElement {
             this.audioVisualizer = undefined;
         }
         this.ring("pause");
-        this.setName("Idle");
+        this.setCallStatus("Idle");
         clearInterval(this.intervalId);
-        this.timerElement.innerHTML = "00:00";
+        this.timerElement = "00:00";
         this.currentCamera = undefined;
         this.closePopup();
         this.sipPhoneSession = null;
     }
 
     async connect() {
-        this.timerElement = this.renderRoot.querySelector('#time');
+        this.timerElement = "00:00";
         if (this.user == undefined) {
             this.error = {
                 title: "Person not configured!",
@@ -633,7 +640,6 @@ class SipJsCard extends LitElement {
             this.requestUpdate();
             throw new Error("Person not configured!");
         }
-        this.setTitle((this.config.custom_title !== "") ? this.config.custom_title : this.user.name);
 
         var socket = new WebSocketInterface("wss://" + this.config.server + ":" + this.config.port + "/ws");
         var configuration = {
@@ -645,8 +651,6 @@ class SipJsCard extends LitElement {
         };
 
         this.sipPhone = new UA(configuration);
-
-        this.setExtension(this.user.extension);
 
         this.sipCallOptions = {
             mediaConstraints: { audio: true, video: this.config.video },
@@ -672,22 +676,20 @@ class SipJsCard extends LitElement {
 
         console.log('ICE config: ' + JSON.stringify(this.sipCallOptions.pcConfig, null, 2));
 
-        this.renderRoot.querySelector('#mutevideo-icon').icon = this.config.video ? "hass:video" : "hass:video-off";
-
         this.sipPhone?.start();
 
         this.sipPhone?.on("registered", () => {
-		console.log('SIP-Card Registered with SIP Server');
-		this.renderRoot.querySelector('.extension').style.color = 'gray';
-	});
+            console.log('SIP-Card Registered with SIP Server');
+            this.renderRoot.querySelector('.extension').style.color = 'gray';
+        });
         this.sipPhone?.on("unregistered", () => {
-		console.log('SIP-Card Unregistered with SIP Server');
-		this.renderRoot.querySelector('.extension').style.color = 'var(--mdc-theme-primary, #03a9f4)';
-	});
+            console.log('SIP-Card Unregistered with SIP Server');
+            this.renderRoot.querySelector('.extension').style.color = 'var(--mdc-theme-primary, #03a9f4)';
+        });
         this.sipPhone?.on("registrationFailed", () => {
-		console.log('SIP-Card Failed Registeration with SIP Server');
-		this.renderRoot.querySelector('.extension').style.color = 'var(--mdc-theme-error, #db4437)';
-	});
+            console.log('SIP-Card Failed Registeration with SIP Server');
+            this.renderRoot.querySelector('.extension').style.color = 'var(--mdc-theme-error, #db4437)';
+        });
         this.sipPhone?.on("newRTCSession", (event: RTCSessionEvent) => {
             if (this.sipPhoneSession !== null ) {
                 event.session.terminate();
@@ -740,9 +742,9 @@ class SipJsCard extends LitElement {
                 }
                 this.ring("pause");
                 if (this.sipPhoneSession?.remote_identity) {
-                    this.setName(this.sipPhoneSession?.remote_identity.display_name);
+                    this.setCallStatus(this.sipPhoneSession?.remote_identity.display_name);
                 } else {
-                    this.setName("On Call");
+                    this.setCallStatus("On Call");
                 }
                 var time = new Date();
                 this.intervalId = window.setInterval(function(this: any): void {
@@ -750,7 +752,7 @@ class SipJsCard extends LitElement {
                     var minutes = Math.floor(delta / 60) % 60;
                     delta -= minutes * 60;
                     var seconds = delta % 60;
-                    this.timerElement.innerHTML = (minutes + ":" + Math.round(seconds)).split(':').map(e => `0${e}`.slice(-2)).join(':');
+                    this.timerElement = (minutes + ":" + Math.round(seconds)).split(':').map(e => `0${e}`.slice(-2)).join(':');
                 }.bind(this), 1000);
             });
 
@@ -859,9 +861,9 @@ class SipJsCard extends LitElement {
                 this.ring("ringtone");
 
                 if (this.sipPhoneSession.remote_identity) {
-                    this.setName("Incoming Call From " + this.sipPhoneSession.remote_identity.display_name);
+                    this.setCallStatus("Incoming Call From " + this.sipPhoneSession.remote_identity.display_name);
                 } else {
-                    this.setName("Incoming Call");
+                    this.setCallStatus("Incoming Call");
                 }
             }
             else if (this.sipPhoneSession.direction === 'outgoing') {
@@ -880,8 +882,8 @@ class SipJsCard extends LitElement {
 
         var urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('call')) {
-            this._call(urlParams.get('call'), undefined); // TODO: Add camera here or in the _call function itself.
             this.openPopup();
+            this._call(urlParams.get('call'), undefined); // TODO: Add camera here or in the _call function itself.
         }
     }
 }
