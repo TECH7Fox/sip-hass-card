@@ -222,9 +222,6 @@ class SipJsCard extends LitElement {
 
             #audioVisualizer {
                 position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
                 white-space: nowrap;
             }
 
@@ -305,11 +302,8 @@ class SipJsCard extends LitElement {
 
     render() {
         return html`
-            <audio id="remoteAudio" style="display:none"></audio>
             <audio id="toneAudio" style="display:none" loop controls></audio>
             ${this.popup ? html`
-                <audio id="remoteAudio" style="display:none"></audio>
-                <audio id="toneAudio" style="display:none" loop controls></audio>
                 <style>
                     ha-icon-button {
                         --mdc-icon-button-size: ${this.config.button_size ? unsafeCSS(this.config.button_size) : css`48`}px;
@@ -340,6 +334,7 @@ class SipJsCard extends LitElement {
                     ` : html`
                         <div id="audioVisualizer"></div>
                         <video poster="noposter" playsinline id="remoteVideo"></video>
+                        <audio id="remoteAudio" style="display:none"></audio>
                     `}
                     <div class="box">
                         <div class="row">
@@ -397,8 +392,6 @@ class SipJsCard extends LitElement {
                     </div>
                 </div>
             ` : html`
-                <audio id="remoteAudio" style="display:none"></audio>
-                <audio id="toneAudio" style="display:none" loop controls></audio>
                 <ha-card @click="${this.openPopup}">
                     <h1 class="card-header">
                         <span id="title" class="name">${this.getTitle()}</span>
