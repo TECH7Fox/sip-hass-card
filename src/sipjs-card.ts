@@ -97,9 +97,9 @@ class SipJsCard extends LitElement {
             }
             video {
                 display: block;
-                height: auto;
+                min-height: 20em;
+                height: 100%;
                 width: 100%;
-                background-color: #2b2b2b;
             }
             .visualizer-container {
                 position: absolute;
@@ -137,6 +137,8 @@ class SipJsCard extends LitElement {
                 display: flex;
                 justify-content: space-between;
                 flex-direction: row;
+                margin-top: -70px;
+                min-height: 62px;
             }
             .box .title {
                 font-weight: 500;
@@ -220,11 +222,11 @@ class SipJsCard extends LitElement {
 
             #audioVisualizer {
                 min-height: 20em;
+                height: 100%;
                 white-space: nowrap;
                 align-items: center;
                 display: flex;
                 justify-content: center;
-                background: var(--card-background-color);
             }
 
             #audioVisualizer div {
@@ -244,6 +246,11 @@ class SipJsCard extends LitElement {
             }
             .content {
                 outline: none;
+                align-self: stretch;
+                flex-grow: 1;
+                display: flex;
+                flex-flow: column;
+                background-color: var(--secondary-background-color);
             }
             @media all and (max-width: 450px), all and (max-height: 500px) {
                 ha-header-bar {
@@ -252,6 +259,13 @@ class SipJsCard extends LitElement {
                     border-bottom: none;
                 }
             }
+
+            @media all and (max-width: 600px) {
+                .heading {
+                    border-bottom: 1px solid var(--mdc-dialog-scroll-divider-color, rgba(0, 0, 0, 0.12))
+                }
+            }
+
             .heading {
                 border-bottom: 1px solid
                     var(--mdc-dialog-scroll-divider-color, rgba(0, 0, 0, 0.12));
@@ -287,6 +301,13 @@ class SipJsCard extends LitElement {
                 overflow: hidden;
                 z-index: 1;
             }
+            
+            .popup {
+                display: flex;
+                flex-wrap: wrap;
+                flex-direction: column;
+                height: 100%;
+            }
         `;
     }
 
@@ -313,83 +334,86 @@ class SipJsCard extends LitElement {
                         --mdc-icon-size: ${this.config.button_size ? unsafeCSS(this.config.button_size - 25) : css`23`}px;
                     }
                 </style>
-                <div slot="heading" class="heading">
-                    <ha-header-bar>
-                        <ha-icon-button
-                            style="--mdc-icon-button-size: 48px; --mdc-icon-size: 23px;"
-                            @click="${() => this.closePopup()}"
-                            slot="navigationIcon"
-                            dialogAction="cancel"
-                            ><ha-icon icon="mdi:window-close"></ha-icon>
-                        </ha-icon-button>
-                        <span slot="title" id="name" class="header-text">${this.callStatus}</span>
-                        <span slot="actionItems" id="time" class="header-text">${this.timerElement}</span>
-                    </ha-header-bar>
-                </div>
-                <div class="content"> 
-                    ${this.currentCamera !== undefined ? html`
-                        <ha-camera-stream
-                            allow-exoplayer
-                            muted
-                            .hass=${this.hass}
-                            .stateObj=${this.hass.states[this.currentCamera]}
-                        ></ha-camera-stream>
-                    ` : html`
-                        <div id="audioVisualizer" style="display:${this.config.video ? "none": "flex"}"></div>
-                        <video poster="noposter" style="display:${this.config.video ? "block": "none"}" playsinline id="remoteVideo"></video>
-                    `}
-                    <div class="box">
-                        <div class="row">
+                <div class="popup">
+                    <div slot="heading" class="heading">
+                        <ha-header-bar>
                             <ha-icon-button
-                                class="accept-btn"
-                                .label=${"Accept Call"}
-                                @click="${this._answer}"
-                                ><ha-icon icon="hass:phone"></ha-icon>
+                                style="--mdc-icon-button-size: 48px; --mdc-icon-size: 23px;"
+                                @click="${() => this.closePopup()}"
+                                slot="navigationIcon"
+                                dialogAction="cancel"
+                                ><ha-icon icon="mdi:window-close"></ha-icon>
                             </ha-icon-button>
-                        </div>
-                        <div class="row">
-                            <ha-icon-button
-                                .label=${"Mute audio"}
-                                @click="${this._toggleMuteAudio}"
-                                ><ha-icon id="muteaudio-icon" icon="hass:microphone"></ha-icon>
-                            </ha-icon-button>
-                            <ha-icon-button style="display:${this.config.video ? "block": "none"}"
-                                .label=${"Mute video"}
-                                @click="${this._toggleMuteVideo}"
-                                ><ha-icon id="mutevideo-icon" icon="${this.config.video ? "hass:video" : "hass:video-off"}"></ha-icon>
-                            </ha-icon-button>
-                        </div>
-                        <div class="row">
-                            ${this.config.dtmfs ?
-                                this.config.dtmfs.map((dtmf: { signal: any; name: any; icon: any; }) => {
-                                    return html `
-                                        <ha-icon-button
-                                            @click="${() => this._sendDTMF(dtmf.signal)}"
-                                            .label="${dtmf.name}"
-                                            ><ha-icon icon="${dtmf.icon}"></ha-icon>
-                                        </ha-icon-button>
-                                    `;
-                                }) : ""
-                            }
-                            ${this.config.buttons ?
-                                this.config.buttons.map((button: { entity: any; name: any; icon: any; }) => {
-                                    return html `
-                                        <ha-icon-button
-                                            @click="${() => this._button(button.entity)}"
-                                            .label="${button.name}"
-                                            ><ha-icon icon="${button.icon}"></ha-icon>
-                                        </ha-icon-button>
-                                    `;
-                                }) : ""
-                            }
-                        </div>
-                        <div class="row">
-                            <ha-icon-button
-                                class="hangup-btn"
-                                .label=${"Decline Call"}
-                                @click="${this._hangup}"
-                            ><ha-icon icon="hass:phone-hangup"></ha-icon>
-                            </ha-icon-button>
+                            <span slot="title" id="name" class="header-text">${this.callStatus}</span>
+                            <span slot="actionItems" id="time" class="header-text">${this.timerElement}</span>
+                        </ha-header-bar>
+                    </div>
+                    <div class="content"> 
+                        ${this.currentCamera !== undefined ? html`
+                            <ha-camera-stream
+                                allow-exoplayer
+                                muted
+                                .hass=${this.hass}
+                                .stateObj=${this.hass.states[this.currentCamera]}
+                            ></ha-camera-stream>
+                        ` : html`
+                            <div id="audioVisualizer" style="display:${this.config.video ? "none": "flex"}"></div>
+                            <video poster="noposter" style="display:${this.config.video ? "block": "none"}" playsinline id="remoteVideo"></video>
+                            <audio id="remoteAudio" style="display:none"></audio>
+                        `}
+                        <div class="box">
+                            <div class="row">
+                                <ha-icon-button
+                                    class="accept-btn"
+                                    .label=${"Accept Call"}
+                                    @click="${this._answer}"
+                                    ><ha-icon icon="hass:phone"></ha-icon>
+                                </ha-icon-button>
+                            </div>
+                            <div class="row">
+                                <ha-icon-button
+                                    .label=${"Mute audio"}
+                                    @click="${this._toggleMuteAudio}"
+                                    ><ha-icon id="muteaudio-icon" icon="hass:microphone"></ha-icon>
+                                </ha-icon-button>
+                                <ha-icon-button style="display:${this.config.video ? "block": "none"}"
+                                    .label=${"Mute video"}
+                                    @click="${this._toggleMuteVideo}"
+                                    ><ha-icon id="mutevideo-icon" icon="${this.config.video ? "hass:video" : "hass:video-off"}"></ha-icon>
+                                </ha-icon-button>
+                            </div>
+                            <div class="row">
+                                ${this.config.dtmfs ?
+                                    this.config.dtmfs.map((dtmf: { signal: any; name: any; icon: any; }) => {
+                                        return html `
+                                            <ha-icon-button
+                                                @click="${() => this._sendDTMF(dtmf.signal)}"
+                                                .label="${dtmf.name}"
+                                                ><ha-icon icon="${dtmf.icon}"></ha-icon>
+                                            </ha-icon-button>
+                                        `;
+                                    }) : ""
+                                }
+                                ${this.config.buttons ?
+                                    this.config.buttons.map((button: { entity: any; name: any; icon: any; }) => {
+                                        return html `
+                                            <ha-icon-button
+                                                @click="${() => this._button(button.entity)}"
+                                                .label="${button.name}"
+                                                ><ha-icon icon="${button.icon}"></ha-icon>
+                                            </ha-icon-button>
+                                        `;
+                                    }) : ""
+                                }
+                            </div>
+                            <div class="row">
+                                <ha-icon-button
+                                    class="hangup-btn"
+                                    .label=${"Decline Call"}
+                                    @click="${this._hangup}"
+                                ><ha-icon icon="hass:phone-hangup"></ha-icon>
+                                </ha-icon-button>
+                            </div>
                         </div>
                     </div>
                 </div>
