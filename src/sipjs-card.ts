@@ -308,6 +308,12 @@ class SipJsCard extends LitElement {
                 flex-direction: column;
                 height: 100%;
             }
+
+            .editField {
+                width: 100%;
+                margin-left: 16px;
+                margin-right: 8px;
+            }
         `;
     }
 
@@ -471,7 +477,7 @@ class SipJsCard extends LitElement {
                                                 .label=${custom.name}
                                                 type="text"
                                                 .inputmode="text"
-                                                style="width:100%;"
+                                                class="editField"
                                             ></ha-textfield>
                                             <mwc-button @click="${() => this._custom_call(nameid, custom.camera)}">CALL</mwc-button>
                                         </div>

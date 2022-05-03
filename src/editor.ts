@@ -110,6 +110,14 @@ class SipJsCardEditor extends LitElement {
                     break;
                 case "custom":
                     rowEditor = html`
+                        <ha-formfield
+                            .label=${"Edit"}
+                            ><ha-switch
+                                .checked=${ent.edit!}
+                                .index="${this._rowEditor.index}"
+                                @change=${this._editValueChanged}
+                            ></ha-switch>
+                        </ha-formfield>
                         <paper-input
                             .label=${"Name"}
                             .index="${this._rowEditor.index}"
@@ -493,6 +501,27 @@ class SipJsCardEditor extends LitElement {
         this._config = {
             ...this._config,
             [target.configValue]: value
+        };
+
+        this.configChanged(this._config);
+    }
+
+    private _editValueChanged(ev: { target: any; }): void {
+        if (!this._config || !this.hass) {
+            return;
+        }
+        
+        const target = ev.target;
+        const index = (ev.target as any).index;
+
+        var array = Object.assign([], this._config["custom"]);
+        array[index] = {
+            ...array[index],
+            ["edit"]: target.checked
+        };
+        this._config = {
+            ...this._config,
+            ["custom"]: array
         };
 
         this.configChanged(this._config);
