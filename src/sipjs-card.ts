@@ -326,6 +326,7 @@ class SipJsCard extends LitElement {
     render() {
         return html`
             <audio id="toneAudio" style="display:none" loop controls></audio>
+            <audio id="remoteAudio" style="display:none"></audio>
             ${this.popup ? html`
                 <style>
                     ha-icon-button {
@@ -417,8 +418,8 @@ class SipJsCard extends LitElement {
                     </div>
                 </div>
             ` : html`
-                <ha-card @click="${this.openPopup}">
-                    <h1 class="card-header">
+                <ha-card>
+                    <h1 class="card-header" @click="${this.openPopup}">
                         <span id="title" class="name">${this.getTitle()}</span>
                         <span id="extension" style="color: ${this.getConnectionCSS()};">${this.user_extension}</span>
                     </h1>
@@ -453,19 +454,41 @@ class SipJsCard extends LitElement {
                         })}
 
                         ${this.config.custom ?
-                            this.config.custom.map((custom: { entity: string | number; icon: any; name: any; number: any; camera: any; }) => {
+                            this.config.custom.map((custom: { entity: string | number; icon: any; name: any; number: any; camera: any; edit: any;}) => {
                                 var stateObj = this.hass.states[custom.entity];
-                                return html`
-                                    <div class="flex">
-                                        <state-badge
-                                            .stateObj=${stateObj}
-                                            .overrideIcon=${custom.icon}
-                                            .stateColor=${this.config.state_color}
-                                        ></state-badge>
-                                        <div class="info">${custom.name}</div>
-                                        <mwc-button @click="${() => this._call(custom.number, custom.camera)}">CALL</mwc-button>
-                                    </div>
-                                `;
+                                var nameid = "custom_" + custom.name.toLowerCase().split(' ').join('_');;
+                                if (custom.edit){
+                                    return html`
+                                        <div class="flex">
+                                            <state-badge
+                                                .stateObj=${stateObj}
+                                                .overrideIcon=${custom.icon}
+                                                .stateColor=${this.config.state_color}
+                                            ></state-badge>
+                                            <ha-textfield
+                                                id="${nameid}"
+                                                .value=${custom.number}
+                                                .label=${custom.name}
+                                                type="text"
+                                                .inputmode="text"
+                                                style="width:100%;"
+                                            ></ha-textfield>
+                                            <mwc-button @click="${() => this._custom_call(nameid, custom.camera)}">CALL</mwc-button>
+                                        </div>
+                                    `;
+                                } else {
+                                    return html`
+                                        <div class="flex">
+                                            <state-badge
+                                                .stateObj=${stateObj}
+                                                .overrideIcon=${custom.icon}
+                                                .stateColor=${this.config.state_color}
+                                            ></state-badge>
+                                            <div class="info">${custom.name}</div>
+                                            <mwc-button @click="${() => this._call(custom.number, custom.camera)}">CALL</mwc-button>
+                                        </div>
+                                    `;
+                                }
                             }) : ""
                         }
 
@@ -564,12 +587,20 @@ class SipJsCard extends LitElement {
     }
 
     async _call(extension: string | null, camera: any) {
+        this.openPopup();
         this.ring("ringbacktone");
         this.setCallStatus("Calling...");
         this.currentCamera = (camera ? camera : undefined);
         if (this.sipPhone) {
             this.sipPhone.call("sip:" + extension + "@" + this.config.server, this.sipCallOptions);
         }
+    }
+
+    async _custom_call(nameid: string | null, camera: any) {
+        console.log(this.renderRoot.querySelector('#' + nameid));
+        var number = this.renderRoot.querySelector('#' + nameid).value;
+        console.log("Trying to custom call this: " + number);
+        this._call(number, camera);
     }
 
     async _answer() {
