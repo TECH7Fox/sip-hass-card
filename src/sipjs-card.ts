@@ -21,13 +21,17 @@ class SipJsCard extends LitElement {
     user: any;
     config: any;
     hass: any;
-    timerElement: any;
+    timerElement: string = "00:00";
     renderRoot: any;
     popup: boolean = false;
     currentCamera: any;
     intervalId!: number;
     error: any = null;
     audioVisualizer: any;
+    callStatus: string = "Idle";
+    user_extension: string = "None";
+    card_title: string = "Unknown";
+    connected: boolean = false;
 
     constructor() {
         super();
@@ -93,9 +97,9 @@ class SipJsCard extends LitElement {
             }
             video {
                 display: block;
-                height: 80vh;
+                min-height: 20em;
+                height: 100%;
                 width: 100%;
-                background-color: #2b2b2b;
             }
             .visualizer-container {
                 position: absolute;
@@ -114,7 +118,6 @@ class SipJsCard extends LitElement {
                 min-height: 5px;
             }
             .box {
-                position: absolute;
                 /* start paper-font-common-nowrap style */
                 white-space: nowrap;
                 overflow: hidden;
@@ -134,6 +137,8 @@ class SipJsCard extends LitElement {
                 display: flex;
                 justify-content: space-between;
                 flex-direction: row;
+                margin-top: -70px;
+                min-height: 62px;
             }
             .box .title {
                 font-weight: 500;
@@ -161,9 +166,6 @@ class SipJsCard extends LitElement {
                 margin-right: 8px;
                 display: flex;
                 align-items: center;
-            }
-            .extension {
-                color: gray;
             }
             ha-camera-stream {
                 height: auto;
@@ -219,11 +221,12 @@ class SipJsCard extends LitElement {
             }
 
             #audioVisualizer {
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
+                min-height: 20em;
+                height: 100%;
                 white-space: nowrap;
+                align-items: center;
+                display: flex;
+                justify-content: center;
             }
 
             #audioVisualizer div {
@@ -243,6 +246,11 @@ class SipJsCard extends LitElement {
             }
             .content {
                 outline: none;
+                align-self: stretch;
+                flex-grow: 1;
+                display: flex;
+                flex-flow: column;
+                background-color: var(--secondary-background-color);
             }
             @media all and (max-width: 450px), all and (max-height: 500px) {
                 ha-header-bar {
@@ -251,6 +259,13 @@ class SipJsCard extends LitElement {
                     border-bottom: none;
                 }
             }
+
+            @media all and (max-width: 600px) {
+                .heading {
+                    border-bottom: 1px solid var(--mdc-dialog-scroll-divider-color, rgba(0, 0, 0, 0.12))
+                }
+            }
+
             .heading {
                 border-bottom: 1px solid
                     var(--mdc-dialog-scroll-divider-color, rgba(0, 0, 0, 0.12));
@@ -286,15 +301,22 @@ class SipJsCard extends LitElement {
                 overflow: hidden;
                 z-index: 1;
             }
+            
+            .popup {
+                display: flex;
+                flex-wrap: wrap;
+                flex-direction: column;
+                height: 100%;
+            }
         `;
     }
 
     closePopup() {
+        super.performUpdate();
         this.popup = false;
     }
 
     openPopup() {
-        this.popup = false;
         super.performUpdate();
         this.popup = true;
     }
@@ -303,153 +325,177 @@ class SipJsCard extends LitElement {
 
     render() {
         return html`
-            <style>
-                ha-icon-button {
-                    --mdc-icon-button-size: ${this.config.button_size ? unsafeCSS(this.config.button_size) : css`48`}px;
-                    --mdc-icon-size: ${this.config.button_size ? unsafeCSS(this.config.button_size - 25) : css`23`}px;
-                }
-            </style>
-            <ha-dialog id="phone" ?open=${this.popup} hideactions data-domain="camera"
-                defaultAction="ignore"
-                .heading=${html`Phone`}>
-                <div slot="heading" class="heading">
-                    <ha-header-bar>
-                        <ha-icon-button
-                            style="--mdc-icon-button-size: 48px; --mdc-icon-size: 23px;"
-                            slot="navigationIcon"
-                            dialogAction="cancel"
-                            ><ha-icon icon="mdi:window-close"></ha-icon>
-                        </ha-icon-button>
-                        <span slot="title" id="name" class="header-text">Idle</span>
-                        <span slot="actionItems" id="time" class="header-text">00:00</span>
-                    </ha-header-bar>
-                </div>
-                <div class="content"> 
-                    ${this.currentCamera !== undefined ? html`
-                        <ha-camera-stream
-                            allow-exoplayer
-                            muted
-                            .hass=${this.hass}
-                            .stateObj=${this.hass.states[this.currentCamera]}
-                        ></ha-camera-stream>
-                    ` : html`
-                        <div id="audioVisualizer"></div>
-                        <video poster="noposter" playsinline id="remoteVideo"></video>
-                    `}
-                    <audio id="remoteAudio" style="display:none"></audio>
-                    <audio id="toneAudio" style="display:none" loop controls></audio>
-                    <div class="box">
-                        <div class="row">
+            <audio id="toneAudio" style="display:none" loop controls></audio>
+            <audio id="remoteAudio" style="display:none"></audio>
+            ${this.popup ? html`
+                <style>
+                    ha-icon-button {
+                        --mdc-icon-button-size: ${this.config.button_size ? unsafeCSS(this.config.button_size) : css`48`}px;
+                        --mdc-icon-size: ${this.config.button_size ? unsafeCSS(this.config.button_size - 25) : css`23`}px;
+                    }
+                </style>
+                <div class="popup">
+                    <div slot="heading" class="heading">
+                        <ha-header-bar>
                             <ha-icon-button
-                                class="accept-btn"
-                                .label=${"Accept Call"}
-                                @click="${this._answer}"
-                                ><ha-icon icon="hass:phone"></ha-icon>
+                                style="--mdc-icon-button-size: 48px; --mdc-icon-size: 23px;"
+                                @click="${() => this.closePopup()}"
+                                slot="navigationIcon"
+                                dialogAction="cancel"
+                                ><ha-icon icon="mdi:window-close"></ha-icon>
                             </ha-icon-button>
-                        </div>
-                        <div class="row">
-                            <ha-icon-button
-                                .label=${"Mute audio"}
-                                @click="${this._toggleMuteAudio}"
-                                ><ha-icon id="muteaudio-icon" icon="hass:microphone"></ha-icon>
-                            </ha-icon-button>
-                            <ha-icon-button
-                                .label=${"Mute video"}
-                                @click="${this._toggleMuteVideo}"
-                                ><ha-icon id="mutevideo-icon" icon="hass:video"></ha-icon>
-                            </ha-icon-button>
-                        </div>
-                        <div class="row">
-                            ${this.config.dtmfs ?
-                                this.config.dtmfs.map((dtmf: { signal: any; name: any; icon: any; }) => {
-                                    return html `
-                                        <ha-icon-button
-                                            @click="${() => this._sendDTMF(dtmf.signal)}"
-                                            .label="${dtmf.name}"
-                                            ><ha-icon icon="${dtmf.icon}"></ha-icon>
-                                        </ha-icon-button>
-                                    `;
-                                }) : ""
-                            }
-                            ${this.config.buttons ?
-                                this.config.buttons.map((button: { entity: any; name: any; icon: any; }) => {
-                                    return html `
-                                        <ha-icon-button
-                                            @click="${() => this._button(button.entity)}"
-                                            .label="${button.name}"
-                                            ><ha-icon icon="${button.icon}"></ha-icon>
-                                        </ha-icon-button>
-                                    `;
-                                }) : ""
-                            }
-                        </div>
-                        <div class="row">
-                            <ha-icon-button
-                                class="hangup-btn"
-                                .label=${"Decline Call"}
-                                @click="${this._hangup}"
-                            ><ha-icon icon="hass:phone-hangup"></ha-icon>
-                            </ha-icon-button>
+                            <span slot="title" id="name" class="header-text">${this.callStatus}</span>
+                            <span slot="actionItems" id="time" class="header-text">${this.timerElement}</span>
+                        </ha-header-bar>
+                    </div>
+                    <div class="content"> 
+                        ${this.currentCamera !== undefined ? html`
+                            <ha-camera-stream
+                                allow-exoplayer
+                                muted
+                                .hass=${this.hass}
+                                .stateObj=${this.hass.states[this.currentCamera]}
+                            ></ha-camera-stream>
+                        ` : html`
+                            <div id="audioVisualizer" style="display:${this.config.video ? "none": "flex"}"></div>
+                            <video poster="noposter" style="display:${this.config.video ? "block": "none"}" playsinline id="remoteVideo"></video>
+                            <audio id="remoteAudio" style="display:none"></audio>
+                        `}
+                        <div class="box">
+                            <div class="row">
+                                <ha-icon-button
+                                    class="accept-btn"
+                                    .label=${"Accept Call"}
+                                    @click="${this._answer}"
+                                    ><ha-icon icon="hass:phone"></ha-icon>
+                                </ha-icon-button>
+                            </div>
+                            <div class="row">
+                                <ha-icon-button
+                                    .label=${"Mute audio"}
+                                    @click="${this._toggleMuteAudio}"
+                                    ><ha-icon id="muteaudio-icon" icon="hass:microphone"></ha-icon>
+                                </ha-icon-button>
+                                <ha-icon-button style="display:${this.config.video ? "block": "none"}"
+                                    .label=${"Mute video"}
+                                    @click="${this._toggleMuteVideo}"
+                                    ><ha-icon id="mutevideo-icon" icon="${this.config.video ? "hass:video" : "hass:video-off"}"></ha-icon>
+                                </ha-icon-button>
+                            </div>
+                            <div class="row">
+                                ${this.config.dtmfs ?
+                                    this.config.dtmfs.map((dtmf: { signal: any; name: any; icon: any; }) => {
+                                        return html `
+                                            <ha-icon-button
+                                                @click="${() => this._sendDTMF(dtmf.signal)}"
+                                                .label="${dtmf.name}"
+                                                ><ha-icon icon="${dtmf.icon}"></ha-icon>
+                                            </ha-icon-button>
+                                        `;
+                                    }) : ""
+                                }
+                                ${this.config.buttons ?
+                                    this.config.buttons.map((button: { entity: any; name: any; icon: any; }) => {
+                                        return html `
+                                            <ha-icon-button
+                                                @click="${() => this._button(button.entity)}"
+                                                .label="${button.name}"
+                                                ><ha-icon icon="${button.icon}"></ha-icon>
+                                            </ha-icon-button>
+                                        `;
+                                    }) : ""
+                                }
+                            </div>
+                            <div class="row">
+                                <ha-icon-button
+                                    class="hangup-btn"
+                                    .label=${"Decline Call"}
+                                    @click="${this._hangup}"
+                                ><ha-icon icon="hass:phone-hangup"></ha-icon>
+                                </ha-icon-button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </ha-dialog>
-
-            <ha-card @click="${this.openPopup}">
-                <h1 class="card-header">
-                    <span id="title" class="name">Unknown</span>
-                    <span id="extension" class="extension">None</span>
-                </h1>
-                <div class="wrapper">
-
-                    ${(this.error !== null) ? html`
-                        <ha-alert alert-type="error" .title=${this.error.title}>
-                            ${this.error.message}
-                        </ha-alert>
-                        ` : ''
-                    }
-
-                    ${this.config.extensions.map((extension: { entity: string | number; person: string | number; icon: any; name: any; extension: any; camera: any; }) => {
-                        var stateObj = this.hass.states[extension.entity];
-                        var isMe = (this.hass.user.id == this.hass.states[extension.person].attributes.user_id);
-                        if (isMe) {
-                            this.user = extension;
+            ` : html`
+                <ha-card>
+                    <h1 class="card-header" @click="${this.openPopup}">
+                        <span id="title" class="name">${this.getTitle()}</span>
+                        <span id="extension" style="color: ${this.getConnectionCSS()};">${this.user_extension}</span>
+                    </h1>
+                    <div class="wrapper">
+                        ${(this.error !== null) ? html`
+                            <ha-alert alert-type="error" .title=${this.error.title}>
+                                ${this.error.message}
+                            </ha-alert>
+                            ` : ''
                         }
-                        if (!(isMe && this.config.hide_me)) {
-                            return html`
-                                <div class="flex">
-                                    <state-badge
-                                        .stateObj=${stateObj}
-                                        .overrideIcon=${extension.icon}
-                                        .stateColor=${this.config.state_color}
-                                    ></state-badge>
-                                    <div class="info">${extension.name}</div>
-                                    <mwc-button @click="${() => this._call(extension.extension, extension.camera)}">CALL</mwc-button>
-                                </div>
-                            `;
+
+                        ${this.config.extensions.map((extension: { entity: string | number; person: string | number; icon: any; name: any; extension: any; camera: any; }) => {
+                            var stateObj = this.hass.states[extension.entity];
+                            var isMe = (this.hass.user.id == this.hass.states[extension.person].attributes.user_id);
+                            if (isMe) {
+                                this.user = extension;
+                                this.user_extension = extension.extension;
+                            }
+                            if (!(isMe && this.config.hide_me)) {
+                                return html`
+                                    <div class="flex">
+                                        <state-badge
+                                            .stateObj=${stateObj}
+                                            .overrideIcon=${extension.icon}
+                                            .stateColor=${this.config.state_color}
+                                        ></state-badge>
+                                        <div class="info">${extension.name}</div>
+                                        <mwc-button @click="${() => this._call(extension.extension, extension.camera)}">CALL</mwc-button>
+                                    </div>
+                                `;
+                            }
+                        })}
+
+                        ${this.config.custom ?
+                            this.config.custom.map((custom: { entity: string | number; icon: any; name: any; number: any; camera: any; edit: any;}) => {
+                                var stateObj = this.hass.states[custom.entity];
+                                var nameid = "custom_" + custom.name.toLowerCase().split(' ').join('_');;
+                                if (custom.edit){
+                                    return html`
+                                        <div class="flex">
+                                            <state-badge
+                                                .stateObj=${stateObj}
+                                                .overrideIcon=${custom.icon}
+                                                .stateColor=${this.config.state_color}
+                                            ></state-badge>
+                                            <ha-textfield
+                                                id="${nameid}"
+                                                .value=${custom.number}
+                                                .label=${custom.name}
+                                                type="text"
+                                                .inputmode="text"
+                                                style="width:100%;"
+                                            ></ha-textfield>
+                                            <mwc-button @click="${() => this._custom_call(nameid, custom.camera)}">CALL</mwc-button>
+                                        </div>
+                                    `;
+                                } else {
+                                    return html`
+                                        <div class="flex">
+                                            <state-badge
+                                                .stateObj=${stateObj}
+                                                .overrideIcon=${custom.icon}
+                                                .stateColor=${this.config.state_color}
+                                            ></state-badge>
+                                            <div class="info">${custom.name}</div>
+                                            <mwc-button @click="${() => this._call(custom.number, custom.camera)}">CALL</mwc-button>
+                                        </div>
+                                    `;
+                                }
+                            }) : ""
                         }
-                    })}
 
-                    ${this.config.custom ?
-                        this.config.custom.map((custom: { entity: string | number; icon: any; name: any; number: any; camera: any; }) => {
-                            var stateObj = this.hass.states[custom.entity];
-                            return html`
-                                <div class="flex">
-                                    <state-badge
-                                        .stateObj=${stateObj}
-                                        .overrideIcon=${custom.icon}
-                                        .stateColor=${this.config.state_color}
-                                    ></state-badge>
-                                    <div class="info">${custom.name}</div>
-                                    <mwc-button @click="${() => this._call(custom.number, custom.camera)}">CALL</mwc-button>
-                                </div>
-                            `;
-                        }) : ""
-                    }
-
-                </div>
-            </ha-card>
-        `;
+                    </div>
+                </ha-card>
+            `}
+        `
     }
 
     firstUpdated() {
@@ -518,25 +564,43 @@ class SipJsCard extends LitElement {
         }
     }
 
-    private setName(text: string) {
-        this.renderRoot.querySelector('#name').innerHTML = text;
+    private setCallStatus(text: string) {
+        this.callStatus = text;
     }
 
-    private setTitle(text: any) {
-        this.renderRoot.querySelector('#title').innerHTML = text;
+    private getTitle() {
+        if (this.config.custom_title != "") {
+            return this.config.custom_title;
+        } else if (this.user !== undefined && this.user.name !== undefined) {
+            return this.user.name;
+        } else {
+            return "Undefined";
+        }
     }
 
-    private setExtension(text: any) {
-        this.renderRoot.querySelector('#extension').innerHTML = text;
+    private getConnectionCSS() {
+        if (this.connected) {
+            return 'gray'
+        } else {
+            return 'var(--mdc-theme-error, #db4437)'
+        }
     }
 
     async _call(extension: string | null, camera: any) {
+        this.openPopup();
         this.ring("ringbacktone");
-        this.setName("Calling...");
+        this.setCallStatus("Calling...");
         this.currentCamera = (camera ? camera : undefined);
         if (this.sipPhone) {
             this.sipPhone.call("sip:" + extension + "@" + this.config.server, this.sipCallOptions);
         }
+    }
+
+    async _custom_call(nameid: string | null, camera: any) {
+        console.log(this.renderRoot.querySelector('#' + nameid));
+        var number = this.renderRoot.querySelector('#' + nameid).value;
+        console.log("Trying to custom call this: " + number);
+        this._call(number, camera);
     }
 
     async _answer() {
@@ -615,16 +679,16 @@ class SipJsCard extends LitElement {
             this.audioVisualizer = undefined;
         }
         this.ring("pause");
-        this.setName("Idle");
+        this.setCallStatus("Idle");
         clearInterval(this.intervalId);
-        this.timerElement.innerHTML = "00:00";
+        this.timerElement = "00:00";
         this.currentCamera = undefined;
         this.closePopup();
         this.sipPhoneSession = null;
     }
 
     async connect() {
-        this.timerElement = this.renderRoot.querySelector('#time');
+        this.timerElement = "00:00";
         if (this.user == undefined) {
             this.error = {
                 title: "Person not configured!",
@@ -633,7 +697,6 @@ class SipJsCard extends LitElement {
             this.requestUpdate();
             throw new Error("Person not configured!");
         }
-        this.setTitle((this.config.custom_title !== "") ? this.config.custom_title : this.user.name);
 
         var socket = new WebSocketInterface("wss://" + this.config.server + ":" + this.config.port + "/ws");
         var configuration = {
@@ -645,8 +708,6 @@ class SipJsCard extends LitElement {
         };
 
         this.sipPhone = new UA(configuration);
-
-        this.setExtension(this.user.extension);
 
         this.sipCallOptions = {
             mediaConstraints: { audio: true, video: this.config.video },
@@ -672,22 +733,23 @@ class SipJsCard extends LitElement {
 
         console.log('ICE config: ' + JSON.stringify(this.sipCallOptions.pcConfig, null, 2));
 
-        this.renderRoot.querySelector('#mutevideo-icon').icon = this.config.video ? "hass:video" : "hass:video-off";
-
         this.sipPhone?.start();
 
         this.sipPhone?.on("registered", () => {
-		console.log('SIP-Card Registered with SIP Server');
-		this.renderRoot.querySelector('.extension').style.color = 'gray';
-	});
+            console.log('SIP-Card Registered with SIP Server');
+            this.connected = true;
+            // this.renderRoot.querySelector('.extension').style.color = 'gray';
+        });
         this.sipPhone?.on("unregistered", () => {
-		console.log('SIP-Card Unregistered with SIP Server');
-		this.renderRoot.querySelector('.extension').style.color = 'var(--mdc-theme-primary, #03a9f4)';
-	});
+            console.log('SIP-Card Unregistered with SIP Server');
+            this.connected = false;
+            // this.renderRoot.querySelector('.extension').style.color = 'var(--mdc-theme-primary, #03a9f4)';
+        });
         this.sipPhone?.on("registrationFailed", () => {
-		console.log('SIP-Card Failed Registeration with SIP Server');
-		this.renderRoot.querySelector('.extension').style.color = 'var(--mdc-theme-error, #db4437)';
-	});
+            console.log('SIP-Card Failed Registeration with SIP Server');
+            this.connected = false;
+            // this.renderRoot.querySelector('.extension').style.color = 'var(--mdc-theme-error, #db4437)';
+        });
         this.sipPhone?.on("newRTCSession", (event: RTCSessionEvent) => {
             if (this.sipPhoneSession !== null ) {
                 event.session.terminate();
@@ -740,9 +802,9 @@ class SipJsCard extends LitElement {
                 }
                 this.ring("pause");
                 if (this.sipPhoneSession?.remote_identity) {
-                    this.setName(this.sipPhoneSession?.remote_identity.display_name);
+                    this.setCallStatus(this.sipPhoneSession?.remote_identity.display_name);
                 } else {
-                    this.setName("On Call");
+                    this.setCallStatus("On Call");
                 }
                 var time = new Date();
                 this.intervalId = window.setInterval(function(this: any): void {
@@ -750,7 +812,7 @@ class SipJsCard extends LitElement {
                     var minutes = Math.floor(delta / 60) % 60;
                     delta -= minutes * 60;
                     var seconds = delta % 60;
-                    this.timerElement.innerHTML = (minutes + ":" + Math.round(seconds)).split(':').map(e => `0${e}`.slice(-2)).join(':');
+                    this.timerElement = (minutes + ":" + Math.round(seconds)).split(':').map(e => `0${e}`.slice(-2)).join(':');
                 }.bind(this), 1000);
             });
 
@@ -859,9 +921,9 @@ class SipJsCard extends LitElement {
                 this.ring("ringtone");
 
                 if (this.sipPhoneSession.remote_identity) {
-                    this.setName("Incoming Call From " + this.sipPhoneSession.remote_identity.display_name);
+                    this.setCallStatus("Incoming Call From " + this.sipPhoneSession.remote_identity.display_name);
                 } else {
-                    this.setName("Incoming Call");
+                    this.setCallStatus("Incoming Call");
                 }
             }
             else if (this.sipPhoneSession.direction === 'outgoing') {
@@ -880,8 +942,8 @@ class SipJsCard extends LitElement {
 
         var urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('call')) {
-            this._call(urlParams.get('call'), undefined); // TODO: Add camera here or in the _call function itself.
             this.openPopup();
+            this._call(urlParams.get('call'), undefined); // TODO: Add camera here or in the _call function itself.
         }
     }
 }
