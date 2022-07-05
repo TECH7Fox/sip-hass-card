@@ -704,7 +704,7 @@ class SipJsCard extends LitElement {
             throw new Error("Person not configured!");
         }
 
-        var socket = new WebSocketInterface("wss://" + this.config.server + ":" + this.config.port + "/ws");
+        var socket = new WebSocketInterface("wss://" + this.config.server + ":" + this.config.port + this.config.prefix + "/ws");
         var configuration = {
             sockets : [ socket ],
             uri     : "sip:" + this.user.extension + "@" + this.config.server,
