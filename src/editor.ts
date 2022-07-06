@@ -258,6 +258,12 @@ class SipJsCardEditor extends LitElement {
                     @value-changed="${this._valueChanged}"
                 ></paper-input>
                 <paper-input
+                    label="prefix"
+                    .value="${this._config.prefix}"
+                    .configValue="${"prefix"}"
+                    @value-changed="${this._valueChanged}"
+                ></paper-input>                
+                <paper-input
                     label="Custom title"
                     .value="${this._config.custom_title}"
                     .configValue="${"custom_title"}"
