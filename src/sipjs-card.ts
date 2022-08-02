@@ -905,11 +905,13 @@ class SipJsCard extends LitElement {
                         this.currentCamera = (element.camera ? element.camera : undefined);
                     }
                 });
-                this.config.custom.forEach((element: { number: any; camera: boolean; }) => {
-                    if (element.number == extension) {
-                        this.currentCamera = (element.camera ? element.camera : undefined);
-                    }
-                });
+                if(typeof this.config.custom !== 'undefined') {
+                  this.config.custom.forEach((element: { number: any; camera: boolean; }) => {
+                      if (element.number == extension) {
+                          this.currentCamera = (element.camera ? element.camera : undefined);
+                      }
+                  });
+                }
 
                 this.sipPhoneSession.on("peerconnection", (event: PeerConnectionEvent) => {
                     console.log('Call: peerconnection(incoming)');
