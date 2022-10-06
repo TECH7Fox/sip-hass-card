@@ -421,7 +421,7 @@ class SipJsCard extends LitElement {
                 <ha-card>
                     <h1 class="card-header" @click="${this.openPopup}">
                         <span id="title" class="name">${this.getTitle()}</span>
-                        <span id="extension" style="color: ${this.getConnectionCSS()};">${this.user_extension}</span>
+                        <span id="extension" style="color: ${this.getConnectionCSS()};">${this.user?.extension}</span>
                     </h1>
                     <div class="wrapper">
                         ${(this.error !== null) ? html`
@@ -434,10 +434,7 @@ class SipJsCard extends LitElement {
                         ${this.config.extensions.map((extension: { entity: string | number; person: string | number; icon: any; name: any; extension: any; camera: any; }) => {
                             var stateObj = this.hass.states[extension.entity];
                             var isMe = (this.hass.user.id == this.hass.states[extension.person].attributes.user_id);
-                            if (isMe) {
-                                this.user = extension;
-                                this.user_extension = extension.extension;
-                            }
+                            if (isMe) this.user = extension;
                             if (!(isMe && this.config.hide_me)) {
                                 return html`
                                     <div class="flex">
@@ -706,6 +703,8 @@ class SipJsCard extends LitElement {
             }
         }
 
+        this.requestUpdate();
+
         var socket = new WebSocketInterface("wss://" + this.config.server + ":" + this.config.port + "/ws");
         var configuration = {
             sockets : [ socket ],
@@ -746,16 +745,19 @@ class SipJsCard extends LitElement {
         this.sipPhone?.on("registered", () => {
             console.log('SIP-Card Registered with SIP Server');
             this.connected = true;
+            super.requestUpdate();
             // this.renderRoot.querySelector('.extension').style.color = 'gray';
         });
         this.sipPhone?.on("unregistered", () => {
             console.log('SIP-Card Unregistered with SIP Server');
             this.connected = false;
+            super.requestUpdate();
             // this.renderRoot.querySelector('.extension').style.color = 'var(--mdc-theme-primary, #03a9f4)';
         });
         this.sipPhone?.on("registrationFailed", () => {
             console.log('SIP-Card Failed Registeration with SIP Server');
             this.connected = false;
+            super.requestUpdate();
             // this.renderRoot.querySelector('.extension').style.color = 'var(--mdc-theme-error, #db4437)';
         });
         this.sipPhone?.on("newRTCSession", (event: RTCSessionEvent) => {
