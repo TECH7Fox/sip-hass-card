@@ -308,6 +308,12 @@ class SipJsCard extends LitElement {
                 flex-direction: column;
                 height: 100%;
             }
+
+            .editField {
+                width: 100%;
+                margin-left: 16px;
+                margin-right: 8px;
+            }
         `;
     }
 
@@ -468,7 +474,7 @@ class SipJsCard extends LitElement {
                                                 .label=${custom.name}
                                                 type="text"
                                                 .inputmode="text"
-                                                style="width:100%;"
+                                                class="editField"
                                             ></ha-textfield>
                                             <mwc-button @click="${() => this._custom_call(nameid, custom.camera)}">CALL</mwc-button>
                                         </div>
@@ -705,7 +711,7 @@ class SipJsCard extends LitElement {
 
         this.requestUpdate();
 
-        var socket = new WebSocketInterface("wss://" + this.config.server + ":" + this.config.port + "/ws");
+        var socket = new WebSocketInterface("wss://" + this.config.server + ":" + this.config.port + this.config.prefix + "/ws");
         var configuration = {
             sockets : [ socket ],
             uri     : "sip:" + this.user.extension + "@" + this.config.server,
@@ -909,11 +915,13 @@ class SipJsCard extends LitElement {
                         this.currentCamera = (element.camera ? element.camera : undefined);
                     }
                 });
-                this.config.custom.forEach((element: { number: any; camera: boolean; }) => {
-                    if (element.number == extension) {
-                        this.currentCamera = (element.camera ? element.camera : undefined);
-                    }
-                });
+                if(typeof this.config.custom !== 'undefined') {
+                  this.config.custom.forEach((element: { number: any; camera: boolean; }) => {
+                      if (element.number == extension) {
+                          this.currentCamera = (element.camera ? element.camera : undefined);
+                      }
+                  });
+                }
 
                 this.sipPhoneSession.on("peerconnection", (event: PeerConnectionEvent) => {
                     console.log('Call: peerconnection(incoming)');
