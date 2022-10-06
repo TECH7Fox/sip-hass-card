@@ -690,12 +690,20 @@ class SipJsCard extends LitElement {
     async connect() {
         this.timerElement = "00:00";
         if (this.user == undefined) {
-            this.error = {
-                title: "Person not configured!",
-                message: "There is no extension configured for this person."
+            if (this.config.backup_extension !== undefined) {
+                this.user = {
+                    name: this.config.backup_name,
+                    extension: this.config.backup_extension,
+                    secret: this.config.backup_secret
+                };
+            } else {
+                this.error = {
+                    title: "Person and backup not configured!",
+                    message: "There is no extension configured for this person, and no backup extension configured. Please configure one of them."
+                }
+                this.requestUpdate();
+                throw new Error("Person and backup not configured!");
             }
-            this.requestUpdate();
-            throw new Error("Person not configured!");
         }
 
         var socket = new WebSocketInterface("wss://" + this.config.server + ":" + this.config.port + "/ws");
