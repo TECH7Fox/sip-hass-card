@@ -427,7 +427,7 @@ class SipJsCard extends LitElement {
                 <ha-card>
                     <h1 class="card-header" @click="${this.openPopup}">
                         <span id="title" class="name">${this.getTitle()}</span>
-                        <span id="extension" style="color: ${this.getConnectionCSS()};">${this.user_extension}</span>
+                        <span id="extension" style="color: ${this.getConnectionCSS()};">${this.user?.extension}</span>
                     </h1>
                     <div class="wrapper">
                         ${(this.error !== null) ? html`
@@ -440,10 +440,7 @@ class SipJsCard extends LitElement {
                         ${this.config.extensions.map((extension: { entity: string | number; person: string | number; icon: any; name: any; extension: any; camera: any; }) => {
                             var stateObj = this.hass.states[extension.entity];
                             var isMe = (this.hass.user.id == this.hass.states[extension.person].attributes.user_id);
-                            if (isMe) {
-                                this.user = extension;
-                                this.user_extension = extension.extension;
-                            }
+                            if (isMe) this.user = extension;
                             if (!(isMe && this.config.hide_me)) {
                                 return html`
                                     <div class="flex">
@@ -696,14 +693,25 @@ class SipJsCard extends LitElement {
     async connect() {
         this.timerElement = "00:00";
         if (this.user == undefined) {
-            this.error = {
-                title: "Person not configured!",
-                message: "There is no extension configured for this person."
+            if (this.config.backup_extension !== undefined) {
+                this.user = {
+                    name: this.config.backup_name,
+                    extension: this.config.backup_extension,
+                    secret: this.config.backup_secret
+                };
+            } else {
+                this.error = {
+                    title: "Person and backup not configured!",
+                    message: "There is no extension configured for this person, and no backup extension configured. Please configure one of them."
+                }
+                this.requestUpdate();
+                throw new Error("Person and backup not configured!");
             }
-            this.requestUpdate();
-            throw new Error("Person not configured!");
         }
 
+        this.requestUpdate();
+
+        console.log("Connecting to wss://" + this.config.server + ":" + this.config.port + this.config.prefix + "/ws");
         var socket = new WebSocketInterface("wss://" + this.config.server + ":" + this.config.port + this.config.prefix + "/ws");
         var configuration = {
             sockets : [ socket ],
@@ -744,16 +752,19 @@ class SipJsCard extends LitElement {
         this.sipPhone?.on("registered", () => {
             console.log('SIP-Card Registered with SIP Server');
             this.connected = true;
+            super.requestUpdate();
             // this.renderRoot.querySelector('.extension').style.color = 'gray';
         });
         this.sipPhone?.on("unregistered", () => {
             console.log('SIP-Card Unregistered with SIP Server');
             this.connected = false;
+            super.requestUpdate();
             // this.renderRoot.querySelector('.extension').style.color = 'var(--mdc-theme-primary, #03a9f4)';
         });
         this.sipPhone?.on("registrationFailed", () => {
             console.log('SIP-Card Failed Registeration with SIP Server');
             this.connected = false;
+            super.requestUpdate();
             // this.renderRoot.querySelector('.extension').style.color = 'var(--mdc-theme-error, #db4437)';
         });
         this.sipPhone?.on("newRTCSession", (event: RTCSessionEvent) => {
