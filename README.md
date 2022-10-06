@@ -111,6 +111,9 @@ extensions:
 state_color: false 
 ringbacktone: /local/asterisk/backtone.mp3
 auto_answer: false
+backup_name: Backup
+backup_extension: '200'
+backup_secret: 1234
 buttons:
   - name: 'Garage Door'
     icon: mdi:garage
