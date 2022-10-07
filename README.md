@@ -13,7 +13,6 @@ The card supports video, DTMF signals, custom icons, custom names, status entiti
 This is still work in progress, and these are the things i want to add in the near future.
  * Improve styling (hard because custom cards can't use all ha elements)
  * Include default ringtones
- * Fix video on android companion app
  * Translations
 
 **Asterisk add-on**
@@ -118,6 +117,9 @@ buttons:
 custom_title: ''
 hide_me: true
 iceTimeout: 3 # Default is 5 seconds
+backup_name: Tablet
+backup_extension: '200'
+backup_secret: 1234
 iceConfig: # Remove if you don't want to use ICE
   iceCandidatePoolSize: 0
   iceTransportPolicy: all
