@@ -24,7 +24,7 @@ For this to work you will need the following:
  * Extension for every device. (The add-on auto-generates extensions for every person in HA)
  * HACS on your HA. (Home assistant)
 
-Go to https://github.com/TECH7Fox/HA-SIP/wiki/Setup-FreePBX to see how to setup FreePBX for this card.
+Go to https://tech7fox.github.io/sip-hass-docs/docs/card/guides/freepbx to see how to setup FreePBX for this card.
 
 ## Installation
 Download using **HACS**
