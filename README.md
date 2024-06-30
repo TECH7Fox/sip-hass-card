@@ -142,5 +142,11 @@ Android companion app 2022.2 required for speaker + audio permissions.
 
 If you are still having problems you can make an issue or ask on the discord server.
 
+## Development
+For development on Windows, easiest way is to use the devcontainer and run `npm run build` in the terminal. Then copy the `sipjs-card.js` file to your `www` folder.
+You can ask for help on the discord server.
+
+PR's are always welcome!
+
 ## Contact
 **jordy.kuhne@gmail.com**
