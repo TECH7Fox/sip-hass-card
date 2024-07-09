@@ -372,7 +372,7 @@ class SipJsCard extends LitElement {
                                 <ha-icon-button
                                     class="accept-btn"
                                     .label=${"Accept Call"}
-                                    @click="${this._answer}"
+                                    @click="${()=> this._answer()}"
                                     ><ha-icon icon="hass:phone"></ha-icon>
                                 </ha-icon-button>
                             </div>
@@ -606,8 +606,8 @@ class SipJsCard extends LitElement {
         this._call(number, camera);
     }
 
-    async _answer() {
-        this.sipPhoneSession?.answer();
+    private _answer() {
+        this.sipPhoneSession?.answer(this.sipCallOptions);
     }
 
     async _hangup() {
@@ -932,6 +932,7 @@ class SipJsCard extends LitElement {
                 });
 
                 this.openPopup();
+
                 if (this.config.auto_answer) {
                     this.sipPhoneSession.answer(this.sipCallOptions);
                     return;
