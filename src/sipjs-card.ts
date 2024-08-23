@@ -911,18 +911,7 @@ class SipJsCard extends LitElement {
             // See: https://github.com/versatica/JsSIP/issues/750
             if (this.sipPhoneSession.direction === 'incoming') {
                 var extension = this.sipPhoneSession.remote_identity.uri.user;
-                this.config.extensions.forEach((element: { extension: any; camera: boolean; }) => {
-                    if (element.extension == extension) {
-                        this.currentCamera = (element.camera ? element.camera : undefined);
-                    }
-                });
-                if(typeof this.config.custom !== 'undefined') {
-                  this.config.custom.forEach((element: { number: any; camera: boolean; }) => {
-                      if (element.number == extension) {
-                          this.currentCamera = (element.camera ? element.camera : undefined);
-                      }
-                  });
-                }
+                this.currentCamera = this.cameraForExtension(extension);
 
                 this.sipPhoneSession.on("peerconnection", (event: PeerConnectionEvent) => {
                     console.log('Call: peerconnection(incoming)');
@@ -960,10 +949,19 @@ class SipJsCard extends LitElement {
         });
 
         var urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('call')) {
+        const extension = urlParams.get('call');
+        if (extension) {
             this.openPopup();
-            this._call(urlParams.get('call'), undefined); // TODO: Add camera here or in the _call function itself.
+            const camera = this.cameraForExtension(extension);
+            this._call(extension, camera);
         }
+    }
+    cameraForExtension(extension: string) {
+        let found = this.config.extensions.find((element: { extension: string; camera: string; }) => element.extension == extension);
+        if (!found && typeof this.config.custom !== 'undefined') {
+            found = this.config.custom.find((element: { number: string; camera: string; }) => element.number == extension);
+        };
+        return (found && found.camera ? found.camera : undefined)
     }
 }
 
