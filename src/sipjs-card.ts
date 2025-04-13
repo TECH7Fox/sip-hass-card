@@ -32,6 +32,8 @@ class SipJsCard extends LitElement {
     user_extension: string = "None";
     card_title: string = "Unknown";
     connected: boolean = false;
+    heartbeatHandle: number = 0;
+    heartbeatDelayMs: number = 0;
 
     constructor() {
         super();
@@ -528,8 +530,9 @@ class SipJsCard extends LitElement {
         return {
             server: "192.168.0.10",
             port: "8089",
+            prefix: "",
             button_size: "48",
-            state_color: false,
+            state_color: true,
             auto_answer: false,
             hide_me: true,
             custom_title: '',
@@ -690,6 +693,33 @@ class SipJsCard extends LitElement {
         this.sipPhoneSession = null;
     }
 
+    // borrowed from https://github.com/lovelylain/ha-addon-iframe-card/blob/main/src/hassio-ingress.ts
+    setIngressCookie(session: string): string {
+        document.cookie = `ingress_session=${session};path=/api/hassio_ingress/;SameSite=Strict${
+          location.protocol === "https:" ? ";Secure" : ""
+        }`;
+        return session;
+      };
+
+    async createHassioSession(): Promise<string> {
+        const resp: { session: string } = await this.hass.callWS({
+            type: "supervisor/api",
+            endpoint: "/ingress/session",
+            method: "post",
+        });
+        return this.setIngressCookie(resp.session);
+    };
+
+    async validateHassioSession(session: string) {
+        await this.hass.callWS({
+            type: "supervisor/api",
+            endpoint: "/ingress/validate_session",
+            method: "post",
+            data: { session },
+        });
+        this.setIngressCookie(session);
+    };
+
     async connect() {
         this.timerElement = "00:00";
         if (this.user == undefined) {
@@ -711,8 +741,19 @@ class SipJsCard extends LitElement {
 
         this.requestUpdate();
 
-        console.log("Connecting to wss://" + this.config.server + ":" + this.config.port + this.config.prefix + "/ws");
-        var socket = new WebSocketInterface("wss://" + this.config.server + ":" + this.config.port + this.config.prefix + "/ws");
+        let wssUrl = "wss://" + this.config.server + ":" + this.config.port + (this.config.prefix || "") + "/ws";
+
+        const ingressEntry = this.hass.states['text.asterisk_addon_ingress_entry']?.state;
+        if(ingressEntry) {
+            const wssProtocol = window.location.protocol == "https:" ? "wss:" : "ws:";
+            wssUrl = `${wssProtocol}//${window.location.host}${ingressEntry}/ws`;
+            this.heartbeatDelayMs = 30000;
+            await this.createHassioSession();
+        }
+
+        console.log(`Connecting to ${wssUrl}`);
+        var socket = new WebSocketInterface(wssUrl);
+
         var configuration = {
             sockets : [ socket ],
             uri     : "sip:" + this.user.extension + "@" + this.config.server,
@@ -753,17 +794,31 @@ class SipJsCard extends LitElement {
             console.log('SIP-Card Registered with SIP Server');
             this.connected = true;
             super.requestUpdate();
+            if(this.heartbeatDelayMs) {
+                if(this.heartbeatHandle) {
+                    window.clearInterval(this.heartbeatHandle); this.heartbeatHandle = 0;
+                }
+                this.heartbeatHandle = window.setInterval(() => {
+                    socket.send("\n\n");
+                }, this.heartbeatDelayMs);
+            }
             // this.renderRoot.querySelector('.extension').style.color = 'gray';
         });
         this.sipPhone?.on("unregistered", () => {
             console.log('SIP-Card Unregistered with SIP Server');
             this.connected = false;
+            if(this.heartbeatHandle) {
+                window.clearInterval(this.heartbeatHandle); this.heartbeatHandle = 0;
+            }
             super.requestUpdate();
             // this.renderRoot.querySelector('.extension').style.color = 'var(--mdc-theme-primary, #03a9f4)';
         });
         this.sipPhone?.on("registrationFailed", () => {
             console.log('SIP-Card Failed Registeration with SIP Server');
             this.connected = false;
+            if(this.heartbeatHandle) {
+                window.clearInterval(this.heartbeatHandle); this.heartbeatHandle = 0;
+            }
             super.requestUpdate();
             // this.renderRoot.querySelector('.extension').style.color = 'var(--mdc-theme-error, #db4437)';
         });
