@@ -334,7 +334,7 @@ class SipJsCard extends LitElement {
     render() {
         return html`
             <audio id="toneAudio" style="display:none" loop controls></audio>
-            <audio id="remoteAudio" style="display:none"></audio>
+            <audio id="remoteAudio" style="display:none" controls="true"></audio>
             ${this.popup ? html`
                 <style>
                     ha-icon-button {
@@ -390,6 +390,13 @@ class SipJsCard extends LitElement {
                                     ><ha-icon id="mutevideo-icon" icon="${this.config.video ? "hass:video" : "hass:video-off"}"></ha-icon>
                                 </ha-icon-button>
                             </div>
+                            <div class="row">
+                                <ha-icon-button
+                                    .label=${"Mute Volume"}
+                                    @click="${this._toggleSoundAudio}"
+                                    ><ha-icon id="audio-icon" icon="hass:volume-high"></ha-icon>
+                                </ha-icon-button>
+                            </div>                            
                             <div class="row">
                                 ${this.config.dtmfs ?
                                     this.config.dtmfs.map((dtmf: { signal: any; name: any; icon: any; }) => {
@@ -626,6 +633,18 @@ class SipJsCard extends LitElement {
             this.sipPhoneSession?.mute({ video: false, audio: true });
             this.renderRoot.querySelector('#muteaudio-icon').icon = "hass:microphone-off";
         }
+    }
+
+    async _toggleSoundAudio() {
+        let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
+        if (remoteAudio?.volume === 0) {
+            remoteAudio.volume = 1.0;
+            this.renderRoot.querySelector('#audio-icon').icon = "hass:volume-high";
+        }
+        else {
+            remoteAudio.volume = 0.0;
+            this.renderRoot.querySelector('#audio-icon').icon = "hass:volume-mute";
+        }        
     }
 
     async _toggleMuteVideo() {
@@ -942,6 +961,7 @@ class SipJsCard extends LitElement {
                 let remoteAudio = this.renderRoot.querySelector("#remoteAudio");
                 if (event.track.kind === 'audio' && remoteAudio.srcObject != stream) {
                     remoteAudio.srcObject = stream;
+                    remoteAudio.volume = 1.0;
                     try {
                         await remoteAudio.play();
                     }
