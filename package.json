@@ -4,7 +4,8 @@
   "description": "A SIP client inside home assistant!",
   "main": "sipjs-card.js",
   "scripts": {
-    "build": "webpack --progress --config webpack.config.js --mode production"
+    "build": "webpack --progress --config webpack.config.js --mode production",
+    "watch": "webpack --progress --config webpack.config.js --mode development --watch"
   },
   "repository": {
     "type": "git",
@@ -28,7 +29,7 @@
     "webpack-cli": "^4.9.2"
   },
   "dependencies": {
-    "lit": "^2.2.0",
-    "jssip": "^3.9.0"
+    "jssip": "^3.9.0",
+    "lit": "^2.8.0"
   }
 }

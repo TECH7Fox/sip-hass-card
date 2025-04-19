@@ -1,0 +1,59 @@
+{
+    "ice_config": {
+        "iceCandidatePoolSize": 0,
+        "iceTransportPolicy": "all",
+        "iceServers": [
+            {
+                "urls": ["stun:stun.l.google.com:19302"]
+            }
+        ],
+        "rtcpMuxPolicy": "require"
+    },
+    "backup_user": {
+        "ha_username": "tech7fox",
+        "extension": "100",
+        "password": "w8woord"
+    },
+    "users": [
+        {
+            "ha_username": "Jordy",
+            "extension": "101",
+            "password": "w8woord"
+        },
+        {
+            "ha_username": "alice",
+            "extension": "102",
+            "password": "w8woord"
+        }
+    ],
+    "auto_answer": true,
+    "popup_config": {
+        "buttons": [
+            {
+                "label": "Open Door",
+                "icon": "mdi:door-open",
+                "type": "service_call",
+                "data": {
+                    "service": "asterisk.send_dtmf",
+                    "service_data": {
+                        "channel": "SIP/8001",
+                        "dtmf": "1"
+                    }
+                }
+            }
+        ],
+        "extensions": [
+            {
+                "name": "Bob",
+                "extension": "101",
+                "status_entity": "sensor.bob_status",
+                "icon": "mdi:account"
+            },
+            {
+                "name": "Doorbell",
+                "extension": "8001",
+                "camera_entity": "camera.doorbell"
+            }
+        ]
+    }
+}
