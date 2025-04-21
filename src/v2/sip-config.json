@@ -28,6 +28,7 @@
     ],
     "auto_answer": true,
     "popup_config": {
+        "enabled": true,
         "buttons": [
             {
                 "label": "Open Door",

@@ -1,8 +1,10 @@
 import { UA, WebSocketInterface } from "jssip/lib/JsSIP";
 import { RTCSessionEvent, CallOptions } from "jssip/lib/UA";
 import { EndEvent, PeerConnectionEvent, IncomingEvent, OutgoingEvent, IceCandidateEvent, RTCSession } from "jssip/lib/RTCSession";
+// load sip-call-dialog
+import "./sip-call-dialog";
 
-const version = "0.1.0";
+const version = "0.1.3";
 
 console.info(
     `%c SIP-CORE %c ${version} `,
@@ -11,7 +13,7 @@ console.info(
 );
 
 
-class CALLSTATE {
+export class CALLSTATE {
     static IDLE = "idle";
     static INCOMING = "incoming";
     static OUTGOING = "outgoing";
@@ -25,7 +27,7 @@ class ButtonType {
 }
 
 
-class AUDIO_DEVICE_KIND {
+export class AUDIO_DEVICE_KIND {
     static INPUT = "audioinput";
     static OUTPUT = "audiooutput";
 }
@@ -56,6 +58,7 @@ interface Button {
 
 
 interface PopupConfig {
+    enabled: boolean;
     override_component: string | null;
     buttons: Button[];
     extensions: Extension[];
@@ -83,8 +86,13 @@ class SIPCore {
     public RTCSession: RTCSession | null = null;
     private wssUrl: string;
     private callOptions: CallOptions;
+    private dialog: any | null = null;
+    public currentAudioInputId: string | null = localStorage.getItem("sipcore-audio-input") || null;
+    public currentAudioOutputId: string | null = localStorage.getItem("sipcore-audio-output") || null;
 
     constructor() {
+        console.log("current audio input id", this.currentAudioInputId);
+        console.log("current audio output id", this.currentAudioOutputId);
         // Get hass instance
         const homeAssistant = document.querySelector("home-assistant");
         if (!homeAssistant) {
@@ -122,12 +130,21 @@ class SIPCore {
         this.ua = this.setupUA();
     }
 
+    setupPopup() {
+        let POPUP_COMPONENT = this.config.popup_config.override_component || "sip-call-dialog";
+        if (document.getElementsByTagName(POPUP_COMPONENT).length < 1) {
+            this.dialog = document.createElement(POPUP_COMPONENT) as any;
+            document.body.appendChild(this.dialog);
+        }
+    }
+
     async init() {
         await this.createHassioSession();
-
         console.info(`Connecting to ${this.wssUrl}...`);
-
         this.ua.start();
+        if (this.config.popup_config.enabled) {
+            this.setupPopup();
+        }
     }
 
     fetchConfig(): SIPCoreConfig {
@@ -144,15 +161,15 @@ class SIPCore {
         }
     }
 
-    answer() {
+    answerCall() {
         this.RTCSession?.answer(this.callOptions);
     }
 
-    hangup() {
+    endCall() {
         this.RTCSession?.terminate();
     }
 
-    call(extension: string) {
+    startCall(extension: string) {
         // TODO: Set callee
         this.callee = extension;
         this.ua.call(extension, this.callOptions);
@@ -245,6 +262,22 @@ class SIPCore {
         const devices = await navigator.mediaDevices.enumerateDevices();
         return devices.filter(device => device.kind == audioKind);
     }
+
+    async setAudioDevice(deviceId: string, audioKind: AUDIO_DEVICE_KIND) {
+        console.info(`Setting audio device ${deviceId} (${audioKind})`);
+        switch (audioKind) {
+            case AUDIO_DEVICE_KIND.INPUT:
+                this.currentAudioInputId = deviceId;
+                localStorage.setItem("sipcore-audio-input", deviceId);
+                // TODO: THIS
+                break;
+            case AUDIO_DEVICE_KIND.OUTPUT:
+                this.currentAudioOutputId = deviceId;
+                localStorage.setItem("sipcore-audio-output", deviceId);
+                // TODO: THIS
+                break;
+        }
+    }
 }
 
 const sipCore = new SIPCore();
@@ -252,4 +285,4 @@ sipCore.init().catch((error) => {
     console.error("Error initializing SIP Core:", error);
     console.log(error);
 });
-export { sipCore, CALLSTATE, AUDIO_DEVICE_KIND, PopupConfig };
+export { sipCore, PopupConfig };
