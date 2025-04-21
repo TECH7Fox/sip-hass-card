@@ -250,68 +250,70 @@ class SIPCore {
                 console.info("Call accepted");
                 this.call_state = CALLSTATE.CONNECTED;
             });
-            e.session.on("peerconnection", (e: PeerConnectionEvent) => {
-                console.info("Peer connection established");
-                // this.call_state = CALLSTATE.CONNECTING;
 
-                var iceCandidateTimeout: NodeJS.Timeout | null = null;
-                var iceTimeout = this.config.ice_config.iceGatheringTimeout || 5000;
-                console.info("ICE gathering timeout:", iceTimeout);
+            var iceCandidateTimeout: NodeJS.Timeout | null = null;
+            var iceTimeout = this.config.ice_config.iceGatheringTimeout || 5000;
+            console.info("ICE gathering timeout:", iceTimeout);
 
-                e.peerconnection.addEventListener("icecandidate", (e: RTCPeerConnectionIceEvent) => {
-                    console.info("ICE candidate:", e.candidate?.candidate);
+            e.session.on("icecandidate", (e: IceCandidateEvent) => {
+                console.info("ICE candidate:", e.candidate?.candidate);
+                if (iceCandidateTimeout != null) {
+                    clearTimeout(iceCandidateTimeout);
+                }
+
+                iceCandidateTimeout = setTimeout(() => {
+                    console.warn("ICE stopped gathering candidates due to timeout");
+                    e.ready();
+                }, iceTimeout);
+            });
+
+            let handleIceGatheringStateChangeEvent = (e: any) => {
+                console.info("ICE gathering state changed:", e);
+                if (e.target?.iceGatheringState === "complete") {
+                    console.info("ICE gathering complete");
                     if (iceCandidateTimeout != null) {
                         clearTimeout(iceCandidateTimeout);
                     }
+                }
+            };
 
-                    iceCandidateTimeout = setTimeout(() => {
-                        console.warn("ICE stopped gathering candidates due to timeout");
-                        // TODO: Handle this
-                    }, iceTimeout);
+            let handleRemoteTrackEvent = async (e: RTCTrackEvent) => {
+                console.info("Track event:", e);
 
-                });
+                let stream: MediaStream | null = null;
+                if (e.streams.length > 0) {
+                    console.log(`Received remote streams amount: ${e.streams.length}. Using first stream...`);
+                    stream = e.streams[0];
+                }
+                else {
+                    console.log("No associated streams. Creating new stream...");
+                    stream = new MediaStream();
+                    stream.addTrack(e.track);
+                }
 
-                e.peerconnection.addEventListener("iceconnectionstatechange", (e: any) => {
-                    console.info("ICE connection state changed:", e.target?.iceGatheringState);
-                    if (e.target?.iceGatheringState === "complete") {
-                        console.info("ICE gathering complete. Stopping timeout...");
-                        if (iceCandidateTimeout != null) {
-                            clearTimeout(iceCandidateTimeout);
-                        }
+                let remoteAudio = document.getElementById("remoteAudio") as HTMLAudioElement;
+                if (e.track.kind === 'audio' && remoteAudio.srcObject != stream) {
+                    remoteAudio.srcObject = stream;
+                    try {
+                        await remoteAudio.play();
                     }
-                });
-
-                e.peerconnection.addEventListener("track", async (e: RTCTrackEvent) => {
-                    console.info("Track event:", e);
-
-                    let stream: MediaStream | null = null;
-                    if (e.streams.length > 0) {
-                        console.log(`Received remote streams amount: ${e.streams.length}. Using first stream...`);
-                        stream = e.streams[0];
+                    catch (err) {
+                        console.log('Error starting audio playback: ' + err);
                     }
-                    else {
-                        console.log("No associated streams. Creating new stream...");
-                        stream = new MediaStream();
-                        stream.addTrack(e.track);
-                    }
-
-                    let remoteAudio = document.getElementById("remoteAudio") as HTMLAudioElement;
-                    if (e.track.kind === 'audio' && remoteAudio.srcObject != stream) {
-                        remoteAudio.srcObject = stream;
-                        try {
-                            await remoteAudio.play();
-                        }
-                        catch (err) {
-                            console.log('Error starting audio playback: ' + err);
-                        }
-                    }
-                });
-            });
+                }
+            };
 
             switch (e.session.direction) {
                 case "incoming":
                     console.info("Incoming call");
-                    this.call_state = CALLSTATE.INCOMING;
+
+                    e.session.on("peerconnection", (e: PeerConnectionEvent) => {
+                        console.info("Incoming call peer connection established");
+
+                        e.peerconnection.addEventListener("track", handleRemoteTrackEvent);
+                        e.peerconnection.addEventListener("icegatheringstatechange", handleIceGatheringStateChangeEvent);
+                    });
+
                     if (this.config.auto_answer) {
                         console.info("Auto answering call...");
                         this.answerCall();
@@ -319,7 +321,9 @@ class SIPCore {
                     break;
                 case "outgoing":
                     console.info("Outgoing call");
-                    this.call_state = CALLSTATE.OUTGOING;
+
+                    e.session.connection.addEventListener("track", handleRemoteTrackEvent);
+                    e.session.connection.addEventListener("icegatheringstatechange", handleIceGatheringStateChangeEvent);
                     break;
             }
         });
