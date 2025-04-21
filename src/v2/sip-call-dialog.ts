@@ -4,11 +4,36 @@ import {
     css,
 } from "lit";
 // TODO: Use customelement decorator
-import { sipCore, CALLSTATE, AUDIO_DEVICE_KIND, PopupConfig } from "./sip-core";
+import { sipCore, CALLSTATE, AUDIO_DEVICE_KIND } from "./sip-core";
 // import { AudioVisualizer } from "./audio-visualizer.js";
 
 
-console.log("Loading SIPCallDialog");
+interface Extension {
+    name: string;
+    extension: string;
+    icon: string | null;
+    status_entity: string | null;
+    camera_entity: string | null;
+}
+
+
+class ButtonType {
+    static SERVICE_CALL = "service_call";
+}
+
+
+interface Button {
+    label: string;
+    icon: string;
+    type: ButtonType;
+    data: any;
+}
+
+
+interface PopupConfig {
+    buttons: Button[];
+    extensions: Extension[];
+}
 
 
 class SIPCallDialog extends LitElement {
@@ -22,7 +47,7 @@ class SIPCallDialog extends LitElement {
         console.log("SIPCallDialog constructor");
         super();
         this.open = false;
-        this.config = sipCore.config.popup_config;
+        this.config = sipCore.config.popup_config as PopupConfig;
         this.hass = sipCore.hass;
         this.outputDevices = [];
         this.inputDevices = [];
@@ -143,18 +168,20 @@ class SIPCallDialog extends LitElement {
         `;
     }
 
-    // connectedCallback() {
-    //     super.connectedCallback();
-    //     this.updateHandler = (event: any) => {
-    //         this.requestUpdate();
-    //     }
-    //     window.addEventListener('sipcore-update', this.updateHandler);
-    // }
+    updateHandler = (event: any) => {
+        this.open = sipCore.call_state !== CALLSTATE.IDLE;
+        this.requestUpdate();
+    }
 
-    // disconnectedCallback() {
-    //     super.disconnectedCallback();
-    //     window.removeEventListener('sipcore-update', this.updateHandler);
-    // }
+    connectedCallback() {
+        super.connectedCallback();
+        window.addEventListener('sipcore-update', this.updateHandler);
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        window.removeEventListener('sipcore-update', this.updateHandler);
+    }
 
     render() {
         let state_title;
@@ -163,16 +190,16 @@ class SIPCallDialog extends LitElement {
                 state_title = "IDLE";
                 break;
             case CALLSTATE.INCOMING:
-                state_title = `INCOMING CALL FROM ${sipCore.callee}`;
+                state_title = `INCOMING CALL FROM ${sipCore.remoteName}`;
                 break;
             case CALLSTATE.OUTGOING:
-                state_title = `CALLING ${sipCore.callee}`;
+                state_title = `CALLING ${sipCore.remoteName}`;
                 break;
             case CALLSTATE.CONNECTED:
-                state_title = `CONNECTED TO ${sipCore.callee}`;
+                state_title = `CONNECTED TO ${sipCore.remoteName}`;
                 break;
             case CALLSTATE.CONNECTING:
-                state_title = `CONNECTING TO ${sipCore.callee}`;
+                state_title = `CONNECTING TO ${sipCore.remoteName}`;
                 break;
             default:
                 state_title = sipCore.call_state;
@@ -181,8 +208,8 @@ class SIPCallDialog extends LitElement {
 
         let camera: string | null = null;
 
-        if (sipCore.call_state !== CALLSTATE.IDLE && sipCore.callee !== null) {
-            camera = this.config.extensions.find((extension) => extension.extension === sipCore.callee)?.camera_entity || null;
+        if (sipCore.call_state !== CALLSTATE.IDLE && sipCore.remoteExtension !== null) {
+            camera = this.config.extensions.find((extension) => extension.extension === sipCore.remoteExtension)?.camera_entity || null;
             // } else {
             //     if (sipCore.audioStream !== null) {
             //         if (this.audioVisualizer === undefined) {
@@ -238,6 +265,7 @@ class SIPCallDialog extends LitElement {
                 <div tabindex="-1" dialogInitialFocus>
                     <div class="top-row">
                         <h2>${state_title}</h2>
+                        <h2>${sipCore.remoteExtension}</h2>
                     </div>
                     <div class="content">
                         <div id="audioVisualizer" style="display: ${camera ? "hidden" : "block"}"></div>

@@ -1,6 +1,6 @@
 {
     "ice_config": {
-        "iceGatheringTimeout": 5000,
+        "iceGatheringTimeout": 1000,
         "iceCandidatePoolSize": 0,
         "iceTransportPolicy": "all",
         "iceServers": [
@@ -27,9 +27,8 @@
             "password": "w8woord"
         }
     ],
-    "auto_answer": true,
+    "auto_answer": false,
     "popup_config": {
-        "enabled": true,
         "buttons": [
             {
                 "label": "Open Door",

@@ -22,11 +22,6 @@ export class CALLSTATE {
 }
 
 
-class ButtonType {
-    static SERVICE_CALL = "service_call";
-}
-
-
 export class AUDIO_DEVICE_KIND {
     static INPUT = "audioinput";
     static OUTPUT = "audiooutput";
@@ -40,37 +35,13 @@ interface User {
 }
 
 
-interface Extension {
-    name: string;
-    extension: string;
-    icon: string | null;
-    status_entity: string | null;
-    camera_entity: string | null;
-}
-
-
-interface Button {
-    label: string;
-    icon: string;
-    type: ButtonType;
-    data: any;
-}
-
-
-interface PopupConfig {
-    enabled: boolean;
-    override_component: string | null;
-    buttons: Button[];
-    extensions: Extension[];
-}
-
-
 interface SIPCoreConfig {
     ice_config: any;
     backup_user: User;
     users: User[];
     auto_answer: boolean;
-    popup_config: PopupConfig;
+    popup_config: Object | null;
+    popup_override_component: string | null;
 }
 
 
@@ -80,8 +51,8 @@ class SIPCore {
     public user: User;
     public call_state: string = CALLSTATE.IDLE;
     public registered: boolean = false;
-    public callee: string | null = null;
     public config: SIPCoreConfig;
+    private heartBeatHandle: NodeJS.Timeout | null = null;
     private heartBeatIntervalMs: number = 30000;
     public RTCSession: RTCSession | null = null;
     private wssUrl: string;
@@ -89,6 +60,7 @@ class SIPCore {
     private dialog: any | null = null;
     public currentAudioInputId: string | null = localStorage.getItem("sipcore-audio-input") || null;
     public currentAudioOutputId: string | null = localStorage.getItem("sipcore-audio-output") || null;
+    private iceCandidateTimeout: NodeJS.Timeout | null = null;
 
     constructor() {
         // Get hass instance
@@ -128,33 +100,57 @@ class SIPCore {
         this.ua = this.setupUA();
     }
 
-    async setupAudio() {
-        // TODO: Set default audio devices if not set
+    get remoteExtension(): string | null {
+        return this.RTCSession?.remote_identity.uri.user || null;
+    }
 
+    get remoteName(): string | null {
+        return this.RTCSession?.remote_identity.display_name || null;
+    }
+
+    async setupAudio() {
         let audioElement = document.createElement("audio") as any;
         audioElement.id = "remoteAudio";
         audioElement.autoplay = true;
         audioElement.style.display = "none";
         document.body.appendChild(audioElement);
-        console.info("Audio element created:", audioElement);
-        // set output device
-        // if (this.currentAudioOutputId) {
-        //     audioElement = document.querySelector("#remoteAudio") as any;
-        //     console.log("Audio element found:", audioElement);
-        //     await audioElement.setSinkId(this.currentAudioOutputId);
-        //     console.info(`Audio output set to ${this.currentAudioOutputId}`);
-        // }
-        // set input device
-        // if (this.currentAudioInputId) {
-        //     this.callOptions.mediaConstraints.audio = {
-        //         deviceId: { exact: this.currentAudioInputId },
-        //     };
-        //     console.info(`Audio input set to ${this.currentAudioInputId}`);
-        // }
+
+        if (this.currentAudioInputId) {
+            try {
+                await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        deviceId: { exact: this.currentAudioInputId },
+                    },
+                });
+                console.info(`Audio input set to ${this.currentAudioInputId}`);
+            } catch (err) {
+                console.error(`Error setting audio input: ${err}`);
+                await navigator.mediaDevices.getUserMedia({ audio: true });
+                console.info("Audio input set to default");
+                this.currentAudioInputId = null;
+                localStorage.removeItem("sipcore-audio-input");
+                this.triggerUpdate();
+            }
+        }
+
+        if (this.currentAudioOutputId) {
+            audioElement = document.querySelector("#remoteAudio") as any;
+            console.log("Audio element found:", audioElement);
+            try {
+                await audioElement.setSinkId(this.currentAudioOutputId);
+            }
+            catch (err) {
+                console.error(`Error setting audio output: ${err}`);
+                this.currentAudioOutputId = null;
+                localStorage.removeItem("sipcore-audio-output");
+                this.triggerUpdate();
+                console.info("Audio output set to default");
+            }
+        }
     }
 
     setupPopup() {
-        let POPUP_COMPONENT = this.config.popup_config.override_component || "sip-call-dialog";
+        let POPUP_COMPONENT = this.config.popup_override_component || "sip-call-dialog";
         if (document.getElementsByTagName(POPUP_COMPONENT).length < 1) {
             this.dialog = document.createElement(POPUP_COMPONENT) as any;
             document.body.appendChild(this.dialog);
@@ -166,7 +162,7 @@ class SIPCore {
         await this.setupAudio();
         console.info(`Connecting to ${this.wssUrl}...`);
         this.ua.start();
-        if (this.config.popup_config.enabled) {
+        if (this.config.popup_config !== null) {
             this.setupPopup();
         }
     }
@@ -186,17 +182,26 @@ class SIPCore {
     }
 
     answerCall() {
+        if (this.call_state !== CALLSTATE.INCOMING) {
+            console.warn("Not in incoming call state. Cannot answer.");
+            return;
+        }
         this.RTCSession?.answer(this.callOptions);
+        this.call_state = CALLSTATE.CONNECTING;
+        this.triggerUpdate();
     }
 
     endCall() {
         this.RTCSession?.terminate();
+        this.triggerUpdate();
     }
 
     startCall(extension: string) {
-        // TODO: Set callee
-        this.callee = extension;
         this.ua.call(extension, this.callOptions);
+    }
+
+    triggerUpdate() {
+        window.dispatchEvent(new Event("sipcore-update"));
     }
 
     setupUA(): UA {
@@ -214,22 +219,37 @@ class SIPCore {
             console.info("Registered");
             this.registered = true;
             this.call_state = CALLSTATE.IDLE;
+            this.triggerUpdate();
 
             // Start heartbeat
-            setInterval(() => { // TODO: Stop when unregistered? Using heartbeatHandle int?
-                if (this.registered) {
-                    console.info("Sending heartbeat");
-                    socket.send("\n\n");
-                }
+            if (this.heartBeatHandle != null) {
+                clearInterval(this.heartBeatHandle);
+            }
+            this.heartBeatHandle = setInterval(() => { // TODO: Stop when unregistered? Using heartbeatHandle int?
+                console.debug("Sending heartbeat");
+                socket.send("\n\n");
             }, this.heartBeatIntervalMs);
         })
-        ua.on("registrationFailed", (e) => {
-            console.warn("Registration failed:", e);
+        ua.on("unregistered", (e) => {
+            console.warn("Unregistered");
             this.registered = false;
             this.call_state = CALLSTATE.IDLE;
+            this.triggerUpdate();
+            if (this.heartBeatHandle != null) {
+                clearInterval(this.heartBeatHandle);
+            }
+        })
+        ua.on("registrationFailed", (e) => {
+            console.error("Registration failed:", e);
+            this.registered = false;
+            this.call_state = CALLSTATE.IDLE;
+            this.triggerUpdate();
+            if (this.heartBeatHandle != null) {
+                clearInterval(this.heartBeatHandle);
+            }
         })
         ua.on("newRTCSession", (e: RTCSessionEvent) => {
-            console.info(`New RTC Session: ${e.originator}`);
+            console.debug(`New RTC Session: ${e.originator}`);
 
             if (this.RTCSession !== null) {
                 console.info("Terminating new RTC session");
@@ -239,79 +259,46 @@ class SIPCore {
             this.RTCSession = e.session;
 
             e.session.on("failed", (e: EndEvent) => {
-                console.info("Call failed");
+                console.error("Call failed:", e);
                 this.call_state = CALLSTATE.IDLE;
+                this.RTCSession = null;
+                this.triggerUpdate();
             });
             e.session.on("ended", (e: EndEvent) => {
-                console.info("Call ended");
+                console.info("Call ended:", e);
                 this.call_state = CALLSTATE.IDLE;
+                this.RTCSession = null;
+                this.triggerUpdate();
             });
             e.session.on("accepted", (e: IncomingEvent) => {
                 console.info("Call accepted");
                 this.call_state = CALLSTATE.CONNECTED;
+                this.triggerUpdate();
             });
-
-            var iceCandidateTimeout: NodeJS.Timeout | null = null;
-            var iceTimeout = this.config.ice_config.iceGatheringTimeout || 5000;
-            console.info("ICE gathering timeout:", iceTimeout);
 
             e.session.on("icecandidate", (e: IceCandidateEvent) => {
-                console.info("ICE candidate:", e.candidate?.candidate);
-                if (iceCandidateTimeout != null) {
-                    clearTimeout(iceCandidateTimeout);
+                console.debug("ICE candidate:", e.candidate?.candidate);
+                if (this.iceCandidateTimeout != null) {
+                    clearTimeout(this.iceCandidateTimeout);
                 }
 
-                iceCandidateTimeout = setTimeout(() => {
-                    console.warn("ICE stopped gathering candidates due to timeout");
+                this.iceCandidateTimeout = setTimeout(() => {
+                    console.debug("ICE stopped gathering candidates due to timeout");
                     e.ready();
-                }, iceTimeout);
+                }, this.config.ice_config.iceGatheringTimeout || 5000);
             });
-
-            let handleIceGatheringStateChangeEvent = (e: any) => {
-                console.info("ICE gathering state changed:", e);
-                if (e.target?.iceGatheringState === "complete") {
-                    console.info("ICE gathering complete");
-                    if (iceCandidateTimeout != null) {
-                        clearTimeout(iceCandidateTimeout);
-                    }
-                }
-            };
-
-            let handleRemoteTrackEvent = async (e: RTCTrackEvent) => {
-                console.info("Track event:", e);
-
-                let stream: MediaStream | null = null;
-                if (e.streams.length > 0) {
-                    console.log(`Received remote streams amount: ${e.streams.length}. Using first stream...`);
-                    stream = e.streams[0];
-                }
-                else {
-                    console.log("No associated streams. Creating new stream...");
-                    stream = new MediaStream();
-                    stream.addTrack(e.track);
-                }
-
-                let remoteAudio = document.getElementById("remoteAudio") as HTMLAudioElement;
-                if (e.track.kind === 'audio' && remoteAudio.srcObject != stream) {
-                    remoteAudio.srcObject = stream;
-                    try {
-                        await remoteAudio.play();
-                    }
-                    catch (err) {
-                        console.log('Error starting audio playback: ' + err);
-                    }
-                }
-            };
 
             switch (e.session.direction) {
                 case "incoming":
                     console.info("Incoming call");
+                    this.call_state = CALLSTATE.INCOMING;
+                    this.triggerUpdate();
 
                     e.session.on("peerconnection", (e: PeerConnectionEvent) => {
                         console.info("Incoming call peer connection established");
 
-                        e.peerconnection.addEventListener("track", handleRemoteTrackEvent);
-                        e.peerconnection.addEventListener("icegatheringstatechange", handleIceGatheringStateChangeEvent);
+                        e.peerconnection.addEventListener("track", this.handleRemoteTrackEvent);
+                        e.peerconnection.addEventListener("icegatheringstatechange", this.handleIceGatheringStateChangeEvent);
                     });
 
                     if (this.config.auto_answer) {
@@ -319,16 +306,53 @@ class SIPCore {
                         this.answerCall();
                     }
                     break;
+
                 case "outgoing":
                     console.info("Outgoing call");
+                    this.call_state = CALLSTATE.OUTGOING;
+                    this.triggerUpdate();
 
-                    e.session.connection.addEventListener("track", handleRemoteTrackEvent);
-                    e.session.connection.addEventListener("icegatheringstatechange", handleIceGatheringStateChangeEvent);
+                    e.session.connection.addEventListener("track", this.handleRemoteTrackEvent);
+                    e.session.connection.addEventListener("icegatheringstatechange", this.handleIceGatheringStateChangeEvent);
                     break;
             }
         });
         return ua;
     }
+
+    handleIceGatheringStateChangeEvent(e: any) {
+        console.debug("ICE gathering state changed:", e.target?.iceGatheringState);
+        if (e.target?.iceGatheringState === "complete") {
+            console.info("ICE gathering complete");
+            if (this.iceCandidateTimeout != null) {
+                clearTimeout(this.iceCandidateTimeout);
+            }
+        }
+    };
+
+    async handleRemoteTrackEvent(e: RTCTrackEvent) {
+        let stream: MediaStream | null = null;
+        if (e.streams.length > 0) {
+            console.debug(`Received remote streams amount: ${e.streams.length}. Using first stream...`);
+            stream = e.streams[0];
+        }
+        else {
+            console.debug("No associated streams. Creating new stream...");
+            stream = new MediaStream();
+            stream.addTrack(e.track);
+        }
+
+        let remoteAudio = document.getElementById("remoteAudio") as HTMLAudioElement;
+        if (e.track.kind === 'audio' && remoteAudio.srcObject != stream) {
+            remoteAudio.srcObject = stream;
+            try {
+                await remoteAudio.play();
+            }
+            catch (err) {
+                console.error('Error starting audio playback: ' + err);
+            }
+        }
+    };
 
     // borrowed from https://github.com/lovelylain/ha-addon-iframe-card/blob/main/src/hassio-ingress.ts
     setIngressCookie(session: string): string {
@@ -387,4 +411,4 @@ sipCore.init().catch((error) => {
     console.error("Error initializing SIP Core:", error);
     console.log(error);
 });
-export { sipCore, PopupConfig };
+export { sipCore };
