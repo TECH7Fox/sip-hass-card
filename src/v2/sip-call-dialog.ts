@@ -3,9 +3,8 @@ import {
     html,
     css,
 } from "lit";
-// TODO: Use customelement decorator
 import { sipCore, CALLSTATE, AUDIO_DEVICE_KIND } from "./sip-core";
-// import { AudioVisualizer } from "./audio-visualizer.js";
+import { AudioVisualizer } from "./audio-visualizer";
 
 
 interface Extension {
@@ -42,6 +41,7 @@ class SIPCallDialog extends LitElement {
     public inputDevices: MediaDeviceInfo[];
     public hass: any;
     public config: PopupConfig;
+    private audioVisualizer: AudioVisualizer | undefined;
 
     constructor() {
         console.log("SIPCallDialog constructor");
@@ -206,20 +206,22 @@ class SIPCallDialog extends LitElement {
                 break;
         }
 
-        let camera: string | null = null;
+        let camera: string = "";
 
         if (sipCore.call_state !== CALLSTATE.IDLE && sipCore.remoteExtension !== null) {
-            camera = this.config.extensions.find((extension) => extension.extension === sipCore.remoteExtension)?.camera_entity || null;
-            // } else {
-            //     if (sipCore.audioStream !== null) {
-            //         if (this.audioVisualizer === undefined) {
-            //             this.audioVisualizer = new AudioVisualizer(this.renderRoot, sipCore.audioStream, 16); // TODO: Move to better place
-            //         }
-            //     } else {
-            //         this.audioVisualizer = undefined;
-            //     }
-            //     camera = false;
-            // }
+            camera = this.config.extensions.find((extension) => extension.extension === sipCore.remoteExtension)?.camera_entity || "";
+        if (!camera) {
+                console.log("No camera entity found");
+                if (sipCore.remoteAudioStream !== null) {
+                    console.log("Audio stream found");
+                    if (this.audioVisualizer === undefined) {
+                        console.log("Creating audio visualizer");
+                        this.audioVisualizer = new AudioVisualizer(this.renderRoot, sipCore.remoteAudioStream, 16);
+                    }
+                } else {
+                    this.audioVisualizer = undefined;
+                }
+            }
         }
 
         return html`

@@ -1,7 +1,6 @@
 import { UA, WebSocketInterface } from "jssip/lib/JsSIP";
 import { RTCSessionEvent, CallOptions } from "jssip/lib/UA";
 import { EndEvent, PeerConnectionEvent, IncomingEvent, OutgoingEvent, IceCandidateEvent, RTCSession } from "jssip/lib/RTCSession";
-// load sip-call-dialog
 import "./sip-call-dialog";
 
 const version = "0.1.3";
@@ -49,7 +48,7 @@ class SIPCore {
     private ua: UA;
     public hass: any;
     public user: User;
-    public call_state: string = CALLSTATE.IDLE;
+    public call_state: CALLSTATE = CALLSTATE.IDLE;
     public registered: boolean = false;
     public config: SIPCoreConfig;
     private heartBeatHandle: NodeJS.Timeout | null = null;
@@ -61,6 +60,7 @@ class SIPCore {
     public currentAudioInputId: string | null = localStorage.getItem("sipcore-audio-input") || null;
     public currentAudioOutputId: string | null = localStorage.getItem("sipcore-audio-output") || null;
     private iceCandidateTimeout: NodeJS.Timeout | null = null;
+    public remoteAudioStream: MediaStream | null = null;
 
     constructor() {
         // Get hass instance
@@ -97,6 +97,10 @@ class SIPCore {
             pcConfig: this.config.ice_config,
         }
 
+        // Bind event handlers
+        this.handleRemoteTrackEvent = this.handleRemoteTrackEvent.bind(this);
+        this.handleIceGatheringStateChangeEvent = this.handleIceGatheringStateChangeEvent.bind(this);
+
         this.ua = this.setupUA();
     }
 
@@ -116,36 +120,11 @@ class SIPCore {
         document.body.appendChild(audioElement);
 
         if (this.currentAudioInputId) {
-            try {
-                await navigator.mediaDevices.getUserMedia({
-                    audio: {
-                        deviceId: { exact: this.currentAudioInputId },
-                    },
-                });
-                console.info(`Audio input set to ${this.currentAudioInputId}`);
-            } catch (err) {
-                console.error(`Error setting audio input: ${err}`);
-                await navigator.mediaDevices.getUserMedia({ audio: true });
-                console.info("Audio input set to default");
-                this.currentAudioInputId = null;
-                localStorage.removeItem("sipcore-audio-input");
-                this.triggerUpdate();
-            }
+            await this.setAudioDevice(this.currentAudioInputId, AUDIO_DEVICE_KIND.INPUT);
         }
 
         if (this.currentAudioOutputId) {
-            audioElement = document.querySelector("#remoteAudio") as any;
-            console.log("Audio element found:", audioElement);
-            try {
-                await audioElement.setSinkId(this.currentAudioOutputId);
-            }
-            catch (err) {
-                console.error(`Error setting audio output: ${err}`);
-                this.currentAudioOutputId = null;
-                localStorage.removeItem("sipcore-audio-output");
-                this.triggerUpdate();
-                console.info("Audio output set to default");
-            }
+            await this.setAudioDevice(this.currentAudioOutputId, AUDIO_DEVICE_KIND.OUTPUT);
         }
     }
 
@@ -331,20 +310,21 @@ class SIPCore {
     };
 
     async handleRemoteTrackEvent(e: RTCTrackEvent) {
-        let stream: MediaStream | null = null;
         if (e.streams.length > 0) {
             console.debug(`Received remote streams amount: ${e.streams.length}. Using first stream...`);
-            stream = e.streams[0];
+            this.remoteAudioStream = e.streams[0];
         }
         else {
             console.debug("No associated streams. Creating new stream...");
-            stream = new MediaStream();
-            stream.addTrack(e.track);
+            this.remoteAudioStream = new MediaStream();
+            this.remoteAudioStream.addTrack(e.track);
         }
 
+        this.triggerUpdate();
+
         let remoteAudio = document.getElementById("remoteAudio") as HTMLAudioElement;
-        if (e.track.kind === 'audio' && remoteAudio.srcObject != stream) {
-            remoteAudio.srcObject = stream;
+        if (e.track.kind === 'audio' && remoteAudio.srcObject != this.remoteAudioStream) {
+            remoteAudio.srcObject = this.remoteAudioStream;
             try {
                 await remoteAudio.play();
             }
@@ -393,14 +373,39 @@ class SIPCore {
         console.info(`Setting audio device ${deviceId} (${audioKind})`);
         switch (audioKind) {
             case AUDIO_DEVICE_KIND.INPUT:
+                try {
+                    await navigator.mediaDevices.getUserMedia({
+                        audio: {
+                            deviceId: { exact: deviceId },
+                        },
+                    });
+                    console.info(`Audio input set to ${this.currentAudioInputId}`);
+                } catch (err) {
+                    console.error(`Error setting audio input: ${err}`);
+                    await navigator.mediaDevices.getUserMedia({ audio: true });
+                    console.info("Audio input set to default");
+                    this.currentAudioInputId = null;
+                    localStorage.removeItem("sipcore-audio-input");
+                    this.triggerUpdate();
+                }
                 this.currentAudioInputId = deviceId;
                 localStorage.setItem("sipcore-audio-input", deviceId);
-                // TODO: THIS
                 break;
             case AUDIO_DEVICE_KIND.OUTPUT:
+                var audioElement = document.querySelector("#remoteAudio") as any;
+                try {
+                    await audioElement.setSinkId(this.currentAudioOutputId);
+                }
+                catch (err) {
+                    console.error(`Error setting audio output: ${err}`);
+                    this.currentAudioOutputId = null;
+                    localStorage.removeItem("sipcore-audio-output");
+                    this.triggerUpdate();
+                    console.info("Audio output set to default");
+                    break;
+                }
                 this.currentAudioOutputId = deviceId;
                 localStorage.setItem("sipcore-audio-output", deviceId);
-                // TODO: THIS
                 break;
         }
     }
