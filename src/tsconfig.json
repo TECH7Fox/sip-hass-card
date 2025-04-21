@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "allowJs": true,
-    "target": "es2017",
-    "module": "es2015",
+    "target": "ES2022",
+    "module": "ES2022",
     "strict": true,
     "esModuleInterop": true,
     "importHelpers": true,
@@ -10,7 +10,7 @@
     "moduleResolution": "node",
     "experimentalDecorators": true,
     "lib": [
-      "es2017",
+      "ES2022",
       "DOM"
     ],
     "types": []

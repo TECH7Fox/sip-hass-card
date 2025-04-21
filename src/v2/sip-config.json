@@ -1,5 +1,6 @@
 {
     "ice_config": {
+        "iceGatheringTimeout": 20000,
         "iceCandidatePoolSize": 0,
         "iceTransportPolicy": "all",
         "iceServers": [

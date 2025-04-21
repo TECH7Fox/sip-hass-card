@@ -91,8 +91,6 @@ class SIPCore {
     public currentAudioOutputId: string | null = localStorage.getItem("sipcore-audio-output") || null;
 
     constructor() {
-        console.log("current audio input id", this.currentAudioInputId);
-        console.log("current audio output id", this.currentAudioOutputId);
         // Get hass instance
         const homeAssistant = document.querySelector("home-assistant");
         if (!homeAssistant) {
@@ -130,6 +128,31 @@ class SIPCore {
         this.ua = this.setupUA();
     }
 
+    async setupAudio() {
+        // TODO: Set default audio devices if not set
+
+        let audioElement = document.createElement("audio") as any;
+        audioElement.id = "remoteAudio";
+        audioElement.autoplay = true;
+        audioElement.style.display = "none";
+        document.body.appendChild(audioElement);
+        console.info("Audio element created:", audioElement);
+        // set output device
+        // if (this.currentAudioOutputId) {
+        //     audioElement = document.querySelector("#remoteAudio") as any;
+        //     console.log("Audio element found:", audioElement);
+        //     await audioElement.setSinkId(this.currentAudioOutputId);
+        //     console.info(`Audio output set to ${this.currentAudioOutputId}`);
+        // }
+        // set input device
+        // if (this.currentAudioInputId) {
+        //     this.callOptions.mediaConstraints.audio = {
+        //         deviceId: { exact: this.currentAudioInputId },
+        //     };
+        //     console.info(`Audio input set to ${this.currentAudioInputId}`);
+        // }
+    }
+
     setupPopup() {
         let POPUP_COMPONENT = this.config.popup_config.override_component || "sip-call-dialog";
         if (document.getElementsByTagName(POPUP_COMPONENT).length < 1) {
@@ -140,6 +163,7 @@ class SIPCore {
 
     async init() {
         await this.createHassioSession();
+        await this.setupAudio();
         console.info(`Connecting to ${this.wssUrl}...`);
         this.ua.start();
         if (this.config.popup_config.enabled) {
@@ -208,22 +232,96 @@ class SIPCore {
             console.info(`New RTC Session: ${e.originator}`);
 
             if (this.RTCSession !== null) {
-                console.info("Terminating existing RTC session");
-                this.RTCSession.terminate();
+                console.info("Terminating new RTC session");
+                e.session.terminate();
+                return;
             }
             this.RTCSession = e.session;
-            this.RTCSession.on("failed", (e: EndEvent) => {
+
+            e.session.on("failed", (e: EndEvent) => {
                 console.info("Call failed");
                 this.call_state = CALLSTATE.IDLE;
             });
-            this.RTCSession.on("ended", (e: EndEvent) => {
+            e.session.on("ended", (e: EndEvent) => {
                 console.info("Call ended");
                 this.call_state = CALLSTATE.IDLE;
             });
-            this.RTCSession.on("accepted", (e: IncomingEvent) => {
+            e.session.on("accepted", (e: IncomingEvent) => {
                 console.info("Call accepted");
                 this.call_state = CALLSTATE.CONNECTED;
             });
+            e.session.on("peerconnection", (e: PeerConnectionEvent) => {
+                console.info("Peer connection established");
+                // this.call_state = CALLSTATE.CONNECTING;
+
+                var iceCandidateTimeout: NodeJS.Timeout | null = null;
+                var iceTimeout = this.config.ice_config.iceGatheringTimeout || 5000;
+                console.info("ICE gathering timeout:", iceTimeout);
+
+                e.peerconnection.addEventListener("icecandidate", (e: RTCPeerConnectionIceEvent) => {
+                    console.info("ICE candidate:", e.candidate?.candidate);
+                    if (iceCandidateTimeout != null) {
+                        clearTimeout(iceCandidateTimeout);
+                    }
+
+                    iceCandidateTimeout = setTimeout(() => {
+                        console.warn("ICE stopped gathering candidates due to timeout");
+                        // TODO: Handle this
+                    }, iceTimeout);
+
+                });
+
+                e.peerconnection.addEventListener("iceconnectionstatechange", (e: any) => {
+                    console.info("ICE connection state changed:", e.target?.iceGatheringState);
+                    if (e.target?.iceGatheringState === "complete") {
+                        console.info("ICE gathering complete. Stopping timeout...");
+                        if (iceCandidateTimeout != null) {
+                            clearTimeout(iceCandidateTimeout);
+                        }
+                    }
+                });
+
+                e.peerconnection.addEventListener("track", async (e: RTCTrackEvent) => {
+                    console.info("Track event:", e);
+
+                    let stream: MediaStream | null = null;
+                    if (e.streams.length > 0) {
+                        console.log(`Received remote streams amount: ${e.streams.length}. Using first stream...`);
+                        stream = e.streams[0];
+                    }
+                    else {
+                        console.log("No associated streams. Creating new stream...");
+                        stream = new MediaStream();
+                        stream.addTrack(e.track);
+                    }
+
+                    let remoteAudio = document.getElementById("remoteAudio") as HTMLAudioElement;
+                    if (e.track.kind === 'audio' && remoteAudio.srcObject != stream) {
+                        remoteAudio.srcObject = stream;
+                        try {
+                            await remoteAudio.play();
+                        }
+                        catch (err) {
+                            console.log('Error starting audio playback: ' + err);
+                        }
+                    }
+                });
+            });
+
+            switch (e.session.direction) {
+                case "incoming":
+                    console.info("Incoming call");
+                    this.call_state = CALLSTATE.INCOMING;
+                    if (this.config.auto_answer) {
+                        console.info("Auto answering call...");
+                        this.answerCall();
+                    }
+                    break;
+                case "outgoing":
+                    console.info("Outgoing call");
+                    this.call_state = CALLSTATE.OUTGOING;
+                    break;
+            }
         });
         return ua;
     }
