@@ -10,8 +10,6 @@ import { AudioVisualizer } from "./audio-visualizer";
 interface Extension {
     name: string;
     extension: string;
-    icon: string | null;
-    status_entity: string | null;
     camera_entity: string | null;
 }
 
@@ -32,6 +30,7 @@ interface Button {
 interface PopupConfig {
     buttons: Button[];
     extensions: Extension[];
+    large: boolean | undefined;
 }
 
 
@@ -101,6 +100,14 @@ class SIPCallDialog extends LitElement {
             ha-dialog {
                 --dialog-content-padding: 0;
                 --mdc-dialog-min-width: 600px;
+            }
+
+            ha-dialog[large] {
+                --dialog-content-padding: 0;
+                --mdc-dialog-min-width: 90vw;
+                --mdc-dialog-max-width: 90vw;
+                --mdc-dialog-min-height: 90vh;
+                --mdc-dialog-max-height: 90vh;
             }
 
             ha-camera-stream {
@@ -225,7 +232,7 @@ class SIPCallDialog extends LitElement {
         }
 
         return html`
-            <ha-dialog ?open=${this.open} @closed=${this.closePopup} hideActions flexContent .heading=${true} data-domain="camera">
+            <ha-dialog ?open=${this.open} @closed=${this.closePopup} hideActions flexContent .heading=${true} data-domain="camera" ?large=${this.config.large}>
                 <ha-dialog-header slot="heading">
                     <ha-icon-button
                         dialogAction="cancel"
@@ -373,16 +380,12 @@ class SIPCallDialog extends LitElement {
     }
 
     setupButton() {
-        // TODO: Run again when changing views
-
-        console.log("Setting up button");
-
         const homeAssistant = document.getElementsByTagName("home-assistant")[0];
         const panel = homeAssistant?.shadowRoot?.querySelector("home-assistant-main")
             ?.shadowRoot?.querySelector("ha-panel-lovelace");
 
         if (panel === null) {
-            console.log("panel not found!");
+            console.debug("panel not found!");
             return;
         }
 
@@ -404,6 +407,11 @@ class SIPCallDialog extends LitElement {
             this.openPopup();
         });
         actionItems?.appendChild(callButton);
+
+        window.addEventListener("location-changed", () => {
+            console.debug("View changed, setting up button again...");
+            this.setupButton();
+        })
     }
 }
 

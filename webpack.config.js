@@ -2,7 +2,9 @@ const path = require('path');
 
 module.exports = {
   entry: {
-    'sipjs-card': './src/sip-core.ts'
+    'sipjs-card': './src/sip-core.ts',
+    'sip-call-dialog': './src/sip-call-dialog.ts',
+    'sip-contacts-card': './src/sip-contacts-card.ts',
   },
   devtool: 'inline-source-map',
   mode: 'development',

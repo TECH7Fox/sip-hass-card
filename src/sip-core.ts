@@ -1,7 +1,6 @@
 import { UA, WebSocketInterface } from "jssip/lib/JsSIP";
 import { RTCSessionEvent, CallOptions } from "jssip/lib/UA";
 import { EndEvent, PeerConnectionEvent, IncomingEvent, OutgoingEvent, IceCandidateEvent, RTCSession } from "jssip/lib/RTCSession";
-import "./sip-call-dialog";
 
 const version = "0.1.3";
 
@@ -144,6 +143,14 @@ class SIPCore {
         if (this.config.popup_config !== null) {
             this.setupPopup();
         }
+        this.triggerUpdate();
+        
+        // autocall if set
+        const autocall_extension = new URLSearchParams(window.location.search).get("call");
+        if (autocall_extension) {
+            console.info(`Autocalling ${autocall_extension}...`);
+            this.startCall(autocall_extension);
+        }
     }
 
     fetchConfig(): SIPCoreConfig {
@@ -197,7 +204,6 @@ class SIPCore {
         ua.on("registered", (e) => {
             console.info("Registered");
             this.registered = true;
-            this.call_state = CALLSTATE.IDLE;
             this.triggerUpdate();
 
             // Start heartbeat
@@ -212,7 +218,6 @@ class SIPCore {
         ua.on("unregistered", (e) => {
             console.warn("Unregistered");
             this.registered = false;
-            this.call_state = CALLSTATE.IDLE;
             this.triggerUpdate();
             if (this.heartBeatHandle != null) {
                 clearInterval(this.heartBeatHandle);
@@ -238,7 +243,7 @@ class SIPCore {
             this.RTCSession = e.session;
 
             e.session.on("failed", (e: EndEvent) => {
-                console.error("Call failed:", e);
+                console.warn("Call failed:", e);
                 this.call_state = CALLSTATE.IDLE;
                 this.RTCSession = null;
                 this.triggerUpdate();
@@ -414,6 +419,5 @@ class SIPCore {
 const sipCore = new SIPCore();
 sipCore.init().catch((error) => {
     console.error("Error initializing SIP Core:", error);
-    console.log(error);
 });
 export { sipCore };

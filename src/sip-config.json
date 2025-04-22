@@ -29,6 +29,7 @@
     ],
     "auto_answer": false,
     "popup_config": {
+        "large": true,
         "buttons": [
             {
                 "label": "Open Door",
@@ -46,9 +47,7 @@
         "extensions": [
             {
                 "name": "Bob",
-                "extension": "101",
-                "status_entity": "sensor.bob_status",
-                "icon": "mdi:account"
+                "extension": "101"
             },
             {
                 "name": "Doorbell",
