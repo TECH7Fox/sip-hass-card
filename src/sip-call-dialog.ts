@@ -43,7 +43,6 @@ class SIPCallDialog extends LitElement {
     private audioVisualizer: AudioVisualizer | undefined;
 
     constructor() {
-        console.log("SIPCallDialog constructor");
         super();
         this.open = false;
         this.config = sipCore.config.popup_config as PopupConfig;
@@ -146,22 +145,10 @@ class SIPCallDialog extends LitElement {
                 flex-direction: row;
             }
 
-            .top-row {
-                display: flex;
-                flex-direction: row;
-                justify-content: space-between;
-                margin-left: 24px;
-                margin-right: 24px;
-            }
-
             .bottom-row {
                 display: flex;
                 justify-content: space-between;
-                margin: 24px;
-            }
-
-            .text {
-                margin-right: 5px;
+                margin: 18px;
             }
 
             .content {
@@ -191,28 +178,6 @@ class SIPCallDialog extends LitElement {
     }
 
     render() {
-        let state_title;
-        switch (sipCore.call_state) {
-            case CALLSTATE.IDLE:
-                state_title = "IDLE";
-                break;
-            case CALLSTATE.INCOMING:
-                state_title = `INCOMING CALL FROM ${sipCore.remoteName}`;
-                break;
-            case CALLSTATE.OUTGOING:
-                state_title = `CALLING ${sipCore.remoteName}`;
-                break;
-            case CALLSTATE.CONNECTED:
-                state_title = `CONNECTED TO ${sipCore.remoteName}`;
-                break;
-            case CALLSTATE.CONNECTING:
-                state_title = `CONNECTING TO ${sipCore.remoteName}`;
-                break;
-            default:
-                state_title = sipCore.call_state;
-                break;
-        }
-
         let camera: string = "";
 
         if (sipCore.call_state !== CALLSTATE.IDLE && sipCore.remoteExtension !== null) {
@@ -229,6 +194,22 @@ class SIPCallDialog extends LitElement {
                     this.audioVisualizer = undefined;
                 }
             }
+        }
+
+        let phoneIcon: string;
+        switch (sipCore.call_state) {
+            case CALLSTATE.INCOMING:
+                phoneIcon = "mdi:phone-incoming-outline";
+                break;
+            case CALLSTATE.OUTGOING:
+                phoneIcon = "mdi:phone-outgoing-outline";
+                break;
+            case CALLSTATE.CONNECTED:
+                phoneIcon = "mdi:phone-in-talk-outline";
+                break;
+            default:
+                phoneIcon = "mdi:phone-outline";
+                break;
         }
 
         return html`
@@ -272,10 +253,6 @@ class SIPCallDialog extends LitElement {
                     </ha-button-menu>
                 </ha-dialog-header>
                 <div tabindex="-1" dialogInitialFocus>
-                    <div class="top-row">
-                        <h2>${state_title}</h2>
-                        <h2>${sipCore.remoteExtension}</h2>
-                    </div>
                     <div class="content">
                         <div id="audioVisualizer" style="display: ${camera ? "hidden" : "block"}"></div>
                         ${camera ? html`
@@ -288,75 +265,21 @@ class SIPCallDialog extends LitElement {
                         ` : ""}
                     </div>
                     <div class="bottom-row">
-                        <div>
-                            <ha-icon-button
-                                class="deny-button"
-                                label="End call"
-                                @click="${() => {
-                                    console.log("Ending call");
-                                    sipCore.endCall();
-                                    this.closePopup();
-                                }}">
-                                <ha-icon .icon=${"mdi:phone-off"}></ha-icon>
-                            </ha-icon-button>
-                            <ha-button-menu
-                                corner="BOTTOM_END"
-                                menucorner="END"
-                                fixed
-                                @closed="${(event: { stopPropagation: () => any; }) => event.stopPropagation()}"
-                            >
-                                <ha-icon-button
-                                    slot="trigger"
-                                    label="Audio output"
-                                    class="audio-button">
-                                    <ha-icon .icon=${"mdi:speaker"}></ha-icon>
-                                </ha-icon-button>
-                                ${this.outputDevices.map((device) => html`
-                                    <ha-list-item
-                                        graphic="icon"
-                                        @click="${async () => {
-                                            await sipCore.setAudioDevice(device.deviceId, AUDIO_DEVICE_KIND.OUTPUT);
-                                            this.requestUpdate();
-                                        }}">
-                                        ${device.label}
-                                        ${sipCore.currentAudioOutputId === device.deviceId ? html`
-                                            <ha-icon slot="graphic" .icon=${"mdi:check"}></ha-icon>
-                                        ` : ''}
-                                    </ha-list-item>
-                                `)}
-                            </ha-button-menu>
-                            <ha-button-menu
-                                corner="BOTTOM_END"
-                                menucorner="END"
-                                fixed
-                                @closed="${(event: { stopPropagation: () => any; }) => event.stopPropagation()}"
-                            >
-                                <ha-icon-button
-                                    slot="trigger"
-                                    label="Audio input"
-                                    class="audio-button">
-                                    <ha-icon .icon=${"mdi:microphone"}></ha-icon>
-                                </ha-icon-button>
-                                ${this.inputDevices.map((device) => html`
-                                    <ha-list-item
-                                        graphic="icon"
-                                        @click="${async () => {
-                                            await sipCore.setAudioDevice(device.deviceId, AUDIO_DEVICE_KIND.INPUT);
-                                            this.requestUpdate();
-                                        }}">
-                                        ${device.label}
-                                        ${sipCore.currentAudioInputId === device.deviceId ? html`
-                                            <ha-icon slot="graphic" .icon=${"mdi:check"}></ha-icon>
-                                        ` : ''}
-                                    </ha-list-item>
-                                `)}
-                            </ha-button-menu>
-                        </div>
                         <ha-icon-button
                             class="accept-button"
                             label="Answer call"
                             @click="${() => sipCore.answerCall()}">
-                            <ha-icon .icon=${"mdi:phone"}></ha-icon>
+                            <ha-icon .icon=${phoneIcon}></ha-icon>
+                        </ha-icon-button>
+                        <div>custom buttons go here</div>
+                        <ha-icon-button
+                            class="deny-button"
+                            label="End call"
+                            @click="${() => {
+                                sipCore.endCall();
+                                this.closePopup();
+                            }}">
+                            <ha-icon .icon=${"mdi:phone-off-outline"}></ha-icon>
                         </ha-icon-button>
                     </div>
                 </div>

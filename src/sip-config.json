@@ -29,7 +29,7 @@
     ],
     "auto_answer": false,
     "popup_config": {
-        "large": true,
+        "large": false,
         "buttons": [
             {
                 "label": "Open Door",

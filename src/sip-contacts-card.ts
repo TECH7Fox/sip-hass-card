@@ -33,7 +33,7 @@ interface SIPContactsCardConfig {
 }
 
 
-class SIPContentCard extends LitElement {
+class SIPContactsCard extends LitElement {
 
     public hass: any;
     public config: SIPContactsCardConfig | undefined;
@@ -225,12 +225,12 @@ class SIPContentCard extends LitElement {
     }
 }
 
-customElements.define("sip-contacts-card", SIPContentCard);
+customElements.define("sip-contacts-card", SIPContactsCard);
 
 window.customCards = window.customCards || [];
 window.customCards.push({
     type: "sip-contacts-card",
     name: "SIP Contacts Card",
     preview: true,
-    description: "Offical SIP Contacts Card to make calls",
+    description: "Offical SIP Contacts Card",
 });
