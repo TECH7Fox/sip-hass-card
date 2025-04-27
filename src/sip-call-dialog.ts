@@ -3,6 +3,7 @@ import {
     html,
     css,
 } from "lit";
+import { customElement, property, state } from "lit/decorators.js";
 import { sipCore, CALLSTATE, AUDIO_DEVICE_KIND } from "./sip-core";
 import { AudioVisualizer } from "./audio-visualizer";
 
@@ -34,30 +35,29 @@ interface PopupConfig {
 }
 
 
+@customElement("sip-call-dialog")
 class SIPCallDialog extends LitElement {
-    public open: boolean;
-    public outputDevices: MediaDeviceInfo[];
-    public inputDevices: MediaDeviceInfo[];
-    public hass: any;
-    public config: PopupConfig;
+    @property()
+    public open = false;
+
+    @property()
+    public outputDevices: MediaDeviceInfo[] = [];
+    
+    @property()
+    public inputDevices: MediaDeviceInfo[] = [];
+    
+    @property()
+    public hass = sipCore.hass;
+
+    @property()
+    public config = sipCore.config.popup_config as PopupConfig;
+
+    @state()
     private audioVisualizer: AudioVisualizer | undefined;
 
     constructor() {
         super();
-        this.open = false;
-        this.config = sipCore.config.popup_config as PopupConfig;
-        this.hass = sipCore.hass;
-        this.outputDevices = [];
-        this.inputDevices = [];
         this.setupButton();
-    }
-
-    static get properties() {
-        return {
-            hass: {},
-            config: {},
-            open: { type: Boolean },
-        };
     }
 
     static get styles() {
@@ -157,7 +157,6 @@ class SIPCallDialog extends LitElement {
                 align-items: center;
                 min-height: 300px;
                 width: 100%;
-                background-color: #2d3033;
             }
         `;
     }
@@ -337,6 +336,3 @@ class SIPCallDialog extends LitElement {
         })
     }
 }
-
-// @ts-ignore
-customElements.define('sip-call-dialog', SIPCallDialog);
