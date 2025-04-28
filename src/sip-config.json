@@ -36,11 +36,19 @@
                 "icon": "mdi:door-open",
                 "type": "service_call",
                 "data": {
-                    "service": "asterisk.send_dtmf",
-                    "service_data": {
-                        "channel": "SIP/8001",
-                        "dtmf": "1"
-                    }
+                    "domain": "light",
+                    "service": "toggle",
+                    "entity_id": "light.bedroom_lights"
+                }
+            },
+            {
+                "label": "Switch lights",
+                "icon": "mdi:lightbulb",
+                "type": "service_call",
+                "data": {
+                    "domain": "light",
+                    "service": "toggle",
+                    "entity_id": "light.bedroom_lights"
                 }
             }
         ],
