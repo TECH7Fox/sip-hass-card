@@ -44,12 +44,10 @@ interface SIPCoreConfig {
 
 
 class SIPCore {
-    private ua: UA;
+    public ua: UA;
     public version: string = version;
     public hass: any;
     public user: User;
-    public call_state: CALLSTATE = CALLSTATE.IDLE;
-    public registered: boolean = false;
     public config: SIPCoreConfig;
     private heartBeatHandle: NodeJS.Timeout | null = null;
     private heartBeatIntervalMs: number = 30000;
@@ -109,7 +107,22 @@ class SIPCore {
     }
 
     get remoteName(): string | null {
-        return this.RTCSession?.remote_identity.display_name || null;
+        return this.RTCSession?.remote_identity.display_name || this.RTCSession?.remote_identity.uri.user || null;
+    }
+
+    get registered(): boolean {
+        return this.ua.isRegistered();
+    }
+
+    get callState(): CALLSTATE {
+        if (this.RTCSession?.isEstablished()) {
+            return CALLSTATE.CONNECTED;
+        } else if (this.RTCSession?.connection.connectionState === "connecting") {
+            return CALLSTATE.CONNECTING;
+        } else if (this.RTCSession?.isInProgress()) {
+            return this.RTCSession?.direction === "incoming" ? CALLSTATE.INCOMING : CALLSTATE.OUTGOING;
+        }
+        return CALLSTATE.IDLE;
     }
 
     async setupAudio() {
@@ -169,12 +182,11 @@ class SIPCore {
     }
 
     answerCall() {
-        if (this.call_state !== CALLSTATE.INCOMING) {
+        if (this.callState !== CALLSTATE.INCOMING) {
             console.warn("Not in incoming call state. Cannot answer.");
             return;
         }
         this.RTCSession?.answer(this.callOptions);
-        this.call_state = CALLSTATE.CONNECTING;
         this.triggerUpdate();
     }
 
@@ -204,7 +216,6 @@ class SIPCore {
 
         ua.on("registered", (e) => {
             console.info("Registered");
-            this.registered = true;
             this.triggerUpdate();
 
             // Start heartbeat
@@ -218,7 +229,6 @@ class SIPCore {
         })
         ua.on("unregistered", (e) => {
             console.warn("Unregistered");
-            this.registered = false;
             this.triggerUpdate();
             if (this.heartBeatHandle != null) {
                 clearInterval(this.heartBeatHandle);
@@ -226,8 +236,6 @@ class SIPCore {
         })
         ua.on("registrationFailed", (e) => {
             console.error("Registration failed:", e);
-            this.registered = false;
-            this.call_state = CALLSTATE.IDLE;
             this.triggerUpdate();
             if (this.heartBeatHandle != null) {
                 clearInterval(this.heartBeatHandle);
@@ -245,19 +253,16 @@ class SIPCore {
 
             e.session.on("failed", (e: EndEvent) => {
                 console.warn("Call failed:", e);
-                this.call_state = CALLSTATE.IDLE;
                 this.RTCSession = null;
                 this.triggerUpdate();
             });
             e.session.on("ended", (e: EndEvent) => {
                 console.info("Call ended:", e);
-                this.call_state = CALLSTATE.IDLE;
                 this.RTCSession = null;
                 this.triggerUpdate();
             });
             e.session.on("accepted", (e: IncomingEvent) => {
                 console.info("Call accepted");
-                this.call_state = CALLSTATE.CONNECTED;
                 this.triggerUpdate();
             });
 
@@ -276,7 +281,6 @@ class SIPCore {
             switch (e.session.direction) {
                 case "incoming":
                     console.info("Incoming call");
-                    this.call_state = CALLSTATE.INCOMING;
                     this.triggerUpdate();
 
                     e.session.on("peerconnection", (e: PeerConnectionEvent) => {
@@ -294,7 +298,6 @@ class SIPCore {
 
                 case "outgoing":
                     console.info("Outgoing call");
-                    this.call_state = CALLSTATE.OUTGOING;
                     this.triggerUpdate();
 
                     e.session.connection.addEventListener("track", this.handleRemoteTrackEvent);

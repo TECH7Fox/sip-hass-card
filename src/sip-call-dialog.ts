@@ -43,11 +43,11 @@ class SIPCallDialog extends LitElement {
     @property()
     public configuratorOpen = false;
 
-    @property()
-    public outputDevices: MediaDeviceInfo[] = [];
+    @state()
+    private outputDevices: MediaDeviceInfo[] = [];
     
-    @property()
-    public inputDevices: MediaDeviceInfo[] = [];
+    @state()
+    private inputDevices: MediaDeviceInfo[] = [];
     
     @property()
     public hass = sipCore.hass;
@@ -172,7 +172,7 @@ class SIPCallDialog extends LitElement {
     }
 
     updateHandler = (event: any) => {
-        this.open = sipCore.call_state !== CALLSTATE.IDLE;
+        this.open = sipCore.callState !== CALLSTATE.IDLE;
         this.requestUpdate();
     }
 
@@ -198,11 +198,39 @@ class SIPCallDialog extends LitElement {
 
     render() {
         let camera: string = "";
+        let statusText;
+        let phoneIcon: string;
 
-        if (sipCore.call_state !== CALLSTATE.IDLE && sipCore.remoteExtension !== null) {
+        switch (sipCore.callState) {
+            case CALLSTATE.IDLE:
+                statusText = "No active call";
+                phoneIcon = "mdi:phone";
+                break;
+            case CALLSTATE.INCOMING:
+                statusText = "Incoming call from " + sipCore.remoteName;
+                phoneIcon = "mdi:phone-incoming";
+                break;
+            case CALLSTATE.OUTGOING:
+                statusText = "Outgoing call to " + sipCore.remoteName;
+                phoneIcon = "mdi:phone-outgoing";
+                break;
+            case CALLSTATE.CONNECTED:
+                statusText = "Connected to " + sipCore.remoteName;
+                phoneIcon = "mdi:phone-in-talk";
+                break;
+            case CALLSTATE.CONNECTING:
+                statusText = "Connecting to " + sipCore.remoteName;
+                phoneIcon = "mdi:phone";
+                break;
+            default:
+                statusText = "Unknown call state";
+                phoneIcon = "mdi:phone";
+                break;
+        }
+
+        if (sipCore.callState !== CALLSTATE.IDLE && sipCore.remoteExtension !== null) {
             camera = this.config.extensions.find((extension) => extension.extension === sipCore.remoteExtension)?.camera_entity || "";
         if (!camera) {
-                console.log("No camera entity found");
                 if (sipCore.remoteAudioStream !== null) {
                     console.log("Audio stream found");
                     if (this.audioVisualizer === undefined) {
@@ -215,22 +243,6 @@ class SIPCallDialog extends LitElement {
             }
         }
 
-        let phoneIcon: string;
-        switch (sipCore.call_state) {
-            case CALLSTATE.INCOMING:
-                phoneIcon = "mdi:phone-incoming";
-                break;
-            case CALLSTATE.OUTGOING:
-                phoneIcon = "mdi:phone-outgoing";
-                break;
-            case CALLSTATE.CONNECTED:
-                phoneIcon = "mdi:phone-in-talk";
-                break;
-            default:
-                phoneIcon = "mdi:phone";
-                break;
-        }
-
         return html`
             <ha-dialog ?open=${this.configuratorOpen} @closed=${() => { this.configuratorOpen = false; if (!this.open) this.closePopup(); }} hideActions flexContent .heading=${true} data-domain="camera" ?large=${this.config.large}>
                 <ha-dialog-header slot="heading">
@@ -241,7 +253,7 @@ class SIPCallDialog extends LitElement {
                             this.openPopup();
                         }}>
                     </ha-icon-button-prev>
-                    <span slot="title" .title="Call">Call</span>
+                    <span slot="title" .title="Call">SIP Call Settings</span>
                 </ha-dialog-header>
                 <div tabindex="-1" dialogInitialFocus class="form">
                     <ha-select
@@ -287,6 +299,14 @@ class SIPCallDialog extends LitElement {
                         <span slot="description">The current user used to log in to the SIP server. You can configure users in the sip-config.json file</span> 
                     </ha-settings-row>
                     <ha-settings-row>
+                        <span slot="heading">Is ${sipCore.registered ? "registered" : "not registered"} <span style="color: gray;">(${sipCore.registered ? "true" : "false"})</span></span>
+                        <span slot="description">The current registration status of the SIP client. If not registered, check browser console and Asterisk logs for more information</span>
+                    </ha-settings-row>
+                    <ha-settings-row>
+                        <span slot="heading">Call state is ${sipCore.callState}</span>
+                        <span slot="description">The current call state of the SIP client</span>
+                    </ha-settings-row>
+                    <ha-settings-row>
                         <span slot="heading">SIP-Core <span style="color: gray;">v${sipCore.version}</span></span>
                         <span slot="description">The main SIP call system, created by Jordy Kuhne</span> 
                     </ha-settings-row>
@@ -305,10 +325,7 @@ class SIPCallDialog extends LitElement {
                         label="Close">
                         <ha-icon .icon=${"mdi:close"}></ha-icon>
                     </ha-icon-button>
-                    <div slot="title" .title="Call">
-                        <span>Call</span>
-                        <span style="color: gray; padding-left: 8px;">(${sipCore.user.extension})</span>
-                    </div>
+                    <span slot="title" .title="${statusText}">${statusText}</span>
                     <ha-icon-button
                         dialogAction="settings"
                         slot="actionItems"

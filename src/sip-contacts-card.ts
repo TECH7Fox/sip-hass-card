@@ -124,7 +124,7 @@ class SIPContactsCard extends LitElement {
                         <br>
                         extension: ${sipCore.user.extension}
                         <br>
-                        call_state: ${sipCore.call_state}
+                        call_state: ${sipCore.callState}
                         <br>
                         connection_state: ${connection_state}
                         <br>
