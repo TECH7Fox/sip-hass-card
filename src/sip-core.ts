@@ -45,6 +45,7 @@ interface SIPCoreConfig {
 
 class SIPCore {
     private ua: UA;
+    public version: string = version;
     public hass: any;
     public user: User;
     public call_state: CALLSTATE = CALLSTATE.IDLE;

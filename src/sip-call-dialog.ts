@@ -284,7 +284,15 @@ class SIPCallDialog extends LitElement {
                     </ha-select>
                     <ha-settings-row>
                         <span slot="heading">Logged in as ${sipCore.user.ha_username} <span style="color: gray;">(${sipCore.user.extension})</span></span>
-                        <span slot="description">The current user used to log in to the SIP server. You can configure users in the sip-config.json file.</span> 
+                        <span slot="description">The current user used to log in to the SIP server. You can configure users in the sip-config.json file</span> 
+                    </ha-settings-row>
+                    <ha-settings-row>
+                        <span slot="heading">SIP-Core <span style="color: gray;">v${sipCore.version}</span></span>
+                        <span slot="description">The main SIP call system, created by Jordy Kuhne</span> 
+                    </ha-settings-row>
+                    <ha-settings-row>
+                        <span slot="heading">SIP call dialog <span style="color: gray;">v0.1.0</span></span>
+                        <span slot="description">Official SIP call dialog for SIP-Core</span> 
                     </ha-settings-row>
                 </div>
             </ha-dialog>
