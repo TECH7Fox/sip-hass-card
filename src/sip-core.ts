@@ -45,19 +45,24 @@ interface SIPCoreConfig {
 
 class SIPCore {
     public ua: UA;
+    public RTCSession: RTCSession | null = null;
     public version: string = version;
     public hass: any;
     public user: User;
     public config: SIPCoreConfig;
+
     private heartBeatHandle: NodeJS.Timeout | null = null;
     private heartBeatIntervalMs: number = 30000;
-    public RTCSession: RTCSession | null = null;
+
+    private callTimerHandle: NodeJS.Timeout | null = null;
+
     private wssUrl: string;
+    private iceCandidateTimeout: NodeJS.Timeout | null = null;
     private callOptions: CallOptions;
     private dialog: any | null = null;
+
     public currentAudioInputId: string | null = localStorage.getItem("sipcore-audio-input") || null;
     public currentAudioOutputId: string | null = localStorage.getItem("sipcore-audio-output") || null;
-    private iceCandidateTimeout: NodeJS.Timeout | null = null;
     public remoteAudioStream: MediaStream | null = null;
 
     constructor() {
@@ -125,6 +130,16 @@ class SIPCore {
         return CALLSTATE.IDLE;
     }
 
+    get callDuration(): string {
+        if (this.RTCSession?.start_time) {
+            var delta = Math.floor((Date.now() - this.RTCSession.start_time.getTime()) / 1000);
+            var minutes = Math.floor(delta / 60);
+            var seconds = delta % 60;
+            return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+        }
+        return "0:00";
+    }
+
     async setupAudio() {
         let audioElement = document.createElement("audio") as any;
         audioElement.id = "remoteAudio";
@@ -146,6 +161,17 @@ class SIPCore {
         if (document.getElementsByTagName(POPUP_COMPONENT).length < 1) {
             this.dialog = document.createElement(POPUP_COMPONENT) as any;
             document.body.appendChild(this.dialog);
+        }
+    }
+
+    private startCallTimer() {
+        this.callTimerHandle = setInterval(() => {this.triggerUpdate()}, 1000);
+    }
+
+    private stopCallTimer() {
+        if (this.callTimerHandle) {
+            clearInterval(this.callTimerHandle);
+            this.callTimerHandle = null;
         }
     }
 
@@ -253,16 +279,21 @@ class SIPCore {
 
             e.session.on("failed", (e: EndEvent) => {
                 console.warn("Call failed:", e);
+                window.dispatchEvent(new Event("sipcore-call-ended"));
                 this.RTCSession = null;
+                this.stopCallTimer();
                 this.triggerUpdate();
             });
             e.session.on("ended", (e: EndEvent) => {
                 console.info("Call ended:", e);
+                window.dispatchEvent(new Event("sipcore-call-ended"));
                 this.RTCSession = null;
+                this.stopCallTimer();
                 this.triggerUpdate();
             });
             e.session.on("accepted", (e: IncomingEvent) => {
                 console.info("Call accepted");
+                this.startCallTimer();
                 this.triggerUpdate();
             });
 
@@ -277,6 +308,8 @@ class SIPCore {
                     e.ready();
                 }, this.config.ice_config.iceGatheringTimeout || 5000);
             });
+
+            window.dispatchEvent(new Event("sipcore-call-started"));
 
             switch (e.session.direction) {
                 case "incoming":

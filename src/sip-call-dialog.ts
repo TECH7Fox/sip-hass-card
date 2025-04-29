@@ -61,6 +61,10 @@ class SIPCallDialog extends LitElement {
     constructor() {
         super();
         this.setupButton();
+
+        // bind openPopup and closePopup to this instance
+        this.openPopup = this.openPopup.bind(this);
+        this.closePopup = this.closePopup.bind(this);
     }
 
     static get styles() {
@@ -172,18 +176,21 @@ class SIPCallDialog extends LitElement {
     }
 
     updateHandler = (event: any) => {
-        this.open = sipCore.callState !== CALLSTATE.IDLE;
         this.requestUpdate();
     }
-
+    
     connectedCallback() {
         super.connectedCallback();
         window.addEventListener('sipcore-update', this.updateHandler);
+        window.addEventListener('sipcore-call-started', this.openPopup);
+        window.addEventListener('sipcore-call-ended', this.closePopup);
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
         window.removeEventListener('sipcore-update', this.updateHandler);
+        window.removeEventListener('sipcore-call-started', this.openPopup);
+        window.removeEventListener('sipcore-call-ended', this.closePopup);
     }
     
     openPopup() {
@@ -325,7 +332,10 @@ class SIPCallDialog extends LitElement {
                         label="Close">
                         <ha-icon .icon=${"mdi:close"}></ha-icon>
                     </ha-icon-button>
-                    <span slot="title" .title="${statusText}">${statusText}</span>
+                    <div slot="title" class="row">
+                        <span>${statusText}</span>
+                        <span style="color: gray;">${sipCore.callDuration}</span>
+                    </div>
                     <ha-icon-button
                         dialogAction="settings"
                         slot="actionItems"
@@ -356,6 +366,16 @@ class SIPCallDialog extends LitElement {
                             }}">
                             Documentation
                             <ha-icon slot="graphic" .icon=${"mdi:bookshelf"}></ha-icon>
+                            <ha-icon slot="meta" .icon=${"mdi:open-in-new"}></ha-icon>
+                        </ha-list-item>
+                        <ha-list-item
+                            graphic="icon"
+                            hasmeta
+                            @click="${() => {
+                                window.open("https://github.com/TECH7Fox/sip-hass-card", "_blank");
+                            }}">
+                            Github
+                            <ha-icon slot="graphic" .icon=${"mdi:github"}></ha-icon>
                             <ha-icon slot="meta" .icon=${"mdi:open-in-new"}></ha-icon>
                         </ha-list-item>
                     </ha-button-menu>
