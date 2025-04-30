@@ -122,7 +122,7 @@ class SIPCore {
     get callState(): CALLSTATE {
         if (this.RTCSession?.isEstablished()) {
             return CALLSTATE.CONNECTED;
-        } else if (this.RTCSession?.connection.connectionState === "connecting") {
+        } else if (this.RTCSession?.connection?.connectionState === "connecting") {
             return CALLSTATE.CONNECTING;
         } else if (this.RTCSession?.isInProgress()) {
             return this.RTCSession?.direction === "incoming" ? CALLSTATE.INCOMING : CALLSTATE.OUTGOING;

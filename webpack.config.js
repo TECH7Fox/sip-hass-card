@@ -4,6 +4,7 @@ module.exports = {
   entry: {
     'sipjs-card': './src/sip-core.ts',
     'sip-call-dialog': './src/sip-call-dialog.ts',
+    'sip-call-card': './src/sip-call-card.ts',
     'sip-contacts-card': './src/sip-contacts-card.ts',
   },
   devtool: 'inline-source-map',

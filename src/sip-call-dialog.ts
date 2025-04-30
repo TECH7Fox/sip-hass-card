@@ -108,7 +108,6 @@ class SIPCallDialog extends LitElement {
                 --dialog-content-padding: 0;
                 --mdc-dialog-min-width: 90vw;
                 --mdc-dialog-max-width: 90vw;
-                --mdc-dialog-min-height: 90vh;
                 --mdc-dialog-max-height: 90vh;
             }
 
@@ -382,7 +381,7 @@ class SIPCallDialog extends LitElement {
                 </ha-dialog-header>
                 <div tabindex="-1" dialogInitialFocus>
                     <div class="content">
-                        <div id="audioVisualizer" style="display: ${camera ? "hidden" : "block"}"></div>
+                        <div id="audioVisualizer" style="display: ${camera ? "none" : "block"}"></div>
                         ${camera ? html`
                             <ha-camera-stream
                                 allow-exoplayer
@@ -464,7 +463,7 @@ class SIPCallDialog extends LitElement {
     }
 
     async firstUpdated() {
-        this.outputDevices = await sipCore.getAudioDevices(AUDIO_DEVICE_KIND.OUTPUT); // TODO: Move this to sipcore itself?
+        this.outputDevices = await sipCore.getAudioDevices(AUDIO_DEVICE_KIND.OUTPUT);
         this.inputDevices = await sipCore.getAudioDevices(AUDIO_DEVICE_KIND.INPUT);
     }
 
