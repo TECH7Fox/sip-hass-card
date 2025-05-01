@@ -17,7 +17,7 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.js'],
   },
   output: {
-    filename: 'sip-hass-card.js',
+    filename: 'sipjs-card.js',
     path: path.resolve(__dirname, 'dist'),
   },
 };
