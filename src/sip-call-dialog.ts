@@ -186,6 +186,9 @@ class SIPCallDialog extends LitElement {
         if (this.config.auto_open !== false) {
             window.addEventListener('sipcore-call-started', this.openPopup);
             window.addEventListener('sipcore-call-ended', this.closePopup);
+        } else {
+            window.addEventListener('sipcore-call-started', this.updateHandler);
+            window.addEventListener('sipcore-call-ended', this.updateHandler);
         }
     }
 
@@ -196,6 +199,9 @@ class SIPCallDialog extends LitElement {
         if (this.config.auto_open !== false) {
             window.removeEventListener('sipcore-call-started', this.openPopup);
             window.removeEventListener('sipcore-call-ended', this.closePopup);
+        } else {
+            window.removeEventListener('sipcore-call-started', this.updateHandler);
+            window.removeEventListener('sipcore-call-ended', this.updateHandler);
         }
     }
     
@@ -213,6 +219,7 @@ class SIPCallDialog extends LitElement {
         let camera: string = "";
         let statusText;
         let phoneIcon: string;
+        let remoteName = this.config?.extensions[sipCore.remoteExtension || ""]?.name || sipCore.remoteName;
 
         switch (sipCore.callState) {
             case CALLSTATE.IDLE:
@@ -220,19 +227,19 @@ class SIPCallDialog extends LitElement {
                 phoneIcon = "mdi:phone";
                 break;
             case CALLSTATE.INCOMING:
-                statusText = "Incoming call from " + sipCore.remoteName;
+                statusText = "Incoming call from " + remoteName;
                 phoneIcon = "mdi:phone-incoming";
                 break;
             case CALLSTATE.OUTGOING:
-                statusText = "Outgoing call to " + sipCore.remoteName;
+                statusText = "Outgoing call to " + remoteName;
                 phoneIcon = "mdi:phone-outgoing";
                 break;
             case CALLSTATE.CONNECTED:
-                statusText = "Connected to " + sipCore.remoteName;
+                statusText = "Connected to " + remoteName;
                 phoneIcon = "mdi:phone-in-talk";
                 break;
             case CALLSTATE.CONNECTING:
-                statusText = "Connecting to " + sipCore.remoteName;
+                statusText = "Connecting to " + remoteName;
                 phoneIcon = "mdi:phone";
                 break;
             default:

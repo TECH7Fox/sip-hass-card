@@ -43,6 +43,7 @@ interface CallCardConfig {
     buttons: Button[];
     extensions: { [key: string]: Extension };
     idle_text: string;
+    largeUI: boolean;
 }
 
 
@@ -94,10 +95,6 @@ class SIPCallCard extends LitElement {
                 height: auto;
             }
 
-            ha-icon-button {
-                --mdc-icon-button-size: 40px;
-            }
-
             ha-icon {
                 display: flex;
                 align-items: center;
@@ -141,6 +138,7 @@ class SIPCallCard extends LitElement {
                 padding: 4px 8px;
                 font-size: 16px;
                 color: var(--ha-picture-card-text-color,#fff);
+                --mdc-icon-button-size: 40px;
             }
 
             .footer > div {
@@ -153,9 +151,19 @@ class SIPCallCard extends LitElement {
             }
 
             .footer span {
-                font-size: 1em;
                 align-self: center;
                 margin: 0 8px;
+            }
+
+            .footer[large] {
+                font-size: 24px;
+                --mdc-icon-button-size: 68px;
+                --mdc-icon-size: 42px;
+                padding: 14px 
+            }
+
+            .footer[large] span {
+                margin: 0 16px;
             }
         `;
     }
@@ -178,6 +186,7 @@ class SIPCallCard extends LitElement {
         let camera: string = "";
         let statusText;
         let phoneIcon: string;
+        let remoteName = this.config?.extensions[sipCore.remoteExtension || ""]?.name || sipCore.remoteName;
 
         switch (sipCore.callState) {
             case CALLSTATE.IDLE:
@@ -185,19 +194,19 @@ class SIPCallCard extends LitElement {
                 phoneIcon = "mdi:phone";
                 break;
             case CALLSTATE.INCOMING:
-                statusText = "Incoming call from " + sipCore.remoteName;
+                statusText = "Incoming call from " + remoteName;
                 phoneIcon = "mdi:phone-incoming";
                 break;
             case CALLSTATE.OUTGOING:
-                statusText = "Outgoing call to " + sipCore.remoteName;
+                statusText = "Outgoing call to " + remoteName;
                 phoneIcon = "mdi:phone-outgoing";
                 break;
             case CALLSTATE.CONNECTED:
-                statusText = "Connected to " + sipCore.remoteName;
+                statusText = "Connected to " + remoteName;
                 phoneIcon = "mdi:phone-in-talk";
                 break;
             case CALLSTATE.CONNECTING:
-                statusText = "Connecting to " + sipCore.remoteName;
+                statusText = "Connecting to " + remoteName;
                 phoneIcon = "mdi:phone";
                 break;
             default:
@@ -235,7 +244,7 @@ class SIPCallCard extends LitElement {
                         .aspectRatio=${"16:9"}
                     ></hui-image>
                 ` : ""}
-                <div class="footer both">
+                <div ?large=${this.config?.largeUI} class="footer both">
                     <div>
                         <ha-icon-button
                             style="color: var(--label-badge-green);"
@@ -263,6 +272,38 @@ class SIPCallCard extends LitElement {
                                 }></ha-icon-button>
                             `;
                         })}
+                    </div>
+                    <div>
+                        <ha-icon-button
+                            class="audio-button"
+                            label="Mute audio"
+                            ?disabled="${sipCore.RTCSession === null}"
+                            @click="${() => {
+                                if (sipCore.RTCSession?.isMuted().audio)
+                                    sipCore.RTCSession?.unmute({audio: true});
+                                else
+                                    sipCore.RTCSession?.mute({audio: true});
+                                this.requestUpdate();
+                            }}">
+                            <ha-icon
+                                .icon="${(sipCore.RTCSession !== null && sipCore.RTCSession?.isMuted().audio) ? "mdi:microphone-off" : "mdi:microphone"}"
+                            </ha-icon>
+                        </ha-icon-button>
+                        <ha-icon-button
+                            class="audio-button"
+                            label="Mute video"
+                            ?disabled="${sipCore.RTCSession === null}"
+                            @click="${() => {
+                                if (sipCore.RTCSession?.isMuted().video)
+                                    sipCore.RTCSession?.unmute({video: true});
+                                else
+                                    sipCore.RTCSession?.mute({video: true});
+                                this.requestUpdate();
+                            }}">
+                            <ha-icon
+                                .icon="${(sipCore.RTCSession !== null && sipCore.RTCSession?.isMuted().video) ? "mdi:video-off" : "mdi:video"}"
+                            ></ha-icon>
+                        </ha-icon-button>
                     </div>
                     <div>
                         <span style="color: gray">${sipCore.callDuration}</span>
