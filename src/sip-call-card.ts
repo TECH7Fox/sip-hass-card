@@ -4,7 +4,7 @@ import {
     css,
 } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import { sipCore, CALLSTATE, AUDIO_DEVICE_KIND } from "./sip-core";
+import { sipCore, CALLSTATE } from "./sip-core";
 import { AudioVisualizer } from "./audio-visualizer";
 
 

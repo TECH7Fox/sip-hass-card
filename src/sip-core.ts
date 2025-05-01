@@ -1,6 +1,6 @@
 import { UA, WebSocketInterface } from "jssip/lib/JsSIP";
 import { RTCSessionEvent, CallOptions } from "jssip/lib/UA";
-import { EndEvent, PeerConnectionEvent, IncomingEvent, OutgoingEvent, IceCandidateEvent, RTCSession } from "jssip/lib/RTCSession";
+import { EndEvent, PeerConnectionEvent, IncomingEvent, IceCandidateEvent, RTCSession } from "jssip/lib/RTCSession";
 
 const version = "0.1.3";
 
@@ -26,14 +26,15 @@ export class AUDIO_DEVICE_KIND {
 }
 
 
-interface User {
+export interface User {
     ha_username: string;
+    display_name: string;
     extension: string;
     password: string
 }
 
 
-interface SIPCoreConfig {
+export interface SIPCoreConfig {
     ice_config: any;
     backup_user: User;
     users: User[];
@@ -41,10 +42,11 @@ interface SIPCoreConfig {
     popup_config: Object | null;
     popup_override_component: string | null;
     sip_video: boolean;
+    pbx_server: string;
 }
 
 
-class SIPCore {
+export class SIPCore {
     public ua: UA;
     public RTCSession: RTCSession | null = null;
     public version: string = version;
@@ -60,7 +62,6 @@ class SIPCore {
     private wssUrl: string;
     private iceCandidateTimeout: NodeJS.Timeout | null = null;
     private callOptions: CallOptions;
-    private dialog: any | null = null;
 
     public currentAudioInputId: string | null = localStorage.getItem("sipcore-audio-input") || null;
     public currentAudioOutputId: string | null = localStorage.getItem("sipcore-audio-output") || null;
@@ -161,8 +162,7 @@ class SIPCore {
     setupPopup() {
         let POPUP_COMPONENT = this.config.popup_override_component || "sip-call-dialog";
         if (document.getElementsByTagName(POPUP_COMPONENT).length < 1) {
-            this.dialog = document.createElement(POPUP_COMPONENT) as any;
-            document.body.appendChild(this.dialog);
+            document.body.appendChild(document.createElement(POPUP_COMPONENT));
         }
     }
 
@@ -208,7 +208,7 @@ class SIPCore {
     
         if (request.status === 200) {
             const config: SIPCoreConfig = JSON.parse(request.responseText);
-            console.info("Config fetched:", config);
+            console.debug("SIP-Core Config fetched:", config);
             return config;
         } else {
             throw new Error(`Failed to fetch config: ${request.statusText}`);
@@ -241,9 +241,9 @@ class SIPCore {
         const socket = new WebSocketInterface(this.wssUrl);
         const ua = new UA({
             sockets: [socket],
-            uri: `${this.user.extension}@${window.location.host}`, // TODO: Use window.location.host or configurable server?
+            uri: `${this.user.extension}@${this.config.pbx_server || window.location.host}`,
             authorization_user: this.user.extension,
-            display_name: this.user.ha_username, // TODO: This
+            display_name: this.user.display_name || this.user.ha_username,
             password: this.user.password,
             register: true,
         });
@@ -482,4 +482,5 @@ const sipCore = new SIPCore();
 sipCore.init().catch((error) => {
     console.error("Error initializing SIP Core:", error);
 });
+(window as any).sipCore = sipCore;
 export { sipCore };
