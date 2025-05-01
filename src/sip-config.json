@@ -1,0 +1,67 @@
+{
+    "ice_config": {
+        "iceGatheringTimeout": 1000,
+        "iceCandidatePoolSize": 0,
+        "iceTransportPolicy": "all",
+        "iceServers": [
+            {
+                "urls": ["stun:stun.l.google.com:19302"]
+            }
+        ],
+        "rtcpMuxPolicy": "require"
+    },
+    "backup_user": {
+        "ha_username": "tech7fox",
+        "extension": "100",
+        "password": "w8woord"
+    },
+    "users": [
+        {
+            "ha_username": "Jordy",
+            "extension": "101",
+            "password": "w8woord"
+        },
+        {
+            "ha_username": "alice",
+            "extension": "102",
+            "password": "w8woord"
+        }
+    ],
+    "sip_video": false,
+    "auto_answer": false,
+    "popup_config": {
+        "auto_open": false,
+        "large": false,
+        "buttons": [
+            {
+                "label": "Open Door",
+                "icon": "mdi:door-open",
+                "type": "service_call",
+                "data": {
+                    "domain": "light",
+                    "service": "toggle",
+                    "entity_id": "light.bedroom_lights"
+                }
+            },
+            {
+                "label": "Switch lights",
+                "icon": "mdi:lightbulb",
+                "type": "service_call",
+                "data": {
+                    "domain": "light",
+                    "service": "toggle",
+                    "entity_id": "light.bedroom_lights"
+                }
+            }
+        ],
+        "extensions": {
+            "101": {
+                "name": "Bob"
+            },
+            "8001": {
+                "name": "Doorbell",
+                "camera_entity": "camera.doorbell"
+            }
+        }
+    }
+}

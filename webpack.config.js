@@ -2,7 +2,10 @@ const path = require('path');
 
 module.exports = {
   entry: {
-    'sipjs-card': './src/sipjs-card.ts'
+    'sip-core': './src/sip-core.ts',
+    'sip-call-dialog': './src/sip-call-dialog.ts',
+    'sip-call-card': './src/sip-call-card.ts',
+    'sip-contacts-card': './src/sip-contacts-card.ts',
   },
   devtool: 'inline-source-map',
   mode: 'development',
@@ -21,6 +24,11 @@ module.exports = {
         exclude: /node_modules/
       }
     ]
+  },
+  optimization: {
+    runtimeChunk: {
+      name: 'commons'
+    }
   },
   resolve: {
     extensions: [ '.tsx', '.ts', '.js' ]
