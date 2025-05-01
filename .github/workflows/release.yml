@@ -1,4 +1,3 @@
-
 name: Release
 
 on:
@@ -16,11 +15,11 @@ jobs:
           cd /home/runner/work/sip-hass-card/sip-hass-card/
           npm ci
           npm run build
-      - name: Upload zip to release
+      - name: Upload files to release
         uses: svenstaro/upload-release-action@v1-release
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: /home/runner/work/sip-hass-card/sip-hass-card/dist/sipjs-card.js
-          asset_name: sipjs-card.js
+          file: /home/runner/work/sip-hass-card/sip-hass-card/dist/*.js
+          asset_name: ""
           tag: ${{ github.ref }}
           overwrite: true
