@@ -29,6 +29,7 @@
     ],
     "auto_answer": false,
     "popup_config": {
+        "auto_open": false,
         "large": false,
         "buttons": [
             {
@@ -52,16 +53,14 @@
                 }
             }
         ],
-        "extensions": [
-            {
-                "name": "Bob",
-                "extension": "101"
+        "extensions": {
+            "101": {
+                "name": "Bob"
             },
-            {
+            "8001": {
                 "name": "Doorbell",
-                "extension": "8001",
                 "camera_entity": "camera.doorbell"
             }
-        ]
+        }
     }
 }

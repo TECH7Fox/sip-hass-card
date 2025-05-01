@@ -30,8 +30,9 @@ interface Button {
 
 interface PopupConfig {
     buttons: Button[];
-    extensions: Extension[];
+    extensions: { [key: string]: Extension };
     large: boolean | undefined;
+    auto_open: boolean;
 }
 
 
@@ -181,15 +182,21 @@ class SIPCallDialog extends LitElement {
     connectedCallback() {
         super.connectedCallback();
         window.addEventListener('sipcore-update', this.updateHandler);
-        window.addEventListener('sipcore-call-started', this.openPopup);
-        window.addEventListener('sipcore-call-ended', this.closePopup);
+
+        if (this.config.auto_open !== false) {
+            window.addEventListener('sipcore-call-started', this.openPopup);
+            window.addEventListener('sipcore-call-ended', this.closePopup);
+        }
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
         window.removeEventListener('sipcore-update', this.updateHandler);
-        window.removeEventListener('sipcore-call-started', this.openPopup);
-        window.removeEventListener('sipcore-call-ended', this.closePopup);
+        
+        if (this.config.auto_open !== false) {
+            window.removeEventListener('sipcore-call-started', this.openPopup);
+            window.removeEventListener('sipcore-call-ended', this.closePopup);
+        }
     }
     
     openPopup() {
@@ -235,12 +242,10 @@ class SIPCallDialog extends LitElement {
         }
 
         if (sipCore.callState !== CALLSTATE.IDLE && sipCore.remoteExtension !== null) {
-            camera = this.config.extensions.find((extension) => extension.extension === sipCore.remoteExtension)?.camera_entity || "";
+            camera = this.config.extensions[sipCore.remoteExtension]?.camera_entity || "";
         if (!camera) {
                 if (sipCore.remoteAudioStream !== null) {
-                    console.log("Audio stream found");
                     if (this.audioVisualizer === undefined) {
-                        console.log("Creating audio visualizer");
                         this.audioVisualizer = new AudioVisualizer(this.renderRoot, sipCore.remoteAudioStream, 16);
                     }
                 } else {
@@ -381,8 +386,12 @@ class SIPCallDialog extends LitElement {
                 </ha-dialog-header>
                 <div tabindex="-1" dialogInitialFocus>
                     <div class="content">
-                        <div id="audioVisualizer" style="display: ${camera ? "none" : "block"}"></div>
-                        ${camera ? html`
+                        <div id="audioVisualizer" style="display: ${sipCore.callState !== CALLSTATE.IDLE && !camera ? "block" : "none"}"></div>
+                        ${sipCore.callState === CALLSTATE.IDLE ? html`
+                            <div>
+                                <span>No active call</span>
+                            </div>
+                        ` : camera ? html`
                             <ha-camera-stream
                                 allow-exoplayer
                                 muted

@@ -166,6 +166,13 @@ class SIPContactsCard extends LitElement {
                                         .label=${extension.name}
                                         type="text"
                                         .inputmode="text"
+                                        @keyup="${(e: KeyboardEvent) => {
+                                            if (e.key === "Enter") {
+                                                var el = this.shadowRoot?.getElementById(`custom_${extension.name}`) as any;
+                                                const customNumber = el.value;
+                                                sipCore.startCall(customNumber)
+                                            }
+                                        }}"
                                         class="editField"
                                     ></ha-textfield>
                                     <mwc-button @click="${() => {

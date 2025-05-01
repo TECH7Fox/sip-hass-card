@@ -42,6 +42,7 @@ interface Button {
 interface CallCardConfig {
     buttons: Button[];
     extensions: { [key: string]: Extension };
+    idle_text: string;
 }
 
 
@@ -82,9 +83,19 @@ class SIPCallCard extends LitElement {
 
     static get styles() {
         return css`
-            ha-icon[slot="meta"] {
-                width: 18px;
-                height: 18px;
+            ha-card {
+                overflow: hidden;
+                position: relative;
+                height: 100%;
+            }
+
+            hui-image {
+                width: 100%;
+                height: auto;
+            }
+
+            ha-icon-button {
+                --mdc-icon-button-size: 40px;
             }
 
             ha-icon {
@@ -94,12 +105,11 @@ class SIPCallCard extends LitElement {
             }
 
             #audioVisualizer {
-                min-height: 10em;
+                min-height: 230px;
                 white-space: nowrap;
                 align-items: center;
                 display: flex;
                 justify-content: center;
-                padding-top: 2em;
             }
 
             #audioVisualizer div {
@@ -112,52 +122,40 @@ class SIPCallCard extends LitElement {
                 opacity: .25;
             }
 
-            ha-camera-stream {
-                height: 100%;
-                width: 100%;
-                display: block;
-            }
-
-            .accept-button {
-                color: var(--label-badge-green);
-            }
-
-            .deny-button {
-                color: var(--label-badge-red);
-            }
-
-            .deny-button, .accept-button, .audio-button {
-                --mdc-icon-button-size: 40px;
-                --mdc-icon-size: 24px;
-            }
-
-            .row {
-                display: flex;
-                flex-direction: row;
-                justify-content: space-between;
-            }
-
-            .bottom-row {
-                display: flex;
-                justify-content: space-between;
-                margin: 8px 16px;
-            }
-
-            .content {
+            .placeholder {
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                width: 100%;
+                height: 100%;
+                background-color: var(--secondary-background-color);
+                color: var(--primary-text-color);
+                min-height: 230px;
             }
 
-            .form {
+            .footer {
+                position: absolute;
+                left: 0px;
+                right: 0px;
+                bottom: 0px;
+                background-color: var(--ha-picture-card-background-color,rgba(0,0,0,.3));
+                padding: 4px 8px;
+                font-size: 16px;
+                color: var(--ha-picture-card-text-color,#fff);
+            }
+
+            .footer > div {
                 display: flex;
-                flex-direction: column;
-                padding: 16px;
             }
 
-            ha-select {
-                margin: 8px 0;
+            .both {
+                display: flex;
+                justify-content: space-between;
+            }
+
+            .footer span {
+                font-size: 1em;
+                align-self: center;
+                margin: 0 8px;
             }
         `;
     }
@@ -212,9 +210,7 @@ class SIPCallCard extends LitElement {
             camera = this.config?.extensions[sipCore.remoteExtension]?.camera_entity || "";
         if (!camera) {
                 if (sipCore.remoteAudioStream !== null) {
-                    console.log("Audio stream found");
                     if (this.audioVisualizer === undefined) {
-                        console.log("Creating audio visualizer");
                         this.audioVisualizer = new AudioVisualizer(this.renderRoot, sipCore.remoteAudioStream, 16);
                     }
                 } else {
@@ -225,81 +221,56 @@ class SIPCallCard extends LitElement {
 
         return html`
             <ha-card>
-                <div tabindex="-1" dialogInitialFocus>
-                    <div class="content">
-                        <div id="audioVisualizer" style="display: ${camera ? "none" : "block"}"></div>
-                        ${camera ? html`
-                            <ha-camera-stream
-                                allow-exoplayer
-                                muted
-                                .hass=${this.hass}
-                                .stateObj=${this.hass.states[camera]}
-                            ></ha-camera-stream>
-                        ` : ""}
+                <div id="audioVisualizer" style="display: ${sipCore.callState !== CALLSTATE.IDLE && !camera ? "block" : "none"}"></div>
+                ${sipCore.callState === CALLSTATE.IDLE ? html`
+                    <div class="placeholder">
+                        <span>No active call</span>
                     </div>
-                    <div class="bottom-row">
+                ` : camera ? html`
+                    <hui-image
+                        tabindex="0"
+                        .cameraImage=${camera}
+                        .hass=${this.hass}
+                        .cameraView=${"live"}
+                        .aspectRatio=${"16:9"}
+                    ></hui-image>
+                ` : ""}
+                <div class="footer both">
+                    <div>
                         <ha-icon-button
-                            class="accept-button"
+                            style="color: var(--label-badge-green);"
                             label="Answer call"
                             @click="${() => sipCore.answerCall()}">
                             <ha-icon .icon=${phoneIcon}></ha-icon>
                         </ha-icon-button>
-                        <div>
-                            ${this.config?.buttons.map((button) => {
-                                if (button.type === ButtonType.SERVICE_CALL) {
-                                    return html`
-                                        <ha-icon-button
-                                            class="audio-button"
-                                            label="${button.label}"
-                                            @click="${() => {
-                                                const { domain, service, ...service_data } = button.data;
-                                                this.hass.callService(domain, service, service_data);
-                                            }}">
-                                            <ha-icon .icon=${button.icon}></ha-icon>
-                                        </ha-icon-button>
-                                    `;
-                                }
-                            })}
-                        </div>
-                        <div>
-                            <ha-icon-button
-                                class="audio-button"
-                                label="Mute audio"
-                                ?disabled="${sipCore.RTCSession === null}"
-                                @click="${() => {
-                                    if (sipCore.RTCSession?.isMuted().audio)
-                                        sipCore.RTCSession?.unmute({audio: true});
-                                    else
-                                        sipCore.RTCSession?.mute({audio: true});
-                                    this.requestUpdate();
-                                }}">
-                                <ha-icon
-                                    .icon="${(sipCore.RTCSession !== null && sipCore.RTCSession?.isMuted().audio) ? "mdi:microphone-off" : "mdi:microphone"}"
-                                </ha-icon>
-                            </ha-icon-button>
-                            <ha-icon-button
-                                class="audio-button"
-                                label="Mute video"
-                                ?disabled="${sipCore.RTCSession === null}"
-                                @click="${() => {
-                                    if (sipCore.RTCSession?.isMuted().video)
-                                        sipCore.RTCSession?.unmute({video: true});
-                                    else
-                                        sipCore.RTCSession?.mute({video: true});
-                                    this.requestUpdate();
-                                }}">
-                                <ha-icon
-                                    .icon="${(sipCore.RTCSession !== null && sipCore.RTCSession?.isMuted().video) ? "mdi:video-off" : "mdi:video"}"
-                                ></ha-icon>
-                            </ha-icon-button>
-                        </div>
+                        <span>${statusText}</span>
+                    </div>
+                    <div>
+                        ${this.config?.buttons.map((button) => {
+                            return html`
+                                <ha-icon-button
+                                    .icon=${button.icon}
+                                    .label=${button.label}
+                                    @click=${() => {
+                                        if (button.type === ButtonType.SERVICE_CALL) {
+                                            this.hass.callService(
+                                                button.data.domain,
+                                                button.data.service,
+                                                button.data.service_data
+                                            );
+                                        }
+                                    }
+                                }></ha-icon-button>
+                            `;
+                        })}
+                    </div>
+                    <div>
+                        <span style="color: gray">${sipCore.callDuration}</span>
                         <ha-icon-button
-                            class="deny-button"
-                            label="End call"
-                            @click="${() => {
-                                sipCore.endCall();
-                            }}">
-                            <ha-icon .icon=${"mdi:phone-off"}></ha-icon>
+                            style="color: var(--label-badge-red);"
+                            label="End Call"
+                            @click="${() => sipCore.endCall()}">
+                            <ha-icon .icon=${"mdi:phone-hangup"}></ha-icon>
                         </ha-icon-button>
                     </div>
                 </div>
