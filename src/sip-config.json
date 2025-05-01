@@ -30,18 +30,14 @@
     "sip_video": false,
     "auto_answer": false,
     "popup_config": {
-        "auto_open": false,
+        "auto_open": true,
         "large": false,
         "buttons": [
             {
                 "label": "Open Door",
                 "icon": "mdi:door-open",
-                "type": "service_call",
-                "data": {
-                    "domain": "light",
-                    "service": "toggle",
-                    "entity_id": "light.bedroom_lights"
-                }
+                "type": "dtmf",
+                "data": "1"
             },
             {
                 "label": "Switch lights",

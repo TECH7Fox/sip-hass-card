@@ -17,6 +17,7 @@ interface Extension {
 
 class ButtonType {
     static SERVICE_CALL = "service_call";
+    static DTMF = "dtmf";
 }
 
 
@@ -445,6 +446,17 @@ class SIPCallDialog extends LitElement {
                                             <ha-icon .icon=${button.icon}></ha-icon>
                                         </ha-icon-button>
                                     `;
+                                } else if (button.type === ButtonType.DTMF) {
+                                    return html`
+                                        <ha-icon-button
+                                            class="audio-button"
+                                            label="${button.label}"
+                                            @click="${() => {
+                                                sipCore.RTCSession?.sendDTMF(button.data);
+                                            }}">
+                                            <ha-icon .icon=${button.icon}></ha-icon>
+                                        </ha-icon-button>
+                                    `;
                                 }
                             })}
                         </div>
@@ -467,6 +479,7 @@ class SIPCallDialog extends LitElement {
                             <ha-icon-button
                                 class="audio-button"
                                 label="Mute video"
+                                style="display: ${sipCore.config.sip_video ? "block" : "none"}"
                                 ?disabled="${sipCore.RTCSession === null}"
                                 @click="${() => {
                                     if (sipCore.RTCSession?.isMuted().video)

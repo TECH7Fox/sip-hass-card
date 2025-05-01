@@ -387,8 +387,9 @@ export class SIPCore {
 
 
         let remoteAudio = document.getElementById("remoteAudio") as HTMLAudioElement;
-        if (e.track.kind === 'audio' && remoteAudio.srcObject != this.remoteAudioStream) {
-            remoteAudio.srcObject = this.remoteAudioStream;
+        if (e.track.kind === 'audio' && remoteAudio.srcObject != stream) {
+            this.remoteAudioStream = stream;
+            remoteAudio.srcObject = stream;
             try {
                 await remoteAudio.play();
             }

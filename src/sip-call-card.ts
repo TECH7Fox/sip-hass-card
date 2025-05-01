@@ -28,6 +28,7 @@ interface Extension {
 
 class ButtonType {
     static SERVICE_CALL = "service_call";
+    static DTMF = "dtmf";
 }
 
 
@@ -251,7 +252,7 @@ class SIPCallCard extends LitElement {
 
         return html`
             <ha-card>
-                <div id="audioVisualizer" style="display: ${sipCore.callState !== CALLSTATE.IDLE && !camera && sipCore.remoteVideoStream === null ? "block" : "none"}"></div>
+                <div id="audioVisualizer" style="display: ${sipCore.callState !== CALLSTATE.IDLE && !camera && sipCore.remoteVideoStream === null ? "flex" : "none"}"></div>
                 <video poster="noposter" style="display: ${sipCore.remoteVideoStream === null ? "none": "block"}" playsinline id="remoteVideo"></video>
                 ${sipCore.callState === CALLSTATE.IDLE ? html`
                     <div class="placeholder">
@@ -290,6 +291,17 @@ class SIPCallCard extends LitElement {
                                         <ha-icon .icon=${button.icon}></ha-icon>
                                     </ha-icon-button>
                                 `;
+                            } else if (button.type === ButtonType.DTMF) {
+                                return html`
+                                    <ha-icon-button
+                                        class="audio-button"
+                                        label="${button.label}"
+                                        @click="${() => {
+                                            sipCore.RTCSession?.sendDTMF(button.data);
+                                        }}">
+                                        <ha-icon .icon=${button.icon}></ha-icon>
+                                    </ha-icon-button>
+                                `;
                             }
                         })}
                     </div>
@@ -312,6 +324,7 @@ class SIPCallCard extends LitElement {
                         <ha-icon-button
                             class="audio-button"
                             label="Mute video"
+                            style="display: ${sipCore.config.sip_video ? "block" : "none"}"
                             ?disabled="${sipCore.RTCSession === null}"
                             @click="${() => {
                                 if (sipCore.RTCSession?.isMuted().video)
