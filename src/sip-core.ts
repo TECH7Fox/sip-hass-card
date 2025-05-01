@@ -2,7 +2,7 @@ import { UA, WebSocketInterface } from "jssip/lib/JsSIP";
 import { RTCSessionEvent, CallOptions } from "jssip/lib/UA";
 import { EndEvent, PeerConnectionEvent, IncomingEvent, IceCandidateEvent, RTCSession } from "jssip/lib/RTCSession";
 
-const version = "0.1.3";
+const version = "0.1.0";
 
 console.info(
     `%c SIP-CORE %c ${version} `,
@@ -43,6 +43,7 @@ export interface SIPCoreConfig {
     popup_override_component: string | null;
     sip_video: boolean;
     pbx_server: string;
+    custom_wss_url: string;
 }
 
 
@@ -69,6 +70,8 @@ export class SIPCore {
     public remoteVideoStream: MediaStream | null = null;
 
     constructor() {
+        this.config = this.fetchConfig();
+
         // Get hass instance
         const homeAssistant = document.querySelector("home-assistant");
         if (!homeAssistant) {
@@ -78,13 +81,14 @@ export class SIPCore {
 
         // Determine websocket URL
         const ingressEntry = this.hass.states["text.asterisk_addon_ingress_entry"]?.state;
-        if (!ingressEntry) {
-            throw new Error("Ingress entry not found");
+        if (ingressEntry) {
+            const wssProtocol = window.location.protocol == "https:" ? "wss" : "ws";
+            this.wssUrl = `${wssProtocol}://${window.location.host}${ingressEntry}/ws`;
+        } else if (this.config.custom_wss_url) {
+            this.wssUrl = this.config.custom_wss_url;
+        } else {
+            throw new Error("No ingress entry or custom WSS URL provided");
         }
-        const wssProtocol = window.location.protocol == "https:" ? "wss" : "ws";
-        this.wssUrl = `${wssProtocol}://${window.location.host}${ingressEntry}/ws`;
-
-        this.config = this.fetchConfig();
 
         // Get current user
         this.user = this.config.users.find(user => user.ha_username === this.hass.user.name) || this.config.backup_user;

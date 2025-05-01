@@ -2,14 +2,14 @@
   "name": "ha-sip",
   "version": "1.0.0",
   "description": "A SIP client inside home assistant!",
-  "main": "sipjs-card.js",
+  "main": "sip-hass-card.js",
   "scripts": {
     "build": "webpack --progress --config webpack.config.js --mode production",
     "watch": "webpack --progress --config webpack.config.js --mode development --watch"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TECH7Fox/HA-SIP.git"
+    "url": "git+https://github.com/TECH7Fox/sip-hass-card.git"
   },
   "keywords": [
     "sip",
@@ -18,9 +18,9 @@
   "author": "Jordy Kuhne",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/TECH7Fox/HA-SIP/issues"
+    "url": "https://github.com/TECH7Fox/sip-hass-card/issues"
   },
-  "homepage": "https://github.com/TECH7Fox/HA-SIP#readme",
+  "homepage": "https://github.com/TECH7Fox/sip-hass-card#readme",
   "devDependencies": {
     "ts-loader": "^9.5.2",
     "tslib": "^2.3.1",

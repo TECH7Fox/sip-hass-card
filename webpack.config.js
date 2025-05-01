@@ -1,40 +1,23 @@
 const path = require('path');
 
 module.exports = {
-  entry: {
-    'sip-core': './src/sip-core.ts',
-    'sip-call-dialog': './src/sip-call-dialog.ts',
-    'sip-call-card': './src/sip-call-card.ts',
-    'sip-contacts-card': './src/sip-contacts-card.ts',
-  },
+  entry: './src/index.ts',
   devtool: 'inline-source-map',
   mode: 'development',
   module: {
     rules: [
       {
-        test: /\.js?$/,
-        resolve: {
-          fullySpecified: false
-        },
-        use: 'ts-loader'
-      },
-      {
-        test: /\.ts?$/,
+        test: /\.ts$/,
         use: 'ts-loader',
-        exclude: /node_modules/
-      }
-    ]
-  },
-  optimization: {
-    runtimeChunk: {
-      name: 'commons'
-    }
+        exclude: /node_modules/,
+      },
+    ],
   },
   resolve: {
-    extensions: [ '.tsx', '.ts', '.js' ]
+    extensions: ['.tsx', '.ts', '.js'],
   },
   output: {
-    filename: '[name].js',
-    path: path.resolve(__dirname, 'dist')
-  }
+    filename: 'sip-hass-card.js',
+    path: path.resolve(__dirname, 'dist'),
+  },
 };

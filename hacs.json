@@ -1,5 +1,4 @@
 {
-    "name": "SIP Card",
-    "filename": "sipjs-card.js",
-    "render_readme": true
-  }
+  "name": "sip-hass-card",
+  "filename": "sip-hass-card.js"
+}
