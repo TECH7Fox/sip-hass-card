@@ -118,6 +118,11 @@ class SIPCallDialog extends LitElement {
                 display: block;
             }
 
+            #remoteVideo {
+                height: 100%;
+                width: 100%;
+            }
+
             @media (max-width: 600px), (max-height: 600px) {
                 ha-dialog {
                   --dialog-surface-margin-top: 0px;
@@ -152,7 +157,8 @@ class SIPCallDialog extends LitElement {
             .bottom-row {
                 display: flex;
                 justify-content: space-between;
-                margin: 18px;
+                padding: 12px 16px;
+                border-top: 1px solid var(--divider-color);
             }
 
             .content {
@@ -177,6 +183,20 @@ class SIPCallDialog extends LitElement {
 
     updateHandler = (event: any) => {
         this.requestUpdate();
+
+        if (sipCore.remoteVideoStream !== null) {
+            const videoElement = this.renderRoot.querySelector("#remoteVideo") as HTMLVideoElement;
+            if (videoElement && videoElement.srcObject !== sipCore.remoteVideoStream) {
+                videoElement.srcObject = sipCore.remoteVideoStream;
+                videoElement.play();
+            }
+        } else {
+            const videoElement = this.renderRoot.querySelector("#remoteVideo") as HTMLVideoElement;
+            if (videoElement) {
+                videoElement.srcObject = null;
+                videoElement.pause();
+            }
+        }
     }
     
     connectedCallback() {
@@ -248,7 +268,7 @@ class SIPCallDialog extends LitElement {
                 break;
         }
 
-        if (sipCore.callState !== CALLSTATE.IDLE && sipCore.remoteExtension !== null) {
+        if (sipCore.callState !== CALLSTATE.IDLE && sipCore.remoteExtension !== null && sipCore.remoteVideoStream === null) {
             camera = this.config.extensions[sipCore.remoteExtension]?.camera_entity || "";
         if (!camera) {
                 if (sipCore.remoteAudioStream !== null) {
@@ -393,7 +413,8 @@ class SIPCallDialog extends LitElement {
                 </ha-dialog-header>
                 <div tabindex="-1" dialogInitialFocus>
                     <div class="content">
-                        <div id="audioVisualizer" style="display: ${sipCore.callState !== CALLSTATE.IDLE && !camera ? "block" : "none"}"></div>
+                        <div id="audioVisualizer" style="display: ${sipCore.callState !== CALLSTATE.IDLE && !camera && sipCore.remoteVideoStream === null ? "block" : "none"}"></div>
+                        <video poster="noposter" style="display: ${sipCore.remoteVideoStream === null ? "none": "block"}" playsinline id="remoteVideo"></video>
                         ${sipCore.callState === CALLSTATE.IDLE ? html`
                             <div>
                                 <span>No active call</span>

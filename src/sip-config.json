@@ -27,6 +27,7 @@
             "password": "w8woord"
         }
     ],
+    "sip_video": false,
     "auto_answer": false,
     "popup_config": {
         "auto_open": false,

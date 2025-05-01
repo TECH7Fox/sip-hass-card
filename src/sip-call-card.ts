@@ -95,6 +95,11 @@ class SIPCallCard extends LitElement {
                 height: auto;
             }
 
+            #remoteVideo {
+                width: 100%;
+                height: auto;
+            }
+
             ha-icon {
                 display: flex;
                 align-items: center;
@@ -168,8 +173,24 @@ class SIPCallCard extends LitElement {
         `;
     }
 
+
+
     updateHandler = (event: any) => {
         this.requestUpdate();
+
+        if (sipCore.remoteVideoStream !== null) {
+            const videoElement = this.renderRoot.querySelector("#remoteVideo") as HTMLVideoElement;
+            if (videoElement && videoElement.srcObject !== sipCore.remoteVideoStream) {
+                videoElement.srcObject = sipCore.remoteVideoStream;
+                videoElement.play();
+            }
+        } else {
+            const videoElement = this.renderRoot.querySelector("#remoteVideo") as HTMLVideoElement;
+            if (videoElement) {
+                videoElement.srcObject = null;
+                videoElement.pause();
+            }
+        }
     }
     
     connectedCallback() {
@@ -215,7 +236,7 @@ class SIPCallCard extends LitElement {
                 break;
         }
 
-        if (sipCore.callState !== CALLSTATE.IDLE && sipCore.remoteExtension !== null) {
+        if (sipCore.callState !== CALLSTATE.IDLE && sipCore.remoteExtension !== null && sipCore.remoteVideoStream === null) {
             camera = this.config?.extensions[sipCore.remoteExtension]?.camera_entity || "";
         if (!camera) {
                 if (sipCore.remoteAudioStream !== null) {
@@ -230,7 +251,8 @@ class SIPCallCard extends LitElement {
 
         return html`
             <ha-card>
-                <div id="audioVisualizer" style="display: ${sipCore.callState !== CALLSTATE.IDLE && !camera ? "block" : "none"}"></div>
+                <div id="audioVisualizer" style="display: ${sipCore.callState !== CALLSTATE.IDLE && !camera && sipCore.remoteVideoStream === null ? "block" : "none"}"></div>
+                <video poster="noposter" style="display: ${sipCore.remoteVideoStream === null ? "none": "block"}" playsinline id="remoteVideo"></video>
                 ${sipCore.callState === CALLSTATE.IDLE ? html`
                     <div class="placeholder">
                         <span>No active call</span>
@@ -256,21 +278,19 @@ class SIPCallCard extends LitElement {
                     </div>
                     <div>
                         ${this.config?.buttons.map((button) => {
-                            return html`
-                                <ha-icon-button
-                                    .icon=${button.icon}
-                                    .label=${button.label}
-                                    @click=${() => {
-                                        if (button.type === ButtonType.SERVICE_CALL) {
-                                            this.hass.callService(
-                                                button.data.domain,
-                                                button.data.service,
-                                                button.data.service_data
-                                            );
-                                        }
-                                    }
-                                }></ha-icon-button>
-                            `;
+                            if (button.type === ButtonType.SERVICE_CALL) {
+                                return html`
+                                    <ha-icon-button
+                                        class="audio-button"
+                                        label="${button.label}"
+                                        @click="${() => {
+                                            const { domain, service, ...service_data } = button.data;
+                                            this.hass.callService(domain, service, service_data);
+                                        }}">
+                                        <ha-icon .icon=${button.icon}></ha-icon>
+                                    </ha-icon-button>
+                                `;
+                            }
                         })}
                     </div>
                     <div>
@@ -311,7 +331,7 @@ class SIPCallCard extends LitElement {
                             style="color: var(--label-badge-red);"
                             label="End Call"
                             @click="${() => sipCore.endCall()}">
-                            <ha-icon .icon=${"mdi:phone-hangup"}></ha-icon>
+                            <ha-icon .icon=${"mdi:phone-off"}></ha-icon>
                         </ha-icon-button>
                     </div>
                 </div>

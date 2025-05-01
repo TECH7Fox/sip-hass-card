@@ -40,6 +40,7 @@ interface SIPCoreConfig {
     auto_answer: boolean;
     popup_config: Object | null;
     popup_override_component: string | null;
+    sip_video: boolean;
 }
 
 
@@ -64,6 +65,7 @@ class SIPCore {
     public currentAudioInputId: string | null = localStorage.getItem("sipcore-audio-input") || null;
     public currentAudioOutputId: string | null = localStorage.getItem("sipcore-audio-output") || null;
     public remoteAudioStream: MediaStream | null = null;
+    public remoteVideoStream: MediaStream | null = null;
 
     constructor() {
         // Get hass instance
@@ -91,11 +93,11 @@ class SIPCore {
         this.callOptions = {
             mediaConstraints: {
                 audio: true,
-                video: false,
+                video: this.config.sip_video,
             },
             rtcConstraints: {
                 offerToReceiveAudio: true,
-                offerToReceiveVideo: false,
+                offerToReceiveVideo: this.config.sip_video,
             },
             pcConfig: this.config.ice_config,
         }
@@ -178,6 +180,12 @@ class SIPCore {
     async init() {
         await this.createHassioSession();
         await this.setupAudio();
+
+        if (this.config.sip_video) {
+            // Request permission to use video devices for later use
+            await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        }
+
         console.info(`Connecting to ${this.wssUrl}...`);
         this.ua.start();
         if (this.config.popup_config !== null) {
@@ -244,11 +252,10 @@ class SIPCore {
             console.info("Registered");
             this.triggerUpdate();
 
-            // Start heartbeat
             if (this.heartBeatHandle != null) {
                 clearInterval(this.heartBeatHandle);
             }
-            this.heartBeatHandle = setInterval(() => { // TODO: Stop when unregistered? Using heartbeatHandle int?
+            this.heartBeatHandle = setInterval(() => {
                 console.debug("Sending heartbeat");
                 socket.send("\n\n");
             }, this.heartBeatIntervalMs);
@@ -266,6 +273,13 @@ class SIPCore {
             if (this.heartBeatHandle != null) {
                 clearInterval(this.heartBeatHandle);
             }
+
+            if (e.cause === "Connection Error") {
+                console.error("Connection error. Retrying...");
+                setTimeout(() => {
+                    this.ua.start();
+                }, 5000);
+            }
         })
         ua.on("newRTCSession", (e: RTCSessionEvent) => {
             console.debug(`New RTC Session: ${e.originator}`);
@@ -281,6 +295,8 @@ class SIPCore {
                 console.warn("Call failed:", e);
                 window.dispatchEvent(new Event("sipcore-call-ended"));
                 this.RTCSession = null;
+                this.remoteVideoStream = null;
+                this.remoteAudioStream = null;
                 this.stopCallTimer();
                 this.triggerUpdate();
             });
@@ -288,6 +304,8 @@ class SIPCore {
                 console.info("Call ended:", e);
                 window.dispatchEvent(new Event("sipcore-call-ended"));
                 this.RTCSession = null;
+                this.remoteVideoStream = null;
+                this.remoteAudioStream = null;
                 this.stopCallTimer();
                 this.triggerUpdate();
             });
@@ -352,17 +370,17 @@ class SIPCore {
     };
 
     async handleRemoteTrackEvent(e: RTCTrackEvent) {
+
+        let stream: MediaStream | null = null;
         if (e.streams.length > 0) {
             console.debug(`Received remote streams amount: ${e.streams.length}. Using first stream...`);
-            this.remoteAudioStream = e.streams[0];
-        }
-        else {
+            stream = e.streams[0];
+        } else {
             console.debug("No associated streams. Creating new stream...");
-            this.remoteAudioStream = new MediaStream();
-            this.remoteAudioStream.addTrack(e.track);
+            stream = new MediaStream();
+            stream.addTrack(e.track);
         }
 
-        this.triggerUpdate();
 
         let remoteAudio = document.getElementById("remoteAudio") as HTMLAudioElement;
         if (e.track.kind === 'audio' && remoteAudio.srcObject != this.remoteAudioStream) {
@@ -374,6 +392,13 @@ class SIPCore {
                 console.error('Error starting audio playback: ' + err);
             }
         }
+
+        if (e.track.kind === 'video') {
+            console.info("Received remote video track");
+            this.remoteVideoStream = stream;
+        }
+
+        this.triggerUpdate();
     };
 
     // borrowed from https://github.com/lovelylain/ha-addon-iframe-card/blob/main/src/hassio-ingress.ts
