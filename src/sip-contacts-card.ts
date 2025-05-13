@@ -27,7 +27,6 @@ interface Extension {
 interface SIPContactsCardConfig {
     extensions: { [key: string]: Extension };
     title: string;
-    debug: boolean;
     hide_me: boolean;
     state_color: boolean;
 }
@@ -118,33 +117,6 @@ class SIPContactsCard extends LitElement {
 
         return html`
             <ha-card header="${this.config?.title || "Contacts"}">
-                ${this.config?.debug ? html`
-                    <div>
-                        username: ${sipCore.user.ha_username}
-                        <br>
-                        extension: ${sipCore.user.extension}
-                        <br>
-                        call_state: ${sipCore.callState}
-                        <br>
-                        connection_state: ${connection_state}
-                        <br>
-
-                        <button
-                            id="denyButton"
-                            @click="${() => sipCore.endCall()}"
-                        >deny</button>
-                        <button
-                            id="answerButton"
-                            @click="${() => sipCore.answerCall()}"
-                        >answer</button>
-                        <button
-                            id="endButton"
-                            @click="${() => sipCore.endCall()}"
-                        >end</button>
-                        <br>
-                    </div>
-                ` : ""}
-
                 <div class="wrapper">
                     ${Object.entries(this.config?.extensions || {}).map(([number, extension]) => {
                         const isMe = number === sipCore.user.extension;
