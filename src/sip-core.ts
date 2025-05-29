@@ -11,18 +11,18 @@ console.info(
 );
 
 
-export class CALLSTATE {
-    static IDLE = "idle";
-    static INCOMING = "incoming";
-    static OUTGOING = "outgoing";
-    static CONNECTING = "connecting";
-    static CONNECTED = "connected";
+export enum CALLSTATE {
+    IDLE,
+    INCOMING,
+    OUTGOING,
+    CONNECTING,
+    CONNECTED,
 }
 
 
-export class AUDIO_DEVICE_KIND {
-    static INPUT = "audioinput";
-    static OUTPUT = "audiooutput";
+export enum AUDIO_DEVICE_KIND {
+    INPUT,
+    OUTPUT,
 }
 
 

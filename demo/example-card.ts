@@ -1,6 +1,5 @@
 import { LitElement, html, css, PropertyValues } from "lit";
 import { customElement, property } from "lit/decorators.js";
-// import type { SIPCore } from "../src/sip-core";
 
 
 declare global {

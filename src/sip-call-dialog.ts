@@ -15,9 +15,9 @@ interface Extension {
 }
 
 
-class ButtonType {
-    static SERVICE_CALL = "service_call";
-    static DTMF = "dtmf";
+enum ButtonType {
+    SERVICE_CALL,
+    DTMF,
 }
 
 
