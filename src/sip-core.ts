@@ -147,7 +147,7 @@ export class SIPCore {
         return "0:00";
     }
 
-    async setupAudio() {
+    private async setupAudio() {
         let audioElement = document.createElement("audio") as any;
         audioElement.id = "remoteAudio";
         audioElement.autoplay = true;
@@ -163,7 +163,7 @@ export class SIPCore {
         }
     }
 
-    setupPopup() {
+    private setupPopup() {
         let POPUP_COMPONENT = this.config.popup_override_component || "sip-call-dialog";
         if (document.getElementsByTagName(POPUP_COMPONENT).length < 1) {
             document.body.appendChild(document.createElement(POPUP_COMPONENT));
@@ -205,7 +205,7 @@ export class SIPCore {
         }
     }
 
-    fetchConfig(): SIPCoreConfig {
+    private fetchConfig(): SIPCoreConfig {
         const request = new XMLHttpRequest();
         request.open("GET", `/local/sip-config.json?${new Date().getTime()}`, false);
         request.send(null);
@@ -241,7 +241,7 @@ export class SIPCore {
         window.dispatchEvent(new Event("sipcore-update"));
     }
 
-    setupUA(): UA {
+    private setupUA(): UA {
         const socket = new WebSocketInterface(this.wssUrl);
         const ua = new UA({
             sockets: [socket],
@@ -363,7 +363,7 @@ export class SIPCore {
         return ua;
     }
 
-    handleIceGatheringStateChangeEvent(e: any) {
+    private handleIceGatheringStateChangeEvent(e: any) {
         console.debug("ICE gathering state changed:", e.target?.iceGatheringState);
         if (e.target?.iceGatheringState === "complete") {
             console.info("ICE gathering complete");
@@ -373,7 +373,7 @@ export class SIPCore {
         }
     };
 
-    async handleRemoteTrackEvent(e: RTCTrackEvent) {
+    private async handleRemoteTrackEvent(e: RTCTrackEvent) {
 
         let stream: MediaStream | null = null;
         if (e.streams.length > 0) {
@@ -407,14 +407,14 @@ export class SIPCore {
     };
 
     // borrowed from https://github.com/lovelylain/ha-addon-iframe-card/blob/main/src/hassio-ingress.ts
-    setIngressCookie(session: string): string {
+    private setIngressCookie(session: string): string {
         document.cookie = `ingress_session=${session};path=/api/hassio_ingress/;SameSite=Strict${
           location.protocol === "https:" ? ";Secure" : ""
         }`;
         return session;
     };
 
-    async createHassioSession(): Promise<string> {
+    private async createHassioSession(): Promise<string> {
         const resp: { session: string } = await this.hass.callWS({
             type: "supervisor/api",
             endpoint: "/ingress/session",
@@ -423,7 +423,7 @@ export class SIPCore {
         return this.setIngressCookie(resp.session);
     };
 
-    async validateHassioSession(session: string) {
+    private async validateHassioSession(session: string) {
         await this.hass.callWS({
             type: "supervisor/api",
             endpoint: "/ingress/validate_session",
