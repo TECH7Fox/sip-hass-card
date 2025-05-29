@@ -21,8 +21,8 @@ export enum CALLSTATE {
 
 
 export enum AUDIO_DEVICE_KIND {
-    INPUT,
-    OUTPUT,
+    INPUT = "audioinput",
+    OUTPUT = "audiooutput",
 }
 
 
