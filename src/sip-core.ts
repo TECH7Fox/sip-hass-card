@@ -71,6 +71,11 @@ export interface SIPCoreConfig {
  * Handles SIP registration, call management, and audio device management.
  */
 export class SIPCore {
+    /**
+     * The JSSIP User Agent instance
+     * @see {@link UA}
+     * @see {@link https://sipjs.com/api/0.5.0/ua/}
+    */
     public ua: UA;
     public RTCSession: RTCSession | null = null;
     public version: string = version;
@@ -526,4 +531,4 @@ sipCore.init().catch((error) => {
     console.error("Error initializing SIP Core:", error);
 });
 (window as any).sipCore = sipCore;
-export { sipCore, UA };
+export { sipCore };
