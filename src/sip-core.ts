@@ -36,9 +36,15 @@ export interface User {
 }
 
 
+export interface ICEConfig extends RTCConfiguration {
+    /** Timeout in milliseconds for ICE gathering */
+    iceGatheringTimeout?: number;
+}
+
+
 /** Configuration for SIP Core */
 export interface SIPCoreConfig {
-    ice_config: RTCConfiguration;
+    ice_config: ICEConfig;
     backup_user: User;
     users: User[];
     auto_answer: boolean;
