@@ -73,10 +73,13 @@ export interface SIPCoreConfig {
 export class SIPCore {
     /**
      * The JSSIP User Agent instance
-     * @see {@link UA}
-     * @see {@link https://sipjs.com/api/0.5.0/ua/}
+     * @see {@link https://jssip.net/documentation/3.1.x/api/ua/}
     */
     public ua: UA;
+    /**
+     * The current RTC session, if available
+     * @see {@link https://jssip.net/documentation/3.1.x/api/session/}
+    */
     public RTCSession: RTCSession | null = null;
     public version: string = version;
     public hass: any;
