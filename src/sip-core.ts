@@ -2,7 +2,7 @@ import { UA, WebSocketInterface } from "jssip/lib/JsSIP";
 import { RTCSessionEvent, CallOptions } from "jssip/lib/UA";
 import { EndEvent, PeerConnectionEvent, IncomingEvent, IceCandidateEvent, RTCSession } from "jssip/lib/RTCSession";
 
-const version = "0.1.0";
+const version = "4.0.5";
 
 console.info(
     `%c SIP-CORE %c ${version} `,
@@ -10,7 +10,7 @@ console.info(
     'color: dodgerblue; background: white; font-weight: 700;',
 );
 
-
+/** Enum representing the various states of a SIP call */
 export enum CALLSTATE {
     IDLE,
     INCOMING,
@@ -20,12 +20,14 @@ export enum CALLSTATE {
 }
 
 
+/** Enum representing the kind of audio device */
 export enum AUDIO_DEVICE_KIND {
     INPUT = "audioinput",
     OUTPUT = "audiooutput",
 }
 
 
+/** Mapping of a Home Assitant username to a SIP user */
 export interface User {
     ha_username: string;
     display_name: string;
@@ -34,19 +36,34 @@ export interface User {
 }
 
 
+/** Configuration for SIP Core */
 export interface SIPCoreConfig {
-    ice_config: any;
+    ice_config: RTCConfiguration;
     backup_user: User;
     users: User[];
     auto_answer: boolean;
     popup_config: Object | null;
     popup_override_component: string | null;
+    /** 
+     * Whether to use video in SIP calls.
+     * @experimental
+    */
     sip_video: boolean;
     pbx_server: string;
+    /**
+     * Custom WebSocket URL to use when ingress is not setup
+     * 
+     * @example
+     * "wss://sip.example.com/ws"
+    */
     custom_wss_url: string;
 }
 
 
+/**
+ * Main class for SIP Core functionality.
+ * Handles SIP registration, call management, and audio device management.
+ */
 export class SIPCore {
     public ua: UA;
     public RTCSession: RTCSession | null = null;
@@ -114,10 +131,12 @@ export class SIPCore {
         this.ua = this.setupUA();
     }
 
+    /** Returns the remote extension. Returns `null` if not in a call */
     get remoteExtension(): string | null {
         return this.RTCSession?.remote_identity.uri.user || null;
     }
 
+    /** Returns the remote display name if available, otherwise the extension. Returns `null` if not in a call */
     get remoteName(): string | null {
         return this.RTCSession?.remote_identity.display_name || this.RTCSession?.remote_identity.uri.user || null;
     }
@@ -137,6 +156,7 @@ export class SIPCore {
         return CALLSTATE.IDLE;
     }
 
+    /** Returns call duration in format `0:00` */
     get callDuration(): string {
         if (this.RTCSession?.start_time) {
             var delta = Math.floor((Date.now() - this.RTCSession.start_time.getTime()) / 1000);
@@ -237,6 +257,7 @@ export class SIPCore {
         this.ua.call(extension, this.callOptions);
     }
 
+    /** Dispatches a `sipcore-update` event */
     triggerUpdate() {
         window.dispatchEvent(new Event("sipcore-update"));
     }
@@ -433,6 +454,7 @@ export class SIPCore {
         this.setIngressCookie(session);
     };
 
+    /** Returns a list of audio devices of the specified kind */
     async getAudioDevices(audioKind: AUDIO_DEVICE_KIND) {
         // first get permission to use audio devices
         await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -441,6 +463,15 @@ export class SIPCore {
         return devices.filter(device => device.kind == audioKind);
     }
 
+    /**
+     * Sets the audio device for the specified kind
+     * 
+     * @example
+     * ```ts
+     * const audio_devices = await sipCore.getAudioDevices(AUDIO_DEVICE_KIND.INPUT);
+     * await sipCore.setAudioDevice(audio_devices[0].deviceId, AUDIO_DEVICE_KIND.INPUT);
+     * ```
+    */
     async setAudioDevice(deviceId: string, audioKind: AUDIO_DEVICE_KIND) {
         console.info(`Setting audio device ${deviceId} (${audioKind})`);
         switch (audioKind) {
@@ -483,9 +514,10 @@ export class SIPCore {
     }
 }
 
+/** @hidden */
 const sipCore = new SIPCore();
 sipCore.init().catch((error) => {
     console.error("Error initializing SIP Core:", error);
 });
 (window as any).sipCore = sipCore;
-export { sipCore };
+export { sipCore, UA };
