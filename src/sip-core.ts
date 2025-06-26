@@ -103,6 +103,9 @@ export class SIPCore {
   public remoteAudioStream: MediaStream | null = null
   public remoteVideoStream: MediaStream | null = null
 
+  public incomingAudio: HTMLAudioElement | null = null
+  public outgoingAudio: HTMLAudioElement | null = null
+
   constructor() {
     this.config = this.fetchConfig()
 
@@ -112,7 +115,8 @@ export class SIPCore {
       throw new Error('Home Assistant element not found')
     }
     this.hass = (homeAssistant as any).hass
-
+    this.incomingAudio = null
+    this.outgoingAudio = null
     // Determine websocket URL
     const ingressEntry =
       this.hass.states['text.asterisk_addon_ingress_entry']?.state
@@ -282,6 +286,40 @@ export class SIPCore {
     }
   }
 
+  playIncomingRingtone(url: string): void {
+    this.stopIncomingRingtone()
+    this.incomingAudio = new Audio(url)
+    this.incomingAudio.loop = true
+    this.incomingAudio.play().catch((error) => {
+      console.error('Incoming ringtone failed:', error)
+    })
+  }
+
+  stopIncomingRingtone(): void {
+    if (this.incomingAudio) {
+      this.incomingAudio.pause()
+      this.incomingAudio.currentTime = 0
+      this.incomingAudio = null
+    }
+  }
+
+  playOutgoingTone(url: string): void {
+    this.stopOutgoingTone()
+    this.outgoingAudio = new Audio(url)
+    this.outgoingAudio.loop = true
+    this.outgoingAudio.play().catch((error) => {
+      console.error('Outgoing tone failed:', error)
+    })
+  }
+
+  stopOutgoingTone(): void {
+    if (this.outgoingAudio) {
+      this.outgoingAudio.pause()
+      this.outgoingAudio.currentTime = 0
+      this.outgoingAudio = null
+    }
+  }
+
   answerCall() {
     if (this.callState !== CALLSTATE.INCOMING) {
       console.warn('Not in incoming call state. Cannot answer.')
@@ -368,6 +406,8 @@ export class SIPCore {
         this.remoteVideoStream = null
         this.remoteAudioStream = null
         this.stopCallTimer()
+        this.stopOutgoingTone()
+        this.stopIncomingRingtone()
         this.triggerUpdate()
       })
       e.session.on('ended', (e: EndEvent) => {
@@ -377,11 +417,15 @@ export class SIPCore {
         this.remoteVideoStream = null
         this.remoteAudioStream = null
         this.stopCallTimer()
+        this.stopOutgoingTone()
+        this.stopIncomingRingtone()
         this.triggerUpdate()
       })
       e.session.on('accepted', (e: IncomingEvent) => {
         console.info('Call accepted')
         this.startCallTimer()
+        this.stopOutgoingTone()
+        this.stopIncomingRingtone()
         this.triggerUpdate()
       })
 
@@ -403,6 +447,10 @@ export class SIPCore {
         case 'incoming':
           console.info('Incoming call')
           this.triggerUpdate()
+          console.info('PLAYING')
+
+          this.playIncomingRingtone('/local/ring-tones/ring-tone.mp3')
+          console.info('PLAYED')
 
           e.session.on('peerconnection', (e: PeerConnectionEvent) => {
             console.info('Incoming call peer connection established')
@@ -426,8 +474,7 @@ export class SIPCore {
         case 'outgoing':
           console.info('Outgoing call')
           console.info('PLAYING')
-          const audio = new Audio('/local/ring-tones/ring-tone.mp3')
-          audio.play().catch(() => console.info('cant play'))
+          this.playOutgoingTone('/local/ring-tones/calling-tone.mp3')
           console.info('PLAYWEDD')
 
           this.triggerUpdate()
