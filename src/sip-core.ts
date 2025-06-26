@@ -49,6 +49,9 @@ export interface SIPCoreConfig {
   ice_config: ICEConfig
   backup_user: User
   users: User[]
+  incomingRingtoneUrl: string
+  outgoingRingtoneUrl: string
+  out: String
   auto_answer: boolean
   popup_config: Object | null
   popup_override_component: string | null
@@ -115,8 +118,18 @@ export class SIPCore {
       throw new Error('Home Assistant element not found')
     }
     this.hass = (homeAssistant as any).hass
-    this.incomingAudio = null
-    this.outgoingAudio = null
+
+    // ring tones
+    this.incomingAudio = this.config.incomingRingtoneUrl
+      ? new Audio(this.config.incomingRingtoneUrl)
+      : null
+    this.outgoingAudio = this.config.outgoingRingtoneUrl
+      ? new Audio(this.config.outgoingRingtoneUrl)
+      : null
+
+    this.incomingAudio && (this.incomingAudio.loop = true)
+    this.incomingAudio && (this.incomingAudio.loop = true)
+
     // Determine websocket URL
     const ingressEntry =
       this.hass.states['text.asterisk_addon_ingress_entry']?.state
@@ -286,37 +299,33 @@ export class SIPCore {
     }
   }
 
-  playIncomingRingtone(url: string): void {
-    this.stopIncomingRingtone()
-    this.incomingAudio = new Audio(url)
-    this.incomingAudio.loop = true
-    this.incomingAudio.play().catch((error) => {
-      console.error('Incoming ringtone failed:', error)
-    })
+  playIncomingRingtone(): void {
+    if (this.incomingAudio) {
+      this.incomingAudio.play().catch((error) => {
+        console.error('Incoming ringtone failed:', error)
+      })
+    }
   }
 
   stopIncomingRingtone(): void {
     if (this.incomingAudio) {
       this.incomingAudio.pause()
       this.incomingAudio.currentTime = 0
-      this.incomingAudio = null
     }
   }
 
-  playOutgoingTone(url: string): void {
-    this.stopOutgoingTone()
-    this.outgoingAudio = new Audio(url)
-    this.outgoingAudio.loop = true
-    this.outgoingAudio.play().catch((error) => {
-      console.error('Outgoing tone failed:', error)
-    })
+  playOutgoingTone(): void {
+    if (this.outgoingAudio) {
+      this.outgoingAudio.play().catch((error) => {
+        console.error('Incoming ringtone failed:', error)
+      })
+    }
   }
 
   stopOutgoingTone(): void {
     if (this.outgoingAudio) {
       this.outgoingAudio.pause()
       this.outgoingAudio.currentTime = 0
-      this.outgoingAudio = null
     }
   }
 
@@ -449,7 +458,7 @@ export class SIPCore {
           this.triggerUpdate()
           console.info('PLAYING')
 
-          this.playIncomingRingtone('/local/ring-tones/ring-tone.mp3')
+          this.playIncomingRingtone()
           console.info('PLAYED')
 
           e.session.on('peerconnection', (e: PeerConnectionEvent) => {
@@ -474,7 +483,7 @@ export class SIPCore {
         case 'outgoing':
           console.info('Outgoing call')
           console.info('PLAYING')
-          this.playOutgoingTone('/local/ring-tones/calling-tone.mp3')
+          this.playOutgoingTone()
           console.info('PLAYWEDD')
 
           this.triggerUpdate()
