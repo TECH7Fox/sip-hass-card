@@ -460,10 +460,7 @@ export class SIPCore {
                 case "incoming":
                     console.info("Incoming call");
                     this.triggerUpdate();
-                    console.info("PLAYING");
-
                     this.playIncomingRingtone();
-                    console.info("PLAYED");
 
                     e.session.on("peerconnection", (e: PeerConnectionEvent) => {
                         console.info("Incoming call peer connection established");
@@ -486,10 +483,7 @@ export class SIPCore {
 
                 case "outgoing":
                     console.info("Outgoing call");
-                    console.info("PLAYING");
                     this.playOutgoingTone();
-                    console.info("PLAYWEDD");
-
                     this.triggerUpdate();
 
                     e.session.connection.addEventListener(
