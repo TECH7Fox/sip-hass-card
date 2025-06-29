@@ -353,6 +353,19 @@ export class SIPCore {
             e.session.on("accepted", (e: IncomingEvent) => {
                 console.info("Call accepted");
                 this.startCallTimer();
+                switch (this.RTCSession?.direction) {
+                    case "incoming":
+                        console.info("Incoming call");
+                        if (this.config.microphone_mute_on_incoming) {
+                            this.RTCSession?.mute({ audio: true });
+                        }
+                    case "outgoing":
+                        console.info("Outgoing call");
+                        if (this.config.microphone_mute_on_outgoing) {
+                            this.RTCSession?.mute({ audio: true });
+                        }
+                        break;
+                }
                 this.triggerUpdate();
             });
 
@@ -373,9 +386,6 @@ export class SIPCore {
             switch (e.session.direction) {
                 case "incoming":
                     console.info("Incoming call");
-                    if (this.config.microphone_mute_on_incoming) {
-                        e.session.mute({audio: true});
-                    }
                     this.triggerUpdate();
 
                     e.session.on("peerconnection", (e: PeerConnectionEvent) => {
@@ -393,9 +403,6 @@ export class SIPCore {
 
                 case "outgoing":
                     console.info("Outgoing call");
-                    if (this.config.microphone_mute_on_outgoing) {
-                        e.session.mute({audio: true});
-                    }
                     this.triggerUpdate();
 
                     e.session.connection.addEventListener("track", this.handleRemoteTrackEvent);
