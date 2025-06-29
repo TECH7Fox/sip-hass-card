@@ -48,6 +48,9 @@ export interface SIPCoreConfig {
     backup_user: User;
     users: User[];
     auto_answer: boolean;
+    use_default_audio_devices_only: boolean;
+    microphone_mute_on_incoming: boolean
+    microphone_mute_on_outgoing: boolean
     popup_config: Object | null;
     popup_override_component: string | null;
     /** 
@@ -221,7 +224,7 @@ export class SIPCore {
 
         if (this.config.sip_video) {
             // Request permission to use video devices for later use
-            await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            await navigator.mediaDevices.getUserMedia({ video: true, audio: !this.config.use_default_audio_devices_only });
         }
 
         console.info(`Connecting to ${this.wssUrl}...`);
@@ -351,6 +354,19 @@ export class SIPCore {
             e.session.on("accepted", (e: IncomingEvent) => {
                 console.info("Call accepted");
                 this.startCallTimer();
+                switch (this.RTCSession?.direction) {
+                    case "incoming":
+                        console.info("Incoming call");
+                        if (this.config.microphone_mute_on_incoming) {
+                            this.RTCSession?.mute({ audio: true });
+                        }
+                    case "outgoing":
+                        console.info("Outgoing call");
+                        if (this.config.microphone_mute_on_outgoing) {
+                            this.RTCSession?.mute({ audio: true });
+                        }
+                        break;
+                }
                 this.triggerUpdate();
             });
 
@@ -470,12 +486,21 @@ export class SIPCore {
 
     /** Returns a list of audio devices of the specified kind */
     async getAudioDevices(audioKind: AUDIO_DEVICE_KIND) {
-        // first get permission to use audio devices
-        await navigator.mediaDevices.getUserMedia({ audio: true });
+        if (!!this.config.use_default_audio_devices_only && audioKind === AUDIO_DEVICE_KIND.INPUT) {
+            console.info("Using default microphone only, returning empty list for audio input devices");
+            return [];
+        }
 
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        return devices.filter(device => device.kind == audioKind);
-    }
+        // first get permission to use audio devices
+       const streams = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+       streams.getTracks().forEach(track => {
+           track.stop();
+       });
+
+       const devices = await navigator.mediaDevices.enumerateDevices();
+       return devices.filter(device => device.kind == audioKind);
+   }
 
     /**
      * Sets the audio device for the specified kind
@@ -490,6 +515,14 @@ export class SIPCore {
         console.info(`Setting audio device ${deviceId} (${audioKind})`);
         switch (audioKind) {
             case AUDIO_DEVICE_KIND.INPUT:
+                if (!!this.config.use_default_audio_devices_only) {
+                    console.info("Using default microphone only, ignoring audio input device change");
+                    this.currentAudioInputId = null;
+                    localStorage.removeItem("sipcore-audio-input");
+                    this.triggerUpdate();
+                    return;
+                }
+
                 try {
                     await navigator.mediaDevices.getUserMedia({
                         audio: {
