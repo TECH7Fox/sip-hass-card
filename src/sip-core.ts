@@ -48,6 +48,8 @@ export interface SIPCoreConfig {
     backup_user: User;
     users: User[];
     auto_answer: boolean;
+    microphone_mute_on_incoming: boolean
+    microphone_mute_on_outgoing: boolean
     popup_config: Object | null;
     popup_override_component: string | null;
     /** 
@@ -371,6 +373,9 @@ export class SIPCore {
             switch (e.session.direction) {
                 case "incoming":
                     console.info("Incoming call");
+                    if (this.config.microphone_mute_on_incoming) {
+                        e.session.mute({audio: true});
+                    }
                     this.triggerUpdate();
 
                     e.session.on("peerconnection", (e: PeerConnectionEvent) => {
@@ -388,6 +393,9 @@ export class SIPCore {
 
                 case "outgoing":
                     console.info("Outgoing call");
+                    if (this.config.microphone_mute_on_outgoing) {
+                        e.session.mute({audio: true});
+                    }
                     this.triggerUpdate();
 
                     e.session.connection.addEventListener("track", this.handleRemoteTrackEvent);
