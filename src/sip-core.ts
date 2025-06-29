@@ -1,19 +1,19 @@
-import { UA, WebSocketInterface } from 'jssip/lib/JsSIP';
-import { RTCSessionEvent, CallOptions } from 'jssip/lib/UA';
+import { UA, WebSocketInterface } from "jssip/lib/JsSIP";
+import { RTCSessionEvent, CallOptions } from "jssip/lib/UA";
 import {
     EndEvent,
     PeerConnectionEvent,
     IncomingEvent,
     IceCandidateEvent,
     RTCSession,
-} from 'jssip/lib/RTCSession';
+} from "jssip/lib/RTCSession";
 
-const version = '4.0.5';
+const version = "4.0.5";
 
 console.info(
     `%c SIP-CORE %c ${version} `,
-    'color: white; background: dodgerblue; font-weight: 700;',
-    'color: dodgerblue; background: white; font-weight: 700;'
+    "color: white; background: dodgerblue; font-weight: 700;",
+    "color: dodgerblue; background: white; font-weight: 700;"
 );
 
 /** Enum representing the various states of a SIP call */
@@ -27,8 +27,8 @@ export enum CALLSTATE {
 
 /** Enum representing the kind of audio device */
 export enum AUDIO_DEVICE_KIND {
-    INPUT = 'audioinput',
-    OUTPUT = 'audiooutput',
+    INPUT = "audioinput",
+    OUTPUT = "audiooutput",
 }
 
 /** Mapping of a Home Assistant username to a SIP user */
@@ -61,7 +61,7 @@ export interface SIPCoreConfig {
     /** 
      * Whether to use video in SIP calls.
      * @experimental
-     */
+    */
     sip_video: boolean;
     pbx_server: string;
     /**
@@ -69,7 +69,7 @@ export interface SIPCoreConfig {
      * 
      * @example
      * "wss://sip.example.com/ws"
-     */
+    */
     custom_wss_url: string;
 }
 
@@ -81,13 +81,13 @@ export class SIPCore {
     /**
      * The JSSIP User Agent instance
      * @see {@link https://jssip.net/documentation/3.1.x/api/ua/}
-     */
+    */
     public ua: UA;
     
     /**
      * The current RTC session, if available
      * @see {@link https://jssip.net/documentation/3.1.x/api/session/}
-     */
+    */
     public RTCSession: RTCSession | null = null;
     
     public version: string = version;
@@ -105,9 +105,9 @@ export class SIPCore {
     private callOptions: CallOptions;
 
     public currentAudioInputId: string | null =
-        localStorage.getItem('sipcore-audio-input') || null;
+        localStorage.getItem("sipcore-audio-input") || null;
     public currentAudioOutputId: string | null =
-        localStorage.getItem('sipcore-audio-output') || null;
+        localStorage.getItem("sipcore-audio-output") || null;
     public remoteAudioStream: MediaStream | null = null;
     public remoteVideoStream: MediaStream | null = null;
 
@@ -118,9 +118,9 @@ export class SIPCore {
         this.config = this.fetchConfig();
 
         // Get hass instance
-        const homeAssistant = document.querySelector('home-assistant');
+        const homeAssistant = document.querySelector("home-assistant");
         if (!homeAssistant) {
-            throw new Error('Home Assistant element not found');
+            throw new Error("Home Assistant element not found");
         }
         this.hass = (homeAssistant as any).hass;
 
@@ -137,14 +137,14 @@ export class SIPCore {
 
         // Determine websocket URL
         const ingressEntry =
-            this.hass.states['text.asterisk_addon_ingress_entry']?.state;
+            this.hass.states["text.asterisk_addon_ingress_entry"]?.state;
         if (ingressEntry) {
-            const wssProtocol = window.location.protocol == 'https:' ? 'wss' : 'ws';
+            const wssProtocol = window.location.protocol == "https:" ? "wss" : "ws";
             this.wssUrl = `${wssProtocol}://${window.location.host}${ingressEntry}/ws`;
         } else if (this.config.custom_wss_url) {
             this.wssUrl = this.config.custom_wss_url;
         } else {
-            throw new Error('No ingress entry or custom WSS URL provided');
+            throw new Error("No ingress entry or custom WSS URL provided");
         }
 
         // Get current user
@@ -198,10 +198,10 @@ export class SIPCore {
     get callState(): CALLSTATE {
         if (this.RTCSession?.isEstablished()) {
             return CALLSTATE.CONNECTED;
-        } else if (this.RTCSession?.connection?.connectionState === 'connecting') {
+        } else if (this.RTCSession?.connection?.connectionState === "connecting") {
             return CALLSTATE.CONNECTING;
         } else if (this.RTCSession?.isInProgress()) {
-            return this.RTCSession?.direction === 'incoming'
+            return this.RTCSession?.direction === "incoming"
                 ? CALLSTATE.INCOMING
                 : CALLSTATE.OUTGOING;
         }
@@ -216,9 +216,9 @@ export class SIPCore {
             );
             var minutes = Math.floor(delta / 60);
             var seconds = delta % 60;
-            return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
         }
-        return '0:00';
+        return "0:00";
     }
 
     private async setupAudio() {
@@ -245,7 +245,7 @@ export class SIPCore {
 
     private setupPopup() {
         let POPUP_COMPONENT =
-            this.config.popup_override_component || 'sip-call-dialog';
+            this.config.popup_override_component || "sip-call-dialog";
         if (document.getElementsByTagName(POPUP_COMPONENT).length < 1) {
             document.body.appendChild(document.createElement(POPUP_COMPONENT));
         }
@@ -282,7 +282,7 @@ export class SIPCore {
 
         // autocall if set
         const autocall_extension = new URLSearchParams(window.location.search).get(
-            'call'
+            "call"
         );
         if (autocall_extension) {
             console.info(`Autocalling ${autocall_extension}...`);
@@ -292,12 +292,12 @@ export class SIPCore {
 
     private fetchConfig(): SIPCoreConfig {
         const request = new XMLHttpRequest();
-        request.open('GET', `/local/sip-config.json?${new Date().getTime()}`, false);
+        request.open("GET", `/local/sip-config.json?${new Date().getTime()}`, false);
         request.send(null);
 
         if (request.status === 200) {
             const config: SIPCoreConfig = JSON.parse(request.responseText);
-            console.debug('SIP-Core Config fetched:', config);
+            console.debug("SIP-Core Config fetched:", config);
             return config;
         } else {
             throw new Error(`Failed to fetch config: ${request.statusText}`);
@@ -307,7 +307,7 @@ export class SIPCore {
     playIncomingRingtone(): void {
         if (this.incomingAudio) {
             this.incomingAudio.play().catch((error) => {
-                console.error('Incoming ringtone failed:', error);
+                console.error("Incoming ringtone failed:", error);
             });
         }
     }
@@ -322,7 +322,7 @@ export class SIPCore {
     playOutgoingTone(): void {
         if (this.outgoingAudio) {
             this.outgoingAudio.play().catch((error) => {
-                console.error('Incoming ringtone failed:', error);
+                console.error("Incoming ringtone failed:", error);
             });
         }
     }
@@ -336,7 +336,7 @@ export class SIPCore {
 
     answerCall() {
         if (this.callState !== CALLSTATE.INCOMING) {
-            console.warn('Not in incoming call state. Cannot answer.');
+            console.warn("Not in incoming call state. Cannot answer.");
             return;
         }
         this.RTCSession?.answer(this.callOptions);
@@ -354,7 +354,7 @@ export class SIPCore {
 
     /** Dispatches a `sipcore-update` event */
     triggerUpdate() {
-        window.dispatchEvent(new Event('sipcore-update'));
+        window.dispatchEvent(new Event("sipcore-update"));
     }
 
     private setupUA(): UA {
@@ -369,52 +369,52 @@ export class SIPCore {
             register: true,
         });
 
-        ua.on('registered', (e) => {
-            console.info('Registered');
+        ua.on("registered", (e) => {
+            console.info("Registered");
             this.triggerUpdate();
 
             if (this.heartBeatHandle != null) {
                 clearInterval(this.heartBeatHandle);
             }
             this.heartBeatHandle = setInterval(() => {
-                console.debug('Sending heartbeat');
-                socket.send('\n\n');
+                console.debug("Sending heartbeat");
+                socket.send("\n\n");
             }, this.heartBeatIntervalMs);
         });
-        ua.on('unregistered', (e) => {
-            console.warn('Unregistered');
+        ua.on("unregistered", (e) => {
+            console.warn("Unregistered");
             this.triggerUpdate();
             if (this.heartBeatHandle != null) {
                 clearInterval(this.heartBeatHandle);
             }
         });
-        ua.on('registrationFailed', (e) => {
-            console.error('Registration failed:', e);
+        ua.on("registrationFailed", (e) => {
+            console.error("Registration failed:", e);
             this.triggerUpdate();
             if (this.heartBeatHandle != null) {
                 clearInterval(this.heartBeatHandle);
             }
 
-            if (e.cause === 'Connection Error') {
-                console.error('Connection error. Retrying...');
+            if (e.cause === "Connection Error") {
+                console.error("Connection error. Retrying...");
                 setTimeout(() => {
                     this.ua.start();
                 }, 5000);
             }
         });
-        ua.on('newRTCSession', (e: RTCSessionEvent) => {
+        ua.on("newRTCSession", (e: RTCSessionEvent) => {
             console.debug(`New RTC Session: ${e.originator}`);
 
             if (this.RTCSession !== null) {
-                console.info('Terminating new RTC session');
+                console.info("Terminating new RTC session");
                 e.session.terminate();
                 return;
             }
             this.RTCSession = e.session;
 
-            e.session.on('failed', (e: EndEvent) => {
-                console.warn('Call failed:', e);
-                window.dispatchEvent(new Event('sipcore-call-ended'));
+            e.session.on("failed", (e: EndEvent) => {
+                console.warn("Call failed:", e);
+                window.dispatchEvent(new Event("sipcore-call-ended"));
                 this.RTCSession = null;
                 this.remoteVideoStream = null;
                 this.remoteAudioStream = null;
@@ -423,9 +423,9 @@ export class SIPCore {
                 this.stopIncomingRingtone();
                 this.triggerUpdate();
             });
-            e.session.on('ended', (e: EndEvent) => {
-                console.info('Call ended:', e);
-                window.dispatchEvent(new Event('sipcore-call-ended'));
+            e.session.on("ended", (e: EndEvent) => {
+                console.info("Call ended:", e);
+                window.dispatchEvent(new Event("sipcore-call-ended"));
                 this.RTCSession = null;
                 this.remoteVideoStream = null;
                 this.remoteAudioStream = null;
@@ -434,70 +434,70 @@ export class SIPCore {
                 this.stopIncomingRingtone();
                 this.triggerUpdate();
             });
-            e.session.on('accepted', (e: IncomingEvent) => {
-                console.info('Call accepted');
+            e.session.on("accepted", (e: IncomingEvent) => {
+                console.info("Call accepted");
                 this.startCallTimer();
                 this.stopOutgoingTone();
                 this.stopIncomingRingtone();
                 this.triggerUpdate();
             });
 
-            e.session.on('icecandidate', (e: IceCandidateEvent) => {
-                console.debug('ICE candidate:', e.candidate?.candidate);
+            e.session.on("icecandidate", (e: IceCandidateEvent) => {
+                console.debug("ICE candidate:", e.candidate?.candidate);
                 if (this.iceCandidateTimeout != null) {
                     clearTimeout(this.iceCandidateTimeout);
                 }
 
                 this.iceCandidateTimeout = setTimeout(() => {
-                    console.debug('ICE stopped gathering candidates due to timeout');
+                    console.debug("ICE stopped gathering candidates due to timeout");
                     e.ready();
                 }, this.config.ice_config.iceGatheringTimeout || 5000);
             });
 
-            window.dispatchEvent(new Event('sipcore-call-started'));
+            window.dispatchEvent(new Event("sipcore-call-started"));
 
             switch (e.session.direction) {
-                case 'incoming':
-                    console.info('Incoming call');
+                case "incoming":
+                    console.info("Incoming call");
                     this.triggerUpdate();
-                    console.info('PLAYING');
+                    console.info("PLAYING");
 
                     this.playIncomingRingtone();
-                    console.info('PLAYED');
+                    console.info("PLAYED");
 
-                    e.session.on('peerconnection', (e: PeerConnectionEvent) => {
-                        console.info('Incoming call peer connection established');
+                    e.session.on("peerconnection", (e: PeerConnectionEvent) => {
+                        console.info("Incoming call peer connection established");
 
                         e.peerconnection.addEventListener(
-                            'track',
+                            "track",
                             this.handleRemoteTrackEvent
                         );
                         e.peerconnection.addEventListener(
-                            'icegatheringstatechange',
+                            "icegatheringstatechange",
                             this.handleIceGatheringStateChangeEvent
                         );
                     });
 
                     if (this.config.auto_answer) {
-                        console.info('Auto answering call...');
+                        console.info("Auto answering call...");
                         this.answerCall();
                     }
                     break;
 
-                case 'outgoing':
-                    console.info('Outgoing call');
-                    console.info('PLAYING');
+                case "outgoing":
+                    console.info("Outgoing call");
+                    console.info("PLAYING");
                     this.playOutgoingTone();
-                    console.info('PLAYWEDD');
+                    console.info("PLAYWEDD");
 
                     this.triggerUpdate();
 
                     e.session.connection.addEventListener(
-                        'track',
+                        "track",
                         this.handleRemoteTrackEvent
                     );
                     e.session.connection.addEventListener(
-                        'icegatheringstatechange',
+                        "icegatheringstatechange",
                         this.handleIceGatheringStateChangeEvent
                     );
                     break;
@@ -507,9 +507,9 @@ export class SIPCore {
     }
 
     private handleIceGatheringStateChangeEvent(e: any) {
-        console.debug('ICE gathering state changed:', e.target?.iceGatheringState);
-        if (e.target?.iceGatheringState === 'complete') {
-            console.info('ICE gathering complete');
+        console.debug("ICE gathering state changed:", e.target?.iceGatheringState);
+        if (e.target?.iceGatheringState === "complete") {
+            console.info("ICE gathering complete");
             if (this.iceCandidateTimeout != null) {
                 clearTimeout(this.iceCandidateTimeout);
             }
@@ -524,24 +524,24 @@ export class SIPCore {
             );
             stream = e.streams[0];
         } else {
-            console.debug('No associated streams. Creating new stream...');
+            console.debug("No associated streams. Creating new stream...");
             stream = new MediaStream();
             stream.addTrack(e.track);
         }
 
-        let remoteAudio = document.getElementById('remoteAudio') as HTMLAudioElement;
-        if (e.track.kind === 'audio' && remoteAudio.srcObject != stream) {
+        let remoteAudio = document.getElementById("remoteAudio") as HTMLAudioElement;
+        if (e.track.kind === "audio" && remoteAudio.srcObject != stream) {
             this.remoteAudioStream = stream;
             remoteAudio.srcObject = stream;
             try {
                 await remoteAudio.play();
             } catch (err) {
-                console.error('Error starting audio playback: ' + err);
+                console.error("Error starting audio playback: " + err);
             }
         }
 
-        if (e.track.kind === 'video') {
-            console.info('Received remote video track');
+        if (e.track.kind === "video") {
+            console.info("Received remote video track");
             this.remoteVideoStream = stream;
         }
 
@@ -550,25 +550,25 @@ export class SIPCore {
 
     // borrowed from https://github.com/lovelylain/ha-addon-iframe-card/blob/main/src/hassio-ingress.ts
     private setIngressCookie(session: string): string {
-        document.cookie = `ingress_session=${session};path=/api/hassio_ingress/;SameSite=Strict${location.protocol === 'https:' ? ';Secure' : ''
+        document.cookie = `ingress_session=${session};path=/api/hassio_ingress/;SameSite=Strict${location.protocol === "https:" ? ";Secure" : ""
             }`;
         return session;
     }
 
     private async createHassioSession(): Promise<string> {
         const resp: { session: string; } = await this.hass.callWS({
-            type: 'supervisor/api',
-            endpoint: '/ingress/session',
-            method: 'post',
+            type: "supervisor/api",
+            endpoint: "/ingress/session",
+            method: "post",
         });
         return this.setIngressCookie(resp.session);
     }
 
     private async validateHassioSession(session: string) {
         await this.hass.callWS({
-            type: 'supervisor/api',
-            endpoint: '/ingress/validate_session',
-            method: 'post',
+            type: "supervisor/api",
+            endpoint: "/ingress/validate_session",
+            method: "post",
             data: { session },
         });
         this.setIngressCookie(session);
@@ -606,28 +606,28 @@ export class SIPCore {
                 } catch (err) {
                     console.error(`Error setting audio input: ${err}`);
                     await navigator.mediaDevices.getUserMedia({ audio: true });
-                    console.info('Audio input set to default');
+                    console.info("Audio input set to default");
                     this.currentAudioInputId = null;
-                    localStorage.removeItem('sipcore-audio-input');
+                    localStorage.removeItem("sipcore-audio-input");
                     this.triggerUpdate();
                 }
                 this.currentAudioInputId = deviceId;
-                localStorage.setItem('sipcore-audio-input', deviceId);
+                localStorage.setItem("sipcore-audio-input", deviceId);
                 break;
             case AUDIO_DEVICE_KIND.OUTPUT:
-                var audioElement = document.querySelector('#remoteAudio') as any;
+                var audioElement = document.querySelector("#remoteAudio") as any;
                 try {
                     await audioElement.setSinkId(this.currentAudioOutputId);
                 } catch (err) {
                     console.error(`Error setting audio output: ${err}`);
                     this.currentAudioOutputId = null;
-                    localStorage.removeItem('sipcore-audio-output');
+                    localStorage.removeItem("sipcore-audio-output");
                     this.triggerUpdate();
-                    console.info('Audio output set to default');
+                    console.info("Audio output set to default");
                     break;
                 }
                 this.currentAudioOutputId = deviceId;
-                localStorage.setItem('sipcore-audio-output', deviceId);
+                localStorage.setItem("sipcore-audio-output", deviceId);
                 break;
         }
     }
@@ -636,7 +636,7 @@ export class SIPCore {
 /** @hidden */
 const sipCore = new SIPCore();
 sipCore.init().catch((error) => {
-    console.error('Error initializing SIP Core:', error);
+    console.error("Error initializing SIP Core:", error);
 });
 (window as any).sipCore = sipCore;
 export { sipCore };
