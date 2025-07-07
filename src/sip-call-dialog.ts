@@ -57,6 +57,9 @@ class SIPCallDialog extends LitElement {
     @property()
     public config = sipCore.config.popup_config as PopupConfig;
 
+    @property()
+    public useDefaultAudioDevices = sipCore.config.use_default_audio_devices_only
+
     @state()
     private audioVisualizer: AudioVisualizer | undefined;
 
@@ -295,44 +298,46 @@ class SIPCallDialog extends LitElement {
                     <span slot="title" .title="Call">SIP Call Settings</span>
                 </ha-dialog-header>
                 <div tabindex="-1" dialogInitialFocus class="form">
-                    <ha-select
-                        naturalMenuWidth
-                        fixedMenuPosition
-                        icon
-                        label=${"Audio Output"}
-                        .value="${sipCore.currentAudioOutputId}"
-                        @selected=${this.handleAudioOutputChange}
-                        @closed="${(event: { stopPropagation: () => any; }) => event.stopPropagation()}">
-                        ${this.outputDevices.map((device) => html`
-                            <ha-list-item
-                                graphic="icon"
-                                .value="${device.deviceId}"
-                                ?selected=${sipCore.currentAudioOutputId === device.deviceId}>
-                                ${device.label}
-                                <ha-icon slot="graphic" .icon=${"mdi:headphones"}></ha-icon>
-                            </ha-list-item>
-                        `)}
-                        <ha-icon slot="icon" .icon=${"mdi:headphones"}></ha-icon>
-                    </ha-select>
-                    <ha-select
-                        naturalMenuWidth
-                        fixedMenuPosition
-                        icon
-                        label=${"Audio Input"}
-                        .value="${sipCore.currentAudioInputId}"
-                        @selected=${this.handleAudioInputChange}
-                        @closed="${(event: { stopPropagation: () => any; }) => event.stopPropagation()}">
-                        ${this.inputDevices.map((device) => html`
-                            <ha-list-item
-                                graphic="icon"
-                                .value="${device.deviceId}"
-                                ?selected=${sipCore.currentAudioInputId === device.deviceId}>
-                                ${device.label}
-                                <ha-icon slot="graphic" .icon=${"mdi:microphone"}></ha-icon>
-                            </ha-list-item>
-                        `)}
-                        <ha-icon slot="icon" .icon=${"mdi:microphone"}></ha-icon>
-                    </ha-select>
+                    ${ !!this.useDefaultAudioDevices ? "" : html`
+                        <ha-select
+                            naturalMenuWidth
+                            fixedMenuPosition
+                            icon
+                            label=${"Audio Output"}
+                            .value="${sipCore.currentAudioOutputId}"
+                            @selected=${this.handleAudioOutputChange}
+                            @closed="${(event: { stopPropagation: () => any; }) => event.stopPropagation()}">
+                            ${this.outputDevices.map((device) => html`
+                                <ha-list-item
+                                    graphic="icon"
+                                    .value="${device.deviceId}"
+                                    ?selected=${sipCore.currentAudioOutputId === device.deviceId}>
+                                    ${device.label}
+                                    <ha-icon slot="graphic" .icon=${"mdi:headphones"}></ha-icon>
+                                </ha-list-item>
+                            `)}
+                            <ha-icon slot="icon" .icon=${"mdi:headphones"}></ha-icon>
+                        </ha-select>
+                        <ha-select
+                            naturalMenuWidth
+                            fixedMenuPosition
+                            icon
+                            label=${"Audio Input"}
+                            .value="${sipCore.currentAudioInputId}"
+                            @selected=${this.handleAudioInputChange}
+                            @closed="${(event: { stopPropagation: () => any; }) => event.stopPropagation()}">
+                            ${this.inputDevices.map((device) => html`
+                                <ha-list-item
+                                    graphic="icon"
+                                    .value="${device.deviceId}"
+                                    ?selected=${sipCore.currentAudioInputId === device.deviceId}>
+                                    ${device.label}
+                                    <ha-icon slot="graphic" .icon=${"mdi:microphone"}></ha-icon>
+                                </ha-list-item>
+                            `)}
+                            <ha-icon slot="icon" .icon=${"mdi:microphone"}></ha-icon>
+                        </ha-select>` 
+                    } 
                     <ha-settings-row>
                         <span slot="heading">Logged in as ${sipCore.user.ha_username} <span style="color: gray;">(${sipCore.user.extension})</span></span>
                         <span slot="description">The current user used to log in to the SIP server. You can configure users in the sip-config.json file</span> 
@@ -509,8 +514,10 @@ class SIPCallDialog extends LitElement {
     }
 
     async firstUpdated() {
-        this.outputDevices = await sipCore.getAudioDevices(AUDIO_DEVICE_KIND.OUTPUT);
-        this.inputDevices = await sipCore.getAudioDevices(AUDIO_DEVICE_KIND.INPUT);
+        if (!this.useDefaultAudioDevices) {
+            this.outputDevices = await sipCore.getAudioDevices(AUDIO_DEVICE_KIND.OUTPUT);
+            this.inputDevices = await sipCore.getAudioDevices(AUDIO_DEVICE_KIND.INPUT);
+        }
     }
 
     private handleAudioInputChange(event: Event) {

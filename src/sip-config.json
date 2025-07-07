@@ -29,6 +29,7 @@
     ],
     "sip_video": false,
     "auto_answer": false,
+    "use_default_audio_devices_only": false,
     "popup_config": {
         "auto_open": true,
         "large": false,
