@@ -1,19 +1,8 @@
-import { LitElement, html, css, PropertyValues } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { LitElement, html, css } from "https://esm.run/lit-html@1";
 
 
-declare global {
-    interface Window {
-        customCards?: Array<{ type: string; name: string; preview: boolean; description: string }>;
-    }
-}
-
-
-@customElement("sip-example-card")
 class ExampleCard extends LitElement {
-
-    @property()
-    public sipCore: any;
+    sipCore;
 
     static styles = css`
         ha-card {
@@ -47,14 +36,14 @@ class ExampleCard extends LitElement {
         window.removeEventListener("sipcore-update", this.updateHandler);
     }
 
-    private updateHandler = () => {
+    updateHandler = () => {
         if (!this.sipCore) {
-            this.sipCore = (window as any).sipCore;
+            this.sipCore = window.sipCore;
         }
         this.requestUpdate();
     };
 
-    setConfig(config: any) {
+    setConfig(config) {
         // Validate the config here
     }
 
@@ -80,6 +69,7 @@ class ExampleCard extends LitElement {
     }
 }
 
+customElements.define("sip-example-card", ExampleCard);
 window.customCards = window.customCards || [];
 window.customCards.push({
     type: "sip-example-card",

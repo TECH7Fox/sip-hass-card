@@ -60,6 +60,9 @@ class SIPCallDialog extends LitElement {
     @state()
     private audioVisualizer: AudioVisualizer | undefined;
 
+    @state()
+    private buttonListenerActive = false;
+
     constructor() {
         super();
         this.setupButton();
@@ -557,9 +560,12 @@ class SIPCallDialog extends LitElement {
         });
         actionItems?.appendChild(callButton);
 
-        window.addEventListener("location-changed", () => {
-            console.debug("View changed, setting up button again...");
-            this.setupButton();
-        })
+        if (!this.buttonListenerActive) {
+            this.buttonListenerActive = true;
+            window.addEventListener("location-changed", () => { 
+                console.debug("View changed, setting up button again...");
+                this.setupButton();
+            });
+        } 
     }
 }

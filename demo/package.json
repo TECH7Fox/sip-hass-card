@@ -1,20 +1,7 @@
 {
   "name": "demo",
   "version": "1.0.0",
-  "main": "webpack.config.js",
-  "scripts": {
-    "build": "webpack --progress --config webpack.config.js --mode production"
-  },
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "devDependencies": {
-    "ts-loader": "^9.5.2",
-    "tslib": "^2.8.1",
-    "typescript": "^5.8.3",
-    "webpack": "^5.99.7",
-    "webpack-cli": "^6.0.1"
-  },
+  "main": "example-card.js",
   "dependencies": {
     "lit": "^3.3.0"
   }
