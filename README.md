@@ -140,7 +140,7 @@ To see how to configure FreePBX go to the [FreePBX guide](https://tech7fox.githu
 
 Android companion app 2022.2 required for speaker + audio permissions.
 
-If you are still having problems you can make an issue or ask on the discord server. 
+If you are still having problems you can make an issue or ask on the discord server.
 
 ## Development
 For development on Windows, easiest way is to use the devcontainer and run `npm run build` in the terminal. Then copy the `sipjs-card.js` file to your `www` folder.
