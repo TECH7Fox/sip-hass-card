@@ -6,6 +6,8 @@ on:
       - main
   pull_request:
 
+permissions: {}
+
 jobs:
   validate-hacs:
     runs-on: ubuntu-latest

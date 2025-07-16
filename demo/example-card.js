@@ -1,6 +1,5 @@
 import { LitElement, html, css } from "https://esm.run/lit-html@1";
 
-
 class ExampleCard extends LitElement {
     sipCore;
 

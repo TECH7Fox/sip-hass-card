@@ -1,12 +1,7 @@
-import {
-    LitElement,
-    html,
-    css,
-} from "lit";
+import { LitElement, html, css } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { sipCore, CALLSTATE, AUDIO_DEVICE_KIND } from "./sip-core";
 import { AudioVisualizer } from "./audio-visualizer";
-
 
 interface Extension {
     name: string;
@@ -14,12 +9,10 @@ interface Extension {
     camera_entity: string | null;
 }
 
-
 enum ButtonType {
-    SERVICE_CALL,
-    DTMF,
+    SERVICE_CALL = "service_call",
+    DTMF = "dtmf"
 }
-
 
 interface Button {
     label: string;
@@ -28,14 +21,12 @@ interface Button {
     data: any;
 }
 
-
 interface PopupConfig {
     buttons: Button[];
     extensions: { [key: string]: Extension };
     large: boolean | undefined;
     auto_open: boolean;
 }
-
 
 @customElement("sip-call-dialog")
 class SIPCallDialog extends LitElement {
@@ -47,10 +38,10 @@ class SIPCallDialog extends LitElement {
 
     @state()
     private outputDevices: MediaDeviceInfo[] = [];
-    
+
     @state()
     private inputDevices: MediaDeviceInfo[] = [];
-    
+
     @property()
     public hass = sipCore.hass;
 
@@ -100,8 +91,8 @@ class SIPCallDialog extends LitElement {
                 height: 100px;
                 margin: 0 7px;
                 background: currentColor;
-                transform: scaleY( .5 );
-                opacity: .25;
+                transform: scaleY(0.5);
+                opacity: 0.25;
             }
 
             ha-dialog {
@@ -129,13 +120,13 @@ class SIPCallDialog extends LitElement {
 
             @media (max-width: 600px), (max-height: 600px) {
                 ha-dialog {
-                  --dialog-surface-margin-top: 0px;
-                  --mdc-dialog-min-width: calc( 100vw - env(safe-area-inset-right) - env(safe-area-inset-left) );
-                  --mdc-dialog-max-width: calc( 100vw - env(safe-area-inset-right) - env(safe-area-inset-left) );
-                  --mdc-dialog-min-height: 100%;
-                  --mdc-dialog-max-height: 100%;
-                  --vertical-align-dialog: flex-end;
-                  --ha-dialog-border-radius: 0;
+                    --dialog-surface-margin-top: 0px;
+                    --mdc-dialog-min-width: calc(100vw - env(safe-area-inset-right) - env(safe-area-inset-left));
+                    --mdc-dialog-max-width: calc(100vw - env(safe-area-inset-right) - env(safe-area-inset-left));
+                    --mdc-dialog-min-height: 100%;
+                    --mdc-dialog-max-height: 100%;
+                    --vertical-align-dialog: flex-end;
+                    --ha-dialog-border-radius: 0;
                 }
             }
 
@@ -147,7 +138,9 @@ class SIPCallDialog extends LitElement {
                 color: var(--label-badge-red);
             }
 
-            .deny-button, .accept-button, .audio-button {
+            .deny-button,
+            .accept-button,
+            .audio-button {
                 --mdc-icon-button-size: 64px;
                 --mdc-icon-size: 32px;
             }
@@ -201,34 +194,34 @@ class SIPCallDialog extends LitElement {
                 videoElement.pause();
             }
         }
-    }
-    
+    };
+
     connectedCallback() {
         super.connectedCallback();
-        window.addEventListener('sipcore-update', this.updateHandler);
+        window.addEventListener("sipcore-update", this.updateHandler);
 
         if (this.config.auto_open !== false) {
-            window.addEventListener('sipcore-call-started', this.openPopup);
-            window.addEventListener('sipcore-call-ended', this.closePopup);
+            window.addEventListener("sipcore-call-started", this.openPopup);
+            window.addEventListener("sipcore-call-ended", this.closePopup);
         } else {
-            window.addEventListener('sipcore-call-started', this.updateHandler);
-            window.addEventListener('sipcore-call-ended', this.updateHandler);
+            window.addEventListener("sipcore-call-started", this.updateHandler);
+            window.addEventListener("sipcore-call-ended", this.updateHandler);
         }
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
-        window.removeEventListener('sipcore-update', this.updateHandler);
-        
+        window.removeEventListener("sipcore-update", this.updateHandler);
+
         if (this.config.auto_open !== false) {
-            window.removeEventListener('sipcore-call-started', this.openPopup);
-            window.removeEventListener('sipcore-call-ended', this.closePopup);
+            window.removeEventListener("sipcore-call-started", this.openPopup);
+            window.removeEventListener("sipcore-call-ended", this.closePopup);
         } else {
-            window.removeEventListener('sipcore-call-started', this.updateHandler);
-            window.removeEventListener('sipcore-call-ended', this.updateHandler);
+            window.removeEventListener("sipcore-call-started", this.updateHandler);
+            window.removeEventListener("sipcore-call-ended", this.updateHandler);
         }
     }
-    
+
     openPopup() {
         this.open = true;
         this.requestUpdate();
@@ -272,9 +265,13 @@ class SIPCallDialog extends LitElement {
                 break;
         }
 
-        if (sipCore.callState !== CALLSTATE.IDLE && sipCore.remoteExtension !== null && sipCore.remoteVideoStream === null) {
+        if (
+            sipCore.callState !== CALLSTATE.IDLE &&
+            sipCore.remoteExtension !== null &&
+            sipCore.remoteVideoStream === null
+        ) {
             camera = this.config.extensions[sipCore.remoteExtension]?.camera_entity || "";
-        if (!camera) {
+            if (!camera) {
                 if (sipCore.remoteAudioStream !== null) {
                     if (this.audioVisualizer === undefined) {
                         this.audioVisualizer = new AudioVisualizer(this.renderRoot, sipCore.remoteAudioStream, 16);
@@ -286,7 +283,10 @@ class SIPCallDialog extends LitElement {
         }
 
         return html`
-            <ha-dialog ?open=${this.configuratorOpen} @closed=${() => { this.configuratorOpen = false; if (!this.open) this.closePopup(); }} hideActions flexContent .heading=${true} data-domain="camera" ?large=${this.config.large}>
+            <ha-dialog ?open=${this.configuratorOpen} @closed=${() => {
+            this.configuratorOpen = false;
+            if (!this.open) this.closePopup();
+        }} hideActions flexContent .heading=${true} data-domain="camera" ?large=${this.config.large}>
                 <ha-dialog-header slot="heading">
                     <ha-icon-button-prev
                         slot="navigationIcon"
@@ -303,18 +303,28 @@ class SIPCallDialog extends LitElement {
                         fixedMenuPosition
                         icon
                         label=${"Audio Output"}
-                        .value="${sipCore.currentAudioOutputId}"
+                        .value="${sipCore.AudioOutputId || "null"}"
                         @selected=${this.handleAudioOutputChange}
-                        @closed="${(event: { stopPropagation: () => any; }) => event.stopPropagation()}">
-                        ${this.outputDevices.map((device) => html`
-                            <ha-list-item
-                                graphic="icon"
-                                .value="${device.deviceId}"
-                                ?selected=${sipCore.currentAudioOutputId === device.deviceId}>
-                                ${device.label}
-                                <ha-icon slot="graphic" .icon=${"mdi:headphones"}></ha-icon>
-                            </ha-list-item>
-                        `)}
+                        @closed="${(event: { stopPropagation: () => any }) => event.stopPropagation()}">
+                        <ha-list-item
+                            graphic="icon"
+                            .value="${"null"}"
+                            ?selected=${sipCore.AudioOutputId === null}>
+                            Default Output
+                            <ha-icon slot="graphic" .icon=${"mdi:headphones"}></ha-icon>
+                        </ha-list-item>
+                        ${this.outputDevices.map(
+                            (device) => html`
+                                <ha-list-item
+                                    graphic="icon"
+                                    .value="${device.deviceId}"
+                                    ?selected=${sipCore.AudioOutputId === device.deviceId}
+                                >
+                                    ${device.label}
+                                    <ha-icon slot="graphic" .icon=${"mdi:headphones"}></ha-icon>
+                                </ha-list-item>
+                            `,
+                        )}
                         <ha-icon slot="icon" .icon=${"mdi:headphones"}></ha-icon>
                     </ha-select>
                     <ha-select
@@ -322,26 +332,40 @@ class SIPCallDialog extends LitElement {
                         fixedMenuPosition
                         icon
                         label=${"Audio Input"}
-                        .value="${sipCore.currentAudioInputId}"
+                        .value="${sipCore.AudioInputId || "null"}"
                         @selected=${this.handleAudioInputChange}
-                        @closed="${(event: { stopPropagation: () => any; }) => event.stopPropagation()}">
-                        ${this.inputDevices.map((device) => html`
-                            <ha-list-item
-                                graphic="icon"
-                                .value="${device.deviceId}"
-                                ?selected=${sipCore.currentAudioInputId === device.deviceId}>
-                                ${device.label}
-                                <ha-icon slot="graphic" .icon=${"mdi:microphone"}></ha-icon>
-                            </ha-list-item>
-                        `)}
+                        @closed="${(event: { stopPropagation: () => any }) => event.stopPropagation()}">
+                        <ha-list-item
+                            graphic="icon"
+                            .value="${"null"}"
+                            ?selected=${sipCore.AudioInputId === null}>
+                            Default Input
+                            <ha-icon slot="graphic" .icon=${"mdi:microphone"}></ha-icon>
+                        </ha-list-item>
+                        ${this.inputDevices.map(
+                            (device) => html`
+                                <ha-list-item
+                                    graphic="icon"
+                                    .value="${device.deviceId}"
+                                    ?selected=${sipCore.AudioInputId === device.deviceId}
+                                >
+                                    ${device.label}
+                                    <ha-icon slot="graphic" .icon=${"mdi:microphone"}></ha-icon>
+                                </ha-list-item>
+                            `,
+                        )}
                         <ha-icon slot="icon" .icon=${"mdi:microphone"}></ha-icon>
                     </ha-select>
                     <ha-settings-row>
-                        <span slot="heading">Logged in as ${sipCore.user.ha_username} <span style="color: gray;">(${sipCore.user.extension})</span></span>
+                        <span slot="heading">Logged in as ${sipCore.user.ha_username} <span style="color: gray;">(${
+            sipCore.user.extension
+        })</span></span>
                         <span slot="description">The current user used to log in to the SIP server. You can configure users in the sip-config.json file</span> 
                     </ha-settings-row>
                     <ha-settings-row>
-                        <span slot="heading">Is ${sipCore.registered ? "registered" : "not registered"} <span style="color: gray;">(${sipCore.registered ? "true" : "false"})</span></span>
+                        <span slot="heading">Is ${
+                            sipCore.registered ? "registered" : "not registered"
+                        } <span style="color: gray;">(${sipCore.registered ? "true" : "false"})</span></span>
                         <span slot="description">The current registration status of the SIP client. If not registered, check browser console and Asterisk logs for more information</span>
                     </ha-settings-row>
                     <ha-settings-row>
@@ -355,7 +379,9 @@ class SIPCallDialog extends LitElement {
                 </div>
             </ha-dialog>
 
-            <ha-dialog ?open=${this.open} @closed=${this.closePopup} hideActions flexContent .heading=${true} data-domain="camera" ?large=${this.config.large}>
+            <ha-dialog ?open=${this.open} @closed=${
+            this.closePopup
+        } hideActions flexContent .heading=${true} data-domain="camera" ?large=${this.config.large}>
                 <ha-dialog-header slot="heading">
                     <ha-icon-button
                         dialogAction="cancel"
@@ -382,7 +408,7 @@ class SIPCallDialog extends LitElement {
                         menucorner="END"
                         slot="actionItems"
                         fixed
-                        @closed="${(event: { stopPropagation: () => any; }) => event.stopPropagation()}"
+                        @closed="${(event: { stopPropagation: () => any }) => event.stopPropagation()}"
                     >
                         <ha-icon-button
                             slot="trigger"
@@ -413,20 +439,32 @@ class SIPCallDialog extends LitElement {
                 </ha-dialog-header>
                 <div tabindex="-1" dialogInitialFocus>
                     <div class="content">
-                        <div id="audioVisualizer" style="display: ${sipCore.callState !== CALLSTATE.IDLE && !camera && sipCore.remoteVideoStream === null ? "block" : "none"}"></div>
-                        <video poster="noposter" style="display: ${sipCore.remoteVideoStream === null ? "none": "block"}" playsinline id="remoteVideo"></video>
-                        ${sipCore.callState === CALLSTATE.IDLE ? html`
-                            <div>
-                                <span>No active call</span>
-                            </div>
-                        ` : camera ? html`
-                            <ha-camera-stream
-                                allow-exoplayer
-                                muted
-                                .hass=${this.hass}
-                                .stateObj=${this.hass.states[camera]}
-                            ></ha-camera-stream>
-                        ` : ""}
+                        <div id="audioVisualizer" style="display: ${
+                            sipCore.callState !== CALLSTATE.IDLE && !camera && sipCore.remoteVideoStream === null
+                                ? "block"
+                                : "none"
+                        }"></div>
+                        <video poster="noposter" style="display: ${
+                            sipCore.remoteVideoStream === null ? "none" : "block"
+                        }" playsinline id="remoteVideo"></video>
+                        ${
+                            sipCore.callState === CALLSTATE.IDLE
+                                ? html`
+                                      <div>
+                                          <span>No active call</span>
+                                      </div>
+                                  `
+                                : camera
+                                ? html`
+                                      <ha-camera-stream
+                                          allow-exoplayer
+                                          muted
+                                          .hass=${this.hass}
+                                          .stateObj=${this.hass.states[camera]}
+                                      ></ha-camera-stream>
+                                  `
+                                : ""
+                        }
                     </div>
                     <div class="bottom-row">
                         <ha-icon-button
@@ -445,7 +483,8 @@ class SIPCallDialog extends LitElement {
                                             @click="${() => {
                                                 const { domain, service, ...service_data } = button.data;
                                                 this.hass.callService(domain, service, service_data);
-                                            }}">
+                                            }}"
+                                        >
                                             <ha-icon .icon=${button.icon}></ha-icon>
                                         </ha-icon-button>
                                     `;
@@ -456,7 +495,8 @@ class SIPCallDialog extends LitElement {
                                             label="${button.label}"
                                             @click="${() => {
                                                 sipCore.RTCSession?.sendDTMF(button.data);
-                                            }}">
+                                            }}"
+                                        >
                                             <ha-icon .icon=${button.icon}></ha-icon>
                                         </ha-icon-button>
                                     `;
@@ -470,13 +510,16 @@ class SIPCallDialog extends LitElement {
                                 ?disabled="${sipCore.RTCSession === null}"
                                 @click="${() => {
                                     if (sipCore.RTCSession?.isMuted().audio)
-                                        sipCore.RTCSession?.unmute({audio: true});
-                                    else
-                                        sipCore.RTCSession?.mute({audio: true});
+                                        sipCore.RTCSession?.unmute({ audio: true });
+                                    else sipCore.RTCSession?.mute({ audio: true });
                                     this.requestUpdate();
                                 }}">
                                 <ha-icon
-                                    .icon="${(sipCore.RTCSession !== null && sipCore.RTCSession?.isMuted().audio) ? "mdi:microphone-off" : "mdi:microphone"}"
+                                    .icon="${
+                                        sipCore.RTCSession !== null && sipCore.RTCSession?.isMuted().audio
+                                            ? "mdi:microphone-off"
+                                            : "mdi:microphone"
+                                    }"
                                 </ha-icon>
                             </ha-icon-button>
                             <ha-icon-button
@@ -486,13 +529,16 @@ class SIPCallDialog extends LitElement {
                                 ?disabled="${sipCore.RTCSession === null}"
                                 @click="${() => {
                                     if (sipCore.RTCSession?.isMuted().video)
-                                        sipCore.RTCSession?.unmute({video: true});
-                                    else
-                                        sipCore.RTCSession?.mute({video: true});
+                                        sipCore.RTCSession?.unmute({ video: true });
+                                    else sipCore.RTCSession?.mute({ video: true });
                                     this.requestUpdate();
                                 }}">
                                 <ha-icon
-                                    .icon="${(sipCore.RTCSession !== null && sipCore.RTCSession?.isMuted().video) ? "mdi:video-off" : "mdi:video"}"
+                                    .icon="${
+                                        sipCore.RTCSession !== null && sipCore.RTCSession?.isMuted().video
+                                            ? "mdi:video-off"
+                                            : "mdi:video"
+                                    }"
                                 ></ha-icon>
                             </ha-icon-button>
                         </div>
@@ -518,21 +564,20 @@ class SIPCallDialog extends LitElement {
 
     private handleAudioInputChange(event: Event) {
         const select = event.target as HTMLSelectElement;
-        const selectedDeviceId = select.value;
-        sipCore.setAudioDevice(selectedDeviceId, AUDIO_DEVICE_KIND.INPUT);
+        sipCore.AudioInputId = select.value === "null" ? null : select.value;
         this.requestUpdate();
     }
 
     private handleAudioOutputChange(event: Event) {
         const select = event.target as HTMLSelectElement;
-        const selectedDeviceId = select.value;
-        sipCore.setAudioDevice(selectedDeviceId, AUDIO_DEVICE_KIND.OUTPUT);
+        sipCore.AudioOutputId = select.value === "null" ? null : select.value;
         this.requestUpdate();
     }
 
     setupButton() {
         const homeAssistant = document.getElementsByTagName("home-assistant")[0];
-        const panel = homeAssistant?.shadowRoot?.querySelector("home-assistant-main")
+        const panel = homeAssistant?.shadowRoot
+            ?.querySelector("home-assistant-main")
             ?.shadowRoot?.querySelector("ha-panel-lovelace");
 
         if (panel === null) {
@@ -562,10 +607,10 @@ class SIPCallDialog extends LitElement {
 
         if (!this.buttonListenerActive) {
             this.buttonListenerActive = true;
-            window.addEventListener("location-changed", () => { 
+            window.addEventListener("location-changed", () => {
                 console.debug("View changed, setting up button again...");
                 this.setupButton();
             });
-        } 
+        }
     }
 }
