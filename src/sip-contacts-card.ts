@@ -1,17 +1,11 @@
-import {
-    LitElement,
-    html,
-    css,
-} from "lit";
+import { LitElement, html, css } from "lit";
 import { sipCore } from "./sip-core";
-
 
 declare global {
     interface Window {
         customCards?: Array<{ type: string; name: string; preview: boolean; description: string }>;
     }
 }
-
 
 interface Extension {
     name: string;
@@ -23,7 +17,6 @@ interface Extension {
     override_state: string | null;
 }
 
-
 interface SIPContactsCardConfig {
     extensions: { [key: string]: Extension };
     title: string;
@@ -31,9 +24,7 @@ interface SIPContactsCardConfig {
     state_color: boolean;
 }
 
-
 class SIPContactsCard extends LitElement {
-
     public hass: any;
     public config: SIPContactsCardConfig | undefined;
 
@@ -54,8 +45,8 @@ class SIPContactsCard extends LitElement {
                 height: 100px;
                 margin: 0 7px;
                 background: currentColor;
-                transform: scaleY( .5 );
-                opacity: .25;
+                transform: scaleY(0.5);
+                opacity: 0.25;
             }
 
             .wrapper {
@@ -74,7 +65,8 @@ class SIPContactsCard extends LitElement {
                 min-width: 0;
             }
 
-            .info, .info > * {
+            .info,
+            .info > * {
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
@@ -101,12 +93,12 @@ class SIPContactsCard extends LitElement {
 
     connectedCallback() {
         super.connectedCallback();
-        window.addEventListener('sipcore-update', () => this.requestUpdate());
+        window.addEventListener("sipcore-update", () => this.requestUpdate());
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
-        window.removeEventListener('sipcore-update', () => this.requestUpdate());
+        window.removeEventListener("sipcore-update", () => this.requestUpdate());
     }
 
     render() {
@@ -123,7 +115,7 @@ class SIPContactsCard extends LitElement {
                         const stateObj = this.hass.states[extension.status_entity || ""] || null;
                         if (extension.hidden) return;
                         if (isMe && this.config?.hide_me) return;
-                        const icon = stateObj ? extension.override_icon : (extension.override_icon || "mdi:account");
+                        const icon = stateObj ? extension.override_icon : extension.override_icon || "mdi:account";
                         if (extension.edit) {
                             return html`
                                 <div class="flex">
@@ -140,18 +132,23 @@ class SIPContactsCard extends LitElement {
                                         .inputmode="text"
                                         @keyup="${(e: KeyboardEvent) => {
                                             if (e.key === "Enter") {
-                                                var el = this.shadowRoot?.getElementById(`custom_${extension.name}`) as any;
+                                                var el = this.shadowRoot?.getElementById(
+                                                    `custom_${extension.name}`,
+                                                ) as any;
                                                 const customNumber = el.value;
-                                                sipCore.startCall(customNumber)
+                                                sipCore.startCall(customNumber);
                                             }
                                         }}"
                                         class="editField"
                                     ></ha-textfield>
-                                    <mwc-button @click="${() => {
-                                        var el = this.shadowRoot?.getElementById(`custom_${extension.name}`) as any;
-                                        const customNumber = el.value;
-                                        sipCore.startCall(customNumber)
-                                    }}">CALL</mwc-button>
+                                    <mwc-button
+                                        @click="${() => {
+                                            var el = this.shadowRoot?.getElementById(`custom_${extension.name}`) as any;
+                                            const customNumber = el.value;
+                                            sipCore.startCall(customNumber);
+                                        }}"
+                                        >CALL</mwc-button
+                                    >
                                 </div>
                             `;
                         } else {
@@ -192,9 +189,9 @@ class SIPContactsCard extends LitElement {
                 "102": {
                     name: "Doorbell",
                     override_icon: "mdi:doorbell",
-                }
+                },
             },
-        }
+        };
     }
 
     // The height of your card. Home Assistant uses this to automatically

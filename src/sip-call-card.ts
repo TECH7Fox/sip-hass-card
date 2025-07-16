@@ -1,19 +1,13 @@
-import {
-    LitElement,
-    html,
-    css,
-} from "lit";
+import { LitElement, html, css } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { sipCore, CALLSTATE } from "./sip-core";
 import { AudioVisualizer } from "./audio-visualizer";
-
 
 declare global {
     interface Window {
         customCards?: Array<{ type: string; name: string; preview: boolean; description: string }>;
     }
 }
-
 
 interface Extension {
     name: string;
@@ -25,12 +19,10 @@ interface Extension {
     override_state: string | null;
 }
 
-
 enum ButtonType {
     SERVICE_CALL,
     DTMF,
 }
-
 
 interface Button {
     label: string;
@@ -39,7 +31,6 @@ interface Button {
     data: any;
 }
 
-
 interface CallCardConfig {
     buttons: Button[];
     extensions: { [key: string]: Extension };
@@ -47,10 +38,8 @@ interface CallCardConfig {
     largeUI: boolean;
 }
 
-
 @customElement("sip-call-card")
 class SIPCallCard extends LitElement {
-    
     @property()
     public hass = sipCore.hass;
 
@@ -77,10 +66,10 @@ class SIPCallCard extends LitElement {
                 "102": {
                     name: "Doorbell",
                     override_icon: "mdi:doorbell",
-                }
+                },
             },
             buttons: [],
-        }
+        };
     }
 
     static get styles() {
@@ -121,8 +110,8 @@ class SIPCallCard extends LitElement {
                 height: 100px;
                 margin: 0 7px;
                 background: currentColor;
-                transform: scaleY( .5 );
-                opacity: .25;
+                transform: scaleY(0.5);
+                opacity: 0.25;
             }
 
             .placeholder {
@@ -140,10 +129,10 @@ class SIPCallCard extends LitElement {
                 left: 0px;
                 right: 0px;
                 bottom: 0px;
-                background-color: var(--ha-picture-card-background-color,rgba(0,0,0,.3));
+                background-color: var(--ha-picture-card-background-color, rgba(0, 0, 0, 0.3));
                 padding: 4px 8px;
                 font-size: 16px;
-                color: var(--ha-picture-card-text-color,#fff);
+                color: var(--ha-picture-card-text-color, #fff);
                 --mdc-icon-button-size: 40px;
             }
 
@@ -165,7 +154,7 @@ class SIPCallCard extends LitElement {
                 font-size: 24px;
                 --mdc-icon-button-size: 68px;
                 --mdc-icon-size: 42px;
-                padding: 14px 
+                padding: 14px;
             }
 
             .footer[large] span {
@@ -173,8 +162,6 @@ class SIPCallCard extends LitElement {
             }
         `;
     }
-
-
 
     updateHandler = (event: any) => {
         this.requestUpdate();
@@ -192,16 +179,16 @@ class SIPCallCard extends LitElement {
                 videoElement.pause();
             }
         }
-    }
-    
+    };
+
     connectedCallback() {
         super.connectedCallback();
-        window.addEventListener('sipcore-update', this.updateHandler);
+        window.addEventListener("sipcore-update", this.updateHandler);
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
-        window.removeEventListener('sipcore-update', this.updateHandler);
+        window.removeEventListener("sipcore-update", this.updateHandler);
     }
 
     render() {
@@ -237,9 +224,13 @@ class SIPCallCard extends LitElement {
                 break;
         }
 
-        if (sipCore.callState !== CALLSTATE.IDLE && sipCore.remoteExtension !== null && sipCore.remoteVideoStream === null) {
+        if (
+            sipCore.callState !== CALLSTATE.IDLE &&
+            sipCore.remoteExtension !== null &&
+            sipCore.remoteVideoStream === null
+        ) {
             camera = this.config?.extensions[sipCore.remoteExtension]?.camera_entity || "";
-        if (!camera) {
+            if (!camera) {
                 if (sipCore.remoteAudioStream !== null) {
                     if (this.audioVisualizer === undefined) {
                         this.audioVisualizer = new AudioVisualizer(this.renderRoot, sipCore.remoteAudioStream, 16);
@@ -252,21 +243,33 @@ class SIPCallCard extends LitElement {
 
         return html`
             <ha-card>
-                <div id="audioVisualizer" style="display: ${sipCore.callState !== CALLSTATE.IDLE && !camera && sipCore.remoteVideoStream === null ? "flex" : "none"}"></div>
-                <video poster="noposter" style="display: ${sipCore.remoteVideoStream === null ? "none": "block"}" playsinline id="remoteVideo"></video>
-                ${sipCore.callState === CALLSTATE.IDLE ? html`
-                    <div class="placeholder">
-                        <span>No active call</span>
-                    </div>
-                ` : camera ? html`
-                    <hui-image
-                        tabindex="0"
-                        .cameraImage=${camera}
-                        .hass=${this.hass}
-                        .cameraView=${"live"}
-                        .aspectRatio=${"16:9"}
-                    ></hui-image>
-                ` : ""}
+                <div id="audioVisualizer" style="display: ${
+                    sipCore.callState !== CALLSTATE.IDLE && !camera && sipCore.remoteVideoStream === null
+                        ? "flex"
+                        : "none"
+                }"></div>
+                <video poster="noposter" style="display: ${
+                    sipCore.remoteVideoStream === null ? "none" : "block"
+                }" playsinline id="remoteVideo"></video>
+                ${
+                    sipCore.callState === CALLSTATE.IDLE
+                        ? html`
+                              <div class="placeholder">
+                                  <span>No active call</span>
+                              </div>
+                          `
+                        : camera
+                        ? html`
+                              <hui-image
+                                  tabindex="0"
+                                  .cameraImage=${camera}
+                                  .hass=${this.hass}
+                                  .cameraView=${"live"}
+                                  .aspectRatio=${"16:9"}
+                              ></hui-image>
+                          `
+                        : ""
+                }
                 <div ?large=${this.config?.largeUI} class="footer both">
                     <div>
                         <ha-icon-button
@@ -287,7 +290,8 @@ class SIPCallCard extends LitElement {
                                         @click="${() => {
                                             const { domain, service, ...service_data } = button.data;
                                             this.hass.callService(domain, service, service_data);
-                                        }}">
+                                        }}"
+                                    >
                                         <ha-icon .icon=${button.icon}></ha-icon>
                                     </ha-icon-button>
                                 `;
@@ -298,7 +302,8 @@ class SIPCallCard extends LitElement {
                                         label="${button.label}"
                                         @click="${() => {
                                             sipCore.RTCSession?.sendDTMF(button.data);
-                                        }}">
+                                        }}"
+                                    >
                                         <ha-icon .icon=${button.icon}></ha-icon>
                                     </ha-icon-button>
                                 `;
@@ -311,14 +316,16 @@ class SIPCallCard extends LitElement {
                             label="Mute audio"
                             ?disabled="${sipCore.RTCSession === null}"
                             @click="${() => {
-                                if (sipCore.RTCSession?.isMuted().audio)
-                                    sipCore.RTCSession?.unmute({audio: true});
-                                else
-                                    sipCore.RTCSession?.mute({audio: true});
+                                if (sipCore.RTCSession?.isMuted().audio) sipCore.RTCSession?.unmute({ audio: true });
+                                else sipCore.RTCSession?.mute({ audio: true });
                                 this.requestUpdate();
                             }}">
                             <ha-icon
-                                .icon="${(sipCore.RTCSession !== null && sipCore.RTCSession?.isMuted().audio) ? "mdi:microphone-off" : "mdi:microphone"}"
+                                .icon="${
+                                    sipCore.RTCSession !== null && sipCore.RTCSession?.isMuted().audio
+                                        ? "mdi:microphone-off"
+                                        : "mdi:microphone"
+                                }"
                             </ha-icon>
                         </ha-icon-button>
                         <ha-icon-button
@@ -327,14 +334,16 @@ class SIPCallCard extends LitElement {
                             style="display: ${sipCore.config.sip_video ? "block" : "none"}"
                             ?disabled="${sipCore.RTCSession === null}"
                             @click="${() => {
-                                if (sipCore.RTCSession?.isMuted().video)
-                                    sipCore.RTCSession?.unmute({video: true});
-                                else
-                                    sipCore.RTCSession?.mute({video: true});
+                                if (sipCore.RTCSession?.isMuted().video) sipCore.RTCSession?.unmute({ video: true });
+                                else sipCore.RTCSession?.mute({ video: true });
                                 this.requestUpdate();
                             }}">
                             <ha-icon
-                                .icon="${(sipCore.RTCSession !== null && sipCore.RTCSession?.isMuted().video) ? "mdi:video-off" : "mdi:video"}"
+                                .icon="${
+                                    sipCore.RTCSession !== null && sipCore.RTCSession?.isMuted().video
+                                        ? "mdi:video-off"
+                                        : "mdi:video"
+                                }"
                             ></ha-icon>
                         </ha-icon-button>
                     </div>
@@ -352,7 +361,6 @@ class SIPCallCard extends LitElement {
         `;
     }
 }
-
 
 window.customCards = window.customCards || [];
 window.customCards.push({

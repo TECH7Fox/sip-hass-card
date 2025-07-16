@@ -31,5 +31,14 @@
   "dependencies": {
     "jssip": "^3.9.0",
     "lit": "^2.8.0"
+  },
+  "prettier": {
+    "singleQuote": false,
+    "semi": true,
+    "trailingComma": "all",
+    "printWidth": 120,
+    "tabWidth": 4,
+    "useTabs": false,
+    "bracketSpacing": true
   }
 }

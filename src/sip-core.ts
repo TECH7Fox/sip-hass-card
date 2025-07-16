@@ -1,19 +1,13 @@
 import { UA, WebSocketInterface } from "jssip/lib/JsSIP";
 import { RTCSessionEvent, CallOptions } from "jssip/lib/UA";
-import {
-    EndEvent,
-    PeerConnectionEvent,
-    IncomingEvent,
-    IceCandidateEvent,
-    RTCSession,
-} from "jssip/lib/RTCSession";
+import { EndEvent, PeerConnectionEvent, IncomingEvent, IceCandidateEvent, RTCSession } from "jssip/lib/RTCSession";
 
 const version = "4.0.5";
 
 console.info(
     `%c SIP-CORE %c ${version} `,
     "color: white; background: dodgerblue; font-weight: 700;",
-    "color: dodgerblue; background: white; font-weight: 700;"
+    "color: dodgerblue; background: white; font-weight: 700;",
 );
 
 /** Enum representing the various states of a SIP call */
@@ -58,18 +52,18 @@ export interface SIPCoreConfig {
     auto_answer: boolean;
     popup_config: Object | null;
     popup_override_component: string | null;
-    /** 
+    /**
      * Whether to use video in SIP calls.
      * @experimental
-    */
+     */
     sip_video: boolean;
     pbx_server: string;
     /**
      * Custom WebSocket URL to use when ingress is not setup
-     * 
+     *
      * @example
      * "wss://sip.example.com/ws"
-    */
+     */
     custom_wss_url: string;
 }
 
@@ -81,15 +75,15 @@ export class SIPCore {
     /**
      * The JSSIP User Agent instance
      * @see {@link https://jssip.net/documentation/3.1.x/api/ua/}
-    */
+     */
     public ua: UA;
-    
+
     /**
      * The current RTC session, if available
      * @see {@link https://jssip.net/documentation/3.1.x/api/session/}
-    */
+     */
     public RTCSession: RTCSession | null = null;
-    
+
     public version: string = version;
     public hass: any;
     public user: User;
@@ -120,19 +114,14 @@ export class SIPCore {
         this.hass = (homeAssistant as any).hass;
 
         // ring tones
-        this.incomingAudio = this.config.incomingRingtoneUrl
-            ? new Audio(this.config.incomingRingtoneUrl)
-            : null;
-        this.outgoingAudio = this.config.outgoingRingtoneUrl
-            ? new Audio(this.config.outgoingRingtoneUrl)
-            : null;
+        this.incomingAudio = this.config.incomingRingtoneUrl ? new Audio(this.config.incomingRingtoneUrl) : null;
+        this.outgoingAudio = this.config.outgoingRingtoneUrl ? new Audio(this.config.outgoingRingtoneUrl) : null;
 
         this.incomingAudio && (this.incomingAudio.loop = true);
         this.incomingAudio && (this.incomingAudio.loop = true);
 
         // Determine websocket URL
-        const ingressEntry =
-            this.hass.states["text.asterisk_addon_ingress_entry"]?.state;
+        const ingressEntry = this.hass.states["text.asterisk_addon_ingress_entry"]?.state;
         if (ingressEntry) {
             const wssProtocol = window.location.protocol == "https:" ? "wss" : "ws";
             this.wssUrl = `${wssProtocol}://${window.location.host}${ingressEntry}/ws`;
@@ -144,18 +133,13 @@ export class SIPCore {
 
         // Get current user
         this.user =
-            this.config.users.find(
-                (user) => user.ha_username === this.hass.user.name
-            ) || this.config.backup_user;
+            this.config.users.find((user) => user.ha_username === this.hass.user.name) || this.config.backup_user;
 
-        console.info(
-            `Selected user: ${this.user.ha_username} (${this.user.extension})`
-        );
+        console.info(`Selected user: ${this.user.ha_username} (${this.user.extension})`);
 
         // Bind event handlers
         this.handleRemoteTrackEvent = this.handleRemoteTrackEvent.bind(this);
-        this.handleIceGatheringStateChangeEvent =
-            this.handleIceGatheringStateChangeEvent.bind(this);
+        this.handleIceGatheringStateChangeEvent = this.handleIceGatheringStateChangeEvent.bind(this);
 
         this.ua = this.setupUA();
     }
@@ -167,11 +151,7 @@ export class SIPCore {
 
     /** Returns the remote display name if available, otherwise the extension. Returns `null` if not in a call */
     get remoteName(): string | null {
-        return (
-            this.RTCSession?.remote_identity.display_name ||
-            this.RTCSession?.remote_identity.uri.user ||
-            null
-        );
+        return this.RTCSession?.remote_identity.display_name || this.RTCSession?.remote_identity.uri.user || null;
     }
 
     get registered(): boolean {
@@ -189,8 +169,7 @@ export class SIPCore {
                     },
                     video: this.config.sip_video,
                 });
-            }
-            catch (err) {
+            } catch (err) {
                 console.error(`Error getting audio input: ${err}`);
                 micStream = undefined;
             }
@@ -226,9 +205,7 @@ export class SIPCore {
         } else if (this.RTCSession?.connection?.connectionState === "connecting") {
             return CALLSTATE.CONNECTING;
         } else if (this.RTCSession?.isInProgress()) {
-            return this.RTCSession?.direction === "incoming"
-                ? CALLSTATE.INCOMING
-                : CALLSTATE.OUTGOING;
+            return this.RTCSession?.direction === "incoming" ? CALLSTATE.INCOMING : CALLSTATE.OUTGOING;
         }
         return CALLSTATE.IDLE;
     }
@@ -236,9 +213,7 @@ export class SIPCore {
     /** Returns call duration in format `0:00` */
     get callDuration(): string {
         if (this.RTCSession?.start_time) {
-            var delta = Math.floor(
-                (Date.now() - this.RTCSession.start_time.getTime()) / 1000
-            );
+            var delta = Math.floor((Date.now() - this.RTCSession.start_time.getTime()) / 1000);
             var minutes = Math.floor(delta / 60);
             var seconds = delta % 60;
             return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
@@ -273,16 +248,15 @@ export class SIPCore {
     }
 
     private async setupAudio() {
-        let audioElement = document.createElement('audio') as any;
-        audioElement.id = 'remoteAudio';
+        let audioElement = document.createElement("audio") as any;
+        audioElement.id = "remoteAudio";
         audioElement.autoplay = true;
-        audioElement.style.display = 'none';
+        audioElement.style.display = "none";
         document.body.appendChild(audioElement);
     }
 
     private setupPopup() {
-        let POPUP_COMPONENT =
-            this.config.popup_override_component || "sip-call-dialog";
+        let POPUP_COMPONENT = this.config.popup_override_component || "sip-call-dialog";
         if (document.getElementsByTagName(POPUP_COMPONENT).length < 1) {
             document.body.appendChild(document.createElement(POPUP_COMPONENT));
         }
@@ -313,9 +287,7 @@ export class SIPCore {
         this.triggerUpdate();
 
         // autocall if set
-        const autocall_extension = new URLSearchParams(window.location.search).get(
-            "call"
-        );
+        const autocall_extension = new URLSearchParams(window.location.search).get("call");
         if (autocall_extension) {
             console.info(`Autocalling ${autocall_extension}...`);
             this.startCall(autocall_extension);
@@ -393,8 +365,7 @@ export class SIPCore {
         const socket = new WebSocketInterface(this.wssUrl);
         const ua = new UA({
             sockets: [socket],
-            uri: `${this.user.extension}@${this.config.pbx_server || window.location.host
-                }`,
+            uri: `${this.user.extension}@${this.config.pbx_server || window.location.host}`,
             authorization_user: this.user.extension,
             display_name: this.user.display_name || this.user.ha_username,
             password: this.user.password,
@@ -497,13 +468,10 @@ export class SIPCore {
                     e.session.on("peerconnection", (e: PeerConnectionEvent) => {
                         console.info("Incoming call peer connection established");
 
-                        e.peerconnection.addEventListener(
-                            "track",
-                            this.handleRemoteTrackEvent
-                        );
+                        e.peerconnection.addEventListener("track", this.handleRemoteTrackEvent);
                         e.peerconnection.addEventListener(
                             "icegatheringstatechange",
-                            this.handleIceGatheringStateChangeEvent
+                            this.handleIceGatheringStateChangeEvent,
                         );
                     });
 
@@ -518,13 +486,10 @@ export class SIPCore {
                     this.playOutgoingTone();
                     this.triggerUpdate();
 
-                    e.session.connection.addEventListener(
-                        "track",
-                        this.handleRemoteTrackEvent
-                    );
+                    e.session.connection.addEventListener("track", this.handleRemoteTrackEvent);
                     e.session.connection.addEventListener(
                         "icegatheringstatechange",
-                        this.handleIceGatheringStateChangeEvent
+                        this.handleIceGatheringStateChangeEvent,
                     );
                     break;
             }
@@ -545,9 +510,7 @@ export class SIPCore {
     private async handleRemoteTrackEvent(e: RTCTrackEvent) {
         let stream: MediaStream | null = null;
         if (e.streams.length > 0) {
-            console.debug(
-                `Received remote streams amount: ${e.streams.length}. Using first stream...`
-            );
+            console.debug(`Received remote streams amount: ${e.streams.length}. Using first stream...`);
             stream = e.streams[0];
         } else {
             console.debug("No associated streams. Creating new stream...");
@@ -576,13 +539,14 @@ export class SIPCore {
 
     // borrowed from https://github.com/lovelylain/ha-addon-iframe-card/blob/main/src/hassio-ingress.ts
     private setIngressCookie(session: string): string {
-        document.cookie = `ingress_session=${session};path=/api/hassio_ingress/;SameSite=Strict${location.protocol === "https:" ? ";Secure" : ""
-            }`;
+        document.cookie = `ingress_session=${session};path=/api/hassio_ingress/;SameSite=Strict${
+            location.protocol === "https:" ? ";Secure" : ""
+        }`;
         return session;
     }
 
     private async createHassioSession(): Promise<string> {
-        const resp: { session: string; } = await this.hass.callWS({
+        const resp: { session: string } = await this.hass.callWS({
             type: "supervisor/api",
             endpoint: "/ingress/session",
             method: "post",
