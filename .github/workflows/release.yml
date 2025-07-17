@@ -9,7 +9,9 @@ jobs:
     name: Prepare release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.PAT }}
       - name: Update version
         run: |
           npm version ${{ github.event.release.tag_name }} --no-git-tag-version
