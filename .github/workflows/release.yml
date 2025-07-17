@@ -17,6 +17,7 @@ jobs:
         with:
           default_author: github_actions
           message: 'Bump version to ${{ github.event.release.tag_name }}'
+          push: origin HEAD:main
       - name: Build the file
         run: |
           cd /home/runner/work/sip-hass-card/sip-hass-card/
