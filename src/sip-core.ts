@@ -1,8 +1,9 @@
 import { UA, WebSocketInterface } from "jssip/lib/JsSIP";
 import { RTCSessionEvent, CallOptions } from "jssip/lib/UA";
 import { EndEvent, PeerConnectionEvent, IncomingEvent, IceCandidateEvent, RTCSession } from "jssip/lib/RTCSession";
+import pjson from "../package.json";
 
-const version = "4.0.5";
+const version = pjson.version;
 
 console.info(
     `%c SIP-CORE %c ${version} `,

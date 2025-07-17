@@ -397,7 +397,9 @@ class SIPCallDialog extends LitElement {
                         dialogAction="settings"
                         slot="actionItems"
                         label="Settings"
-                        @click="${() => {
+                        @click="${async () => {
+                            this.outputDevices = await sipCore.getAudioDevices(AUDIO_DEVICE_KIND.OUTPUT);
+                            this.inputDevices = await sipCore.getAudioDevices(AUDIO_DEVICE_KIND.INPUT);
                             this.configuratorOpen = true;
                             this.requestUpdate();
                         }}">
@@ -558,8 +560,7 @@ class SIPCallDialog extends LitElement {
     }
 
     async firstUpdated() {
-        this.outputDevices = await sipCore.getAudioDevices(AUDIO_DEVICE_KIND.OUTPUT);
-        this.inputDevices = await sipCore.getAudioDevices(AUDIO_DEVICE_KIND.INPUT);
+
     }
 
     private handleAudioInputChange(event: Event) {
