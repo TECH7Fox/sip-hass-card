@@ -31,6 +31,8 @@
     ],
     "sip_video": false,
     "auto_answer": false,
+    "microphone_mute_on_incoming": false,
+    "microphone_mute_on_outgoing": false,
     "popup_config": {
         "auto_open": true,
         "large": false,
