@@ -301,12 +301,19 @@ export class SIPCore {
         request.send(null);
 
         if (request.status === 200) {
-            const config: SIPCoreConfig = JSON.parse(request.responseText);
-            console.debug("SIP-Core Config fetched:", config);
-            return config;
-        } else {
-            throw new Error(`Failed to fetch config: ${request.statusText}`);
+            try {
+                const config: SIPCoreConfig = JSON.parse(request.responseText);
+                console.debug("SIP-Core Config fetched:", config);
+                return config;
+            } catch (error) {
+                console.error(
+                    "Invalid SIP-Core configuration format! Please check your JSON with https://jsonlint.com/",
+                );
+                throw error;
+            }
         }
+        console.error("No SIP-Core config found at /config/www/sip-config.json!");
+        throw new Error(`Failed to fetch sip-config.json: ${request.statusText}`);
     }
 
     playIncomingRingtone(): void {
