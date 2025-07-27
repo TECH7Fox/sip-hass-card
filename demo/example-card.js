@@ -1,4 +1,4 @@
-import { LitElement, html, css } from "https://esm.run/lit-html@1";
+import { LitElement, html, css } from "https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js";
 
 class ExampleCard extends LitElement {
     sipCore;
@@ -26,6 +26,9 @@ class ExampleCard extends LitElement {
     `;
 
     connectedCallback() {
+        if (window.sipCore) {
+            this.sipCore = window.sipCore;
+        }
         super.connectedCallback();
         window.addEventListener("sipcore-update", this.updateHandler);
     }
