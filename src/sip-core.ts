@@ -131,6 +131,7 @@ export class SIPCore {
         } else {
             throw new Error("No ingress entry or custom WSS URL provided");
         }
+        console.debug(`Using WebSocket URL: ${this.wssUrl}`);
 
         // Bind event handlers
         this.handleRemoteTrackEvent = this.handleRemoteTrackEvent.bind(this);
@@ -154,7 +155,7 @@ export class SIPCore {
     private async callOptions(): Promise<CallOptions> {
         let micStream: MediaStream | undefined = undefined;
         if (this.AudioInputId !== null) {
-            console.info(`Using audio input device: ${this.AudioInputId}`);
+            console.debug(`Using audio input device: ${this.AudioInputId}`);
             try {
                 micStream = await navigator.mediaDevices.getUserMedia({
                     audio: {
@@ -273,7 +274,7 @@ export class SIPCore {
         await this.setupAudio();
         await this.setupUser();
 
-        console.info(`Connecting to ${this.wssUrl}...`);
+        console.debug(`Connecting to ${this.wssUrl}...`);
         this.ua.start();
         if (this.config.popup_config !== null) {
             this.setupPopup();
@@ -559,13 +560,22 @@ export class SIPCore {
         return session;
     }
 
-    private async createHassioSession(): Promise<string> {
-        const resp: { session: string } = await this.hass.callWS({
-            type: "supervisor/api",
-            endpoint: "/ingress/session",
-            method: "post",
-        });
-        return this.setIngressCookie(resp.session);
+    private async createHassioSession(): Promise<void> {
+        try {
+            const resp: { session: string } = await this.hass.callWS({
+                type: "supervisor/api",
+                endpoint: "/ingress/session",
+                method: "post",
+            });
+            this.setIngressCookie(resp.session);
+        } catch (error) {
+            if ((error as any)?.code === "unknown_command") {
+                console.info("Home Assistant Supervisor API not available. Assuming not running on Home Assistant OS.");
+            } else {
+                console.error("Error creating Hass.io session:", error);
+                throw error;
+            }
+        }
     }
 
     private async validateHassioSession(session: string) {
