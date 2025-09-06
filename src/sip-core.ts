@@ -77,7 +77,7 @@ export class SIPCore {
      * The JSSIP User Agent instance
      * @see {@link https://jssip.net/documentation/3.1.x/api/ua/}
      */
-    public ua: UA;
+    public ua!: UA;
 
     /**
      * The current RTC session, if available
@@ -87,7 +87,7 @@ export class SIPCore {
 
     public version: string = version;
     public hass: any;
-    public user: User;
+    public user!: User;
     public config: SIPCoreConfig;
 
     private heartBeatHandle: NodeJS.Timeout | null = null;
@@ -132,17 +132,9 @@ export class SIPCore {
             throw new Error("No ingress entry or custom WSS URL provided");
         }
 
-        // Get current user
-        this.user =
-            this.config.users.find((user) => user.ha_username === this.hass.user.name) || this.config.backup_user;
-
-        console.info(`Selected user: ${this.user.ha_username} (${this.user.extension})`);
-
         // Bind event handlers
         this.handleRemoteTrackEvent = this.handleRemoteTrackEvent.bind(this);
         this.handleIceGatheringStateChangeEvent = this.handleIceGatheringStateChangeEvent.bind(this);
-
-        this.ua = this.setupUA();
     }
 
     /** Returns the remote extension. Returns `null` if not in a call */
@@ -279,6 +271,7 @@ export class SIPCore {
     async init() {
         await this.createHassioSession();
         await this.setupAudio();
+        await this.setupUser();
 
         console.info(`Connecting to ${this.wssUrl}...`);
         this.ua.start();
@@ -293,6 +286,19 @@ export class SIPCore {
             console.info(`Autocalling ${autocall_extension}...`);
             this.startCall(autocall_extension);
         }
+    }
+
+    private async setupUser(): Promise<void> {
+        try {
+            const persons = await this.hass.callWS({ type: "person/list" });
+            const currentUsername = persons.storage.find((person: any) => person.user_id === this.hass.user.id).id;
+            this.user = this.config.users.find((user) => user.ha_username === currentUsername) || this.config.backup_user;
+        } catch (error) {
+            console.error("Error fetching persons from Home Assistant:", error);
+            this.user = this.config.backup_user;
+        }
+        console.info(`Selected user: ${this.user.ha_username} (${this.user.extension})`);
+        this.ua = this.setupUA();
     }
 
     private fetchConfig(): SIPCoreConfig {
@@ -586,7 +592,7 @@ export class SIPCore {
 
 /** @hidden */
 const sipCore = new SIPCore();
-sipCore.init().catch((error) => {
+await sipCore.init().catch((error) => {
     console.error("Error initializing SIP Core:", error);
 });
 (window as any).sipCore = sipCore;
