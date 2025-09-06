@@ -424,7 +424,7 @@ export class SIPCore {
             console.debug(`New RTC Session: ${e.originator}`);
 
             if (this.RTCSession !== null) {
-                console.info("Terminating new RTC session");
+                console.debug("Terminating new RTC session");
                 e.session.terminate();
                 return;
             }
@@ -481,7 +481,7 @@ export class SIPCore {
                     this.playIncomingRingtone();
 
                     e.session.on("peerconnection", (e: PeerConnectionEvent) => {
-                        console.info("Incoming call peer connection established");
+                        console.debug("Incoming call peer connection established");
 
                         e.peerconnection.addEventListener("track", this.handleRemoteTrackEvent);
                         e.peerconnection.addEventListener(
@@ -515,7 +515,7 @@ export class SIPCore {
     private handleIceGatheringStateChangeEvent(e: any) {
         console.debug("ICE gathering state changed:", e.target?.iceGatheringState);
         if (e.target?.iceGatheringState === "complete") {
-            console.info("ICE gathering complete");
+            console.debug("ICE gathering complete");
             if (this.iceCandidateTimeout != null) {
                 clearTimeout(this.iceCandidateTimeout);
             }
@@ -545,7 +545,7 @@ export class SIPCore {
         }
 
         if (e.track.kind === "video") {
-            console.info("Received remote video track");
+            console.debug("Received remote video track");
             this.remoteVideoStream = stream;
         }
 

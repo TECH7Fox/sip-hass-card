@@ -141,13 +141,16 @@ class SIPContactsCard extends LitElement {
                                         }}"
                                         class="editField"
                                     ></ha-textfield>
-                                    <mwc-button
+                                    <ha-button
                                         @click="${() => {
                                             var el = this.shadowRoot?.getElementById(`custom_${extension.name}`) as any;
                                             const customNumber = el.value;
                                             sipCore.startCall(customNumber);
                                         }}"
-                                        >CALL</mwc-button
+                                        appearance="plain"
+                                        size="small"
+                                        variant="brand"
+                                        >CALL</ha-button
                                     >
                                 </div>
                             `;
@@ -160,7 +163,12 @@ class SIPContactsCard extends LitElement {
                                         .stateColor=${this.config?.state_color}
                                     ></state-badge>
                                     <div class="info">${extension.name}</div>
-                                    <mwc-button @click="${() => sipCore.startCall(number)}">CALL</mwc-button>
+                                    <ha-button
+                                        @click="${() => sipCore.startCall(number)}"
+                                        appearance="plain"
+                                        size="small"
+                                        variant="brand"
+                                    >CALL</ha-button>
                                 </div>
                             `;
                         }
