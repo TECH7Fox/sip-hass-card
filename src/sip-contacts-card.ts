@@ -53,6 +53,7 @@ class SIPContactsCard extends LitElement {
                 padding: 8px;
                 padding-top: 0px;
                 padding-bottom: 2px;
+                margin-top: -16px;
             }
 
             .flex {
