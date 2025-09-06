@@ -1,6 +1,6 @@
 {
   "name": "ha-sip",
-  "version": "4.1.4",
+  "version": "4.1.5",
   "description": "A SIP client inside home assistant!",
   "main": "sipjs-card.js",
   "scripts": {
