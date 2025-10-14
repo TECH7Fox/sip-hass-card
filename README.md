@@ -46,6 +46,17 @@ set your ringtones to play when calling/being called.
 ### Auto Call
 You can put `?call=<number>` behind the URL to auto call that number when the card loads. Useful for notifications.
 
+### Hide Header Button
+You can hide the "Open Call Popup" button that appears in the Home Assistant header by setting `hide_header_button: true` in your `/config/www/sip-config.json` file under `popup_config`. This is useful if you want a cleaner header, especially on mobile devices.
+
+Example:
+```json
+"popup_config": {
+    "hide_header_button": true,
+    ...
+}
+```
+
 ### Ice Options
 You can set ICE options for external use. These settings are not (yet) configurable with the card editor, so you will
 need to set them in the code editor. Don't set `iceConfig` if you don't want to use ICE.
