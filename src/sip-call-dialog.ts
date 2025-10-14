@@ -26,6 +26,7 @@ interface PopupConfig {
     extensions: { [key: string]: Extension };
     large: boolean | undefined;
     auto_open: boolean;
+    hide_header_button?: boolean;
 }
 
 @customElement("sip-call-dialog")
@@ -576,6 +577,12 @@ class SIPCallDialog extends LitElement {
     }
 
     setupButton() {
+        // Check if the header button should be hidden
+        if (this.config.hide_header_button === true) {
+            console.debug("Header button is disabled by configuration");
+            return;
+        }
+
         const homeAssistant = document.getElementsByTagName("home-assistant")[0];
         const panel = homeAssistant?.shadowRoot
             ?.querySelector("home-assistant-main")
