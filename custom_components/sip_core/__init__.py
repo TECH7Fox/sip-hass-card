@@ -37,7 +37,17 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
                 url_path=JS_URL_PATH,
                 path=Path(__file__).parent / "www" / JS_FILENAME,
                 cache_headers=True,
-            )
+            ),
+            StaticPathConfig(
+                url_path="/sip_core_files/ringback-tone.mp3",
+                path=Path(__file__).parent / "www" / "ringback-tone.mp3",
+                cache_headers=True,
+            ),
+            StaticPathConfig(
+                url_path="/sip_core_files/ring-tone.mp3",
+                path=Path(__file__).parent / "www" / "ring-tone.mp3",
+                cache_headers=True,
+            ),
         ]
     )
 

@@ -10,8 +10,8 @@ sip_config = {
         ],
         "rtcpMuxPolicy": "require"
     },
-    "outgoingRingtoneUrl": "/local/ring-tones/ring-tone.mp3",
-    "incomingRingtoneUrl": "/local/ring-tones/calling-tone.mp3",
+    "outgoingRingtoneUrl": "/sip_core_files/ringback-tone.mp3",
+    "incomingRingtoneUrl": "/sip_core_files/ring-tone.mp3",
     "backup_user": {
         "ha_username": "tech7fox",
         "extension": "100",
