@@ -12,6 +12,7 @@ from homeassistant.components.hassio.const import DOMAIN as HASSIO_DOMAIN
 from homeassistant.components.hassio.handler import HassIO, get_supervisor_client
 from homeassistant.components.lovelace
 from homeassistant.helpers.http import HomeAssistantView
+from homeassistant.config_entries import ConfigEntry, ConfigError
 from homeassistant.components.lovelace.const import (
     CONF_RESOURCE_TYPE_WS,
     DOMAIN as LL_DOMAIN,
@@ -20,7 +21,7 @@ from .const import DOMAIN, JS_FILENAME, JS_URL_PATH
 
 logger = logging.getLogger(__name__)
 
-async def async_setup(hass: HomeAssistant, config: dict) -> bool:
+async def async_setup(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     """Set up the SIP Core component."""
 
     logger.info("Registering SIP Core HTTP views")
@@ -28,7 +29,12 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     hass.http.register_view(AsteriskIngressView())
 
     logger.info("Setting up SIP Core component")
-    hass.data.setdefault(DOMAIN, {})
+    hass.data.setdefault(DOMAIN, {
+        "data": config_entry.data,
+        "options": config_entry.options,
+        "entry_id": config_entry.entry_id,
+    })
+
     await hass.http.async_register_static_paths(
         [
             StaticPathConfig(
@@ -82,12 +88,9 @@ class SipCoreConfigView(HomeAssistantView):
 
     async def get(self, request: Request):
         """Handle GET request."""
-        hass = request.app["hass"]
-        config_data = {
-            "example_setting": "test",
-            "another_setting": 123,
-        }
-        return self.json(config_data)
+        hass: HomeAssistant = request.app["hass"]
+        sip_core_data = hass.data.get(DOMAIN, {})
+        return self.json(sip_core_data)
 
 
 class AsteriskIngressView(HomeAssistantView):

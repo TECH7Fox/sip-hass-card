@@ -18,6 +18,6 @@ module.exports = {
   },
   output: {
     filename: 'sipjs-card.js',
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, 'custom_components', 'sip-core', 'www'),
   },
 };

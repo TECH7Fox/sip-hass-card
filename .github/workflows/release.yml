@@ -17,6 +17,7 @@ jobs:
       - name: Update version
         run: |
           npm version ${{ github.event.release.tag_name }} --no-git-tag-version
+          sed -i "s/\"version\": \".*\"/\"version\": \"${{ github.event.release.tag_name }}\"/" custom_components/sip-core/manifest.json
       - uses: EndBug/add-and-commit@v9
         with:
           default_author: github_actions
@@ -24,14 +25,17 @@ jobs:
           push: origin HEAD:main
       - name: Build the file
         run: |
-          cd /home/runner/work/sip-hass-card/sip-hass-card/
           npm ci
           npm run build
+      - name: Create release zip
+        run: |
+          cd ${{ github.workspace }}/custom_components/sip-core
+          zip sip-core -r ./
       - name: Upload files to release
         uses: svenstaro/upload-release-action@v1-release
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: /home/runner/work/sip-hass-card/sip-hass-card/dist/*.js
+          file: ${{ github.workspace }}/custom_components/sip-core/sip-core.zip
           tag: ${{ github.ref }}
           overwrite: true
           file_glob: true

@@ -1,0 +1,36 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up SIP Core",
+        "description": "Configure your SIP Core integration. For detailed setup instructions, visit [the documentation]({docs_url}).",
+        "data": {
+          "pbx_server": "PBX Server Address",
+          "custom_wss_url": "Custom WebSocket URL (optional)",
+          "auto_answer": "Auto Answer Calls",
+          "sip_video": "Enable Video Calling"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to PBX server",
+      "invalid_auth": "Invalid authentication",
+      "unknown": "Unexpected error occurred"
+    },
+    "abort": {
+      "already_configured": "SIP Core is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "SIP Core Options",
+        "description": "Configure SIP Core behavior",
+        "data": {
+          "auto_answer": "Auto Answer Incoming Calls",
+          "sip_video": "Enable Video Calling"
+        }
+      }
+    }
+  }
+}
