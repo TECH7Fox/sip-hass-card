@@ -1,10 +1,9 @@
 {
-    "domain": "sip-core",
+    "domain": "sip_core",
     "name": "SIP Core",
     "after_dependencies": [
         "frontend",
         "lovelace",
-        "hacs",
         "hassio"
     ],
     "codeowners": [

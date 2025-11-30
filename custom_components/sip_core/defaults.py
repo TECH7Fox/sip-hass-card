@@ -1,4 +1,4 @@
-{
+sip_config = {
     "ice_config": {
         "iceGatheringTimeout": 1000,
         "iceCandidatePoolSize": 0,
@@ -29,12 +29,12 @@
             "password": "w8woord"
         }
     ],
-    "sip_video": false,
-    "auto_answer": false,
+    "sip_video": False,
+    "auto_answer": False,
     "popup_config": {
-        "auto_open": true,
-        "large": false,
-        "hide_header_button": false,
+        "auto_open": True,
+        "large": False,
+        "hide_header_button": False,
         "buttons": [
             {
                 "label": "Open Door",

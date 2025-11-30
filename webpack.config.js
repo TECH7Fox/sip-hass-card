@@ -17,7 +17,7 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.js'],
   },
   output: {
-    filename: 'sipjs-card.js',
-    path: path.resolve(__dirname, 'custom_components', 'sip-core', 'www'),
+    filename: 'sip_core.js',
+    path: path.resolve(__dirname, 'custom_components', 'sip_core', 'www'),
   },
 };

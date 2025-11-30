@@ -105,14 +105,14 @@ export class SIPCore {
     public outgoingAudio: HTMLAudioElement | null = null;
 
     constructor() {
-        this.config = this.fetchConfig();
-
         // Get hass instance
         const homeAssistant = document.querySelector("home-assistant");
         if (!homeAssistant) {
             throw new Error("Home Assistant element not found");
         }
         this.hass = (homeAssistant as any).hass;
+
+        this.config = this.fetchConfig(this.hass);
 
         // ring tones
         this.incomingAudio = this.config.incomingRingtoneUrl ? new Audio(this.config.incomingRingtoneUrl) : null;
@@ -122,10 +122,22 @@ export class SIPCore {
         this.incomingAudio && (this.incomingAudio.loop = true);
 
         // Determine websocket URL
-        const ingressEntry = this.hass.states["text.asterisk_addon_ingress_entry"]?.state;
-        if (ingressEntry) {
-            const wssProtocol = window.location.protocol == "https:" ? "wss" : "ws";
-            this.wssUrl = `${wssProtocol}://${window.location.host}${ingressEntry}/ws`;
+        const token = this.hass.auth.data.access_token;
+        const request = new XMLHttpRequest();
+
+        request.open("GET", "/api/sip-core/asterisk-ingress", false);
+        request.setRequestHeader("Authorization", `Bearer ${token}`);
+        request.send(null);
+        if (request.status === 200) {
+            try {
+                const resp = JSON.parse(request.responseText);
+                const wssProtocol = window.location.protocol == "https:" ? "wss" : "ws";
+                this.wssUrl = `${wssProtocol}://${window.location.host}${resp.ingress_entry}/ws`;
+                console.debug("Ingress entry fetched:", this.wssUrl);
+            } catch (error) {
+                console.error("Invalid ingress response format!", error);
+                throw error;
+            }
         } else if (this.config.custom_wss_url) {
             this.wssUrl = this.config.custom_wss_url;
         } else {
@@ -302,9 +314,12 @@ export class SIPCore {
         this.ua = this.setupUA();
     }
 
-    private fetchConfig(): SIPCoreConfig {
+    private fetchConfig(hass: any): SIPCoreConfig {
+        const token = hass.auth.data.access_token;
         const request = new XMLHttpRequest();
-        request.open("GET", `/local/sip-config.json?${new Date().getTime()}`, false);
+
+        request.open("GET", "/api/sip-core/config?t=" + Date.now(), false);
+        request.setRequestHeader("Authorization", `Bearer ${token}`);
         request.send(null);
 
         if (request.status === 200) {
