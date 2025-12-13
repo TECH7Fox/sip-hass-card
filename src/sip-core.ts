@@ -149,7 +149,7 @@ export class SIPCore {
             if (resp.ok) {
                 const data = await resp.json();
                 const wssProtocol = window.location.protocol == "https:" ? "wss" : "ws";
-                console.debug("Ingress entry fetched:", this.wssUrl);
+                console.debug("Ingress entry fetched:", data.ingress_entry);
                 return `${wssProtocol}://${window.location.host}${data.ingress_entry}/ws`;
             } else {
                 throw new Error(`Failed to fetch ingress entry: ${resp.statusText}`);
@@ -313,7 +313,7 @@ export class SIPCore {
             console.error("Error fetching persons from Home Assistant:", error);
             this.user = this.config.backup_user;
         }
-        console.info(`Selected user: ${this.user.ha_username} (${this.user.extension})`);
+        console.debug(`Selected user: ${this.user.ha_username} (${this.user.extension})`);
         this.ua = this.setupUA();
     }
 
@@ -535,7 +535,7 @@ export class SIPCore {
     }
 
     private async handleRemoteTrackEvent(e: RTCTrackEvent) {
-        let stream: MediaStream | null = null;
+        let stream: MediaStream;
         if (e.streams.length > 0) {
             console.debug(`Received remote streams amount: ${e.streams.length}. Using first stream...`);
             stream = e.streams[0];
