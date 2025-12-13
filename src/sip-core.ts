@@ -90,13 +90,13 @@ export class SIPCore {
     public user!: User;
     public config!: SIPCoreConfig;
 
-    private heartBeatHandle: NodeJS.Timeout | null = null;
+    private heartBeatHandle: number | null = null;
     private heartBeatIntervalMs: number = 30000;
 
-    private callTimerHandle: NodeJS.Timeout | null = null;
+    private callTimerHandle: number | null = null;
 
     private wssUrl!: string;
-    private iceCandidateTimeout: NodeJS.Timeout | null = null;
+    private iceCandidateTimeout: number | null = null;
 
     public remoteAudioStream: MediaStream | null = null;
     public remoteVideoStream: MediaStream | null = null;
