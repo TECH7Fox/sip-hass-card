@@ -88,14 +88,14 @@ export class SIPCore {
     public version: string = version;
     public hass: any;
     public user!: User;
-    public config: SIPCoreConfig;
+    public config!: SIPCoreConfig;
 
     private heartBeatHandle: NodeJS.Timeout | null = null;
     private heartBeatIntervalMs: number = 30000;
 
     private callTimerHandle: NodeJS.Timeout | null = null;
 
-    private wssUrl: string;
+    private wssUrl!: string;
     private iceCandidateTimeout: NodeJS.Timeout | null = null;
 
     public remoteAudioStream: MediaStream | null = null;
