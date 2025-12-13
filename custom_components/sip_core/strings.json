@@ -2,15 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "Enter your SIP Core configuration details.",
-        "data": {
-          "popup_config": "Auto Answer Calls",
-          "password": "Enable Video Calling"
-        },
-        "data_description": {
-          "popup_config": "Configure popup behavior for incoming calls.",
-          "password": "Password for SIP Core authentication."
-        }
+        "description": "Set up SIP Core integration."
       }
     },
     "error": {
@@ -26,14 +18,12 @@
     "step": {
       "init": {
         "title": "SIP Core Options",
-        "description": "Configure SIP Core behavior",
+        "description": "Configure SIP Core settings using the object editor below.",
         "data": {
-          "auto_answer": "Auto Answer Incoming Calls",
-          "password": "Enable Video Calling"
+          "sip_config": "SIP Configuration"
         },
         "data_description": {
-          "auto_answer": "Automatically answer incoming calls without user interaction.",
-          "password": "Enable video calling feature."
+          "sip_config": "Complete SIP configuration object including ICE settings, ringtone URLs, user credentials, and popup behavior."
         }
       }
     }
