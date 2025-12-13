@@ -30,7 +30,7 @@ jobs:
       - name: Create release zip
         run: |
           cd ${{ github.workspace }}/custom_components/sip_core
-          zip sip_core -r ./
+          zip sip_core.zip -r ./
       - name: Upload files to release
         uses: svenstaro/upload-release-action@v1-release
         with:

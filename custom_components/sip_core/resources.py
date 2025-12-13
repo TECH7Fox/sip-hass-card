@@ -74,7 +74,7 @@ async def remove_resources(hass: HomeAssistant):
         )
 
         if res_id is not None and isinstance(resources, ResourceStorageCollection):
-                logger.info("Removing SIP Core module from Lovelace resources")
-                await resources.async_delete_item(res_id)
+            logger.info("Removing SIP Core module from Lovelace resources")
+            await resources.async_delete_item(res_id)
         else:
             logger.debug("SIP Core module resource not found during unload")
