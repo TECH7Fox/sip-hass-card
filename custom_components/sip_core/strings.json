@@ -1,0 +1,31 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "description": "Set up SIP Core integration."
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to PBX server",
+      "invalid_auth": "Invalid authentication",
+      "unknown": "Unexpected error occurred"
+    },
+    "abort": {
+      "already_configured": "SIP Core is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "SIP Core Options",
+        "description": "Configure SIP Core settings using the object editor below.",
+        "data": {
+          "sip_config": "SIP Configuration"
+        },
+        "data_description": {
+          "sip_config": "Complete SIP configuration object including ICE settings, ringtone URLs, user credentials, and popup behavior."
+        }
+      }
+    }
+  }
+}

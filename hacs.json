@@ -1,4 +1,7 @@
 {
-  "name": "sip-hass-card",
-  "filename": "sipjs-card.js"
+  "name": "SIP Core",
+  "filename": "sip_core.zip",
+  "zip_release": true,
+  "render_readme": true,
+  "hide_default_branch": true
 }

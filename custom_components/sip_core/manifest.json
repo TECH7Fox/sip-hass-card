@@ -1,0 +1,22 @@
+{
+    "domain": "sip_core",
+    "name": "SIP Core",
+    "after_dependencies": [
+        "frontend",
+        "lovelace",
+        "hassio"
+    ],
+    "codeowners": [
+        "@TECH7Fox"
+    ],
+    "dependencies": [
+        "http"
+    ],
+    "single_config_entry": true,
+    "config_flow": true,
+    "documentation": "https://tech7fox.github.io/sip-hass-docs",
+    "iot_class": "local_push",
+    "issue_tracker": "https://github.com/TECH7Fox/sip-hass-cards/issues",
+    "requirements": [],
+    "version": "0.0.0"
+}

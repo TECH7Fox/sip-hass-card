@@ -1,3 +1,6 @@
 node_modules
 dist
 .vscode
+vendor
+sip_core.js
+sip_core.js.LICENSE.txt

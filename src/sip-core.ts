@@ -88,15 +88,15 @@ export class SIPCore {
     public version: string = version;
     public hass: any;
     public user!: User;
-    public config: SIPCoreConfig;
+    public config!: SIPCoreConfig;
 
-    private heartBeatHandle: NodeJS.Timeout | null = null;
+    private heartBeatHandle: number | null = null;
     private heartBeatIntervalMs: number = 30000;
 
-    private callTimerHandle: NodeJS.Timeout | null = null;
+    private callTimerHandle: number | null = null;
 
-    private wssUrl: string;
-    private iceCandidateTimeout: NodeJS.Timeout | null = null;
+    private wssUrl!: string;
+    private iceCandidateTimeout: number | null = null;
 
     public remoteAudioStream: MediaStream | null = null;
     public remoteVideoStream: MediaStream | null = null;
@@ -105,33 +105,12 @@ export class SIPCore {
     public outgoingAudio: HTMLAudioElement | null = null;
 
     constructor() {
-        this.config = this.fetchConfig();
-
         // Get hass instance
         const homeAssistant = document.querySelector("home-assistant");
         if (!homeAssistant) {
             throw new Error("Home Assistant element not found");
         }
         this.hass = (homeAssistant as any).hass;
-
-        // ring tones
-        this.incomingAudio = this.config.incomingRingtoneUrl ? new Audio(this.config.incomingRingtoneUrl) : null;
-        this.outgoingAudio = this.config.outgoingRingtoneUrl ? new Audio(this.config.outgoingRingtoneUrl) : null;
-
-        this.incomingAudio && (this.incomingAudio.loop = true);
-        this.incomingAudio && (this.incomingAudio.loop = true);
-
-        // Determine websocket URL
-        const ingressEntry = this.hass.states["text.asterisk_addon_ingress_entry"]?.state;
-        if (ingressEntry) {
-            const wssProtocol = window.location.protocol == "https:" ? "wss" : "ws";
-            this.wssUrl = `${wssProtocol}://${window.location.host}${ingressEntry}/ws`;
-        } else if (this.config.custom_wss_url) {
-            this.wssUrl = this.config.custom_wss_url;
-        } else {
-            throw new Error("No ingress entry or custom WSS URL provided");
-        }
-        console.debug(`Using WebSocket URL: ${this.wssUrl}`);
 
         // Bind event handlers
         this.handleRemoteTrackEvent = this.handleRemoteTrackEvent.bind(this);
@@ -150,6 +129,35 @@ export class SIPCore {
 
     get registered(): boolean {
         return this.ua.isRegistered();
+    }
+
+    private async fetchWSSUrl(): Promise<string> {
+        if (this.config.custom_wss_url) {
+            console.debug("Using custom WSS URL:", this.config.custom_wss_url);
+            return this.config.custom_wss_url;
+        }
+
+        // async fetch ingress entry
+        const token = this.hass.auth.data.access_token;
+        try {
+            const resp = await fetch("/api/sip-core/asterisk-ingress", {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                const wssProtocol = window.location.protocol == "https:" ? "wss" : "ws";
+                console.debug("Ingress entry fetched:", data.ingress_entry);
+                return `${wssProtocol}://${window.location.host}${data.ingress_entry}/ws`;
+            } else {
+                throw new Error(`Failed to fetch ingress entry: ${resp.statusText}`);
+            }
+        } catch (error) {
+            console.error("Error fetching ingress entry:", error);
+            throw new Error("No ingress entry or custom WSS URL provided");
+        }
     }
 
     private async callOptions(): Promise<CallOptions> {
@@ -242,6 +250,11 @@ export class SIPCore {
     }
 
     private async setupAudio() {
+        this.incomingAudio = new Audio(this.config.incomingRingtoneUrl);
+        this.outgoingAudio = new Audio(this.config.outgoingRingtoneUrl);
+        this.incomingAudio.loop = true;
+        this.outgoingAudio.loop = true;
+
         let audioElement = document.createElement("audio") as any;
         audioElement.id = "remoteAudio";
         audioElement.autoplay = true;
@@ -270,6 +283,8 @@ export class SIPCore {
     }
 
     async init() {
+        this.config = await this.fetchConfig(this.hass);
+        this.wssUrl = await this.fetchWSSUrl();
         await this.createHassioSession();
         await this.setupAudio();
         await this.setupUser();
@@ -298,29 +313,26 @@ export class SIPCore {
             console.error("Error fetching persons from Home Assistant:", error);
             this.user = this.config.backup_user;
         }
-        console.info(`Selected user: ${this.user.ha_username} (${this.user.extension})`);
+        console.debug(`Selected user: ${this.user.ha_username} (${this.user.extension})`);
         this.ua = this.setupUA();
     }
 
-    private fetchConfig(): SIPCoreConfig {
-        const request = new XMLHttpRequest();
-        request.open("GET", `/local/sip-config.json?${new Date().getTime()}`, false);
-        request.send(null);
-
-        if (request.status === 200) {
-            try {
-                const config: SIPCoreConfig = JSON.parse(request.responseText);
-                console.debug("SIP-Core Config fetched:", config);
-                return config;
-            } catch (error) {
-                console.error(
-                    "Invalid SIP-Core configuration format! Please check your JSON with https://jsonlint.com/",
-                );
-                throw error;
-            }
+    private async fetchConfig(hass: any): Promise<SIPCoreConfig> {
+        const token = hass.auth.data.access_token;
+        const resp = await fetch("/api/sip-core/config?t=" + Date.now(), {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        if (resp.ok) {
+            const config: SIPCoreConfig = await resp.json();
+            console.debug("SIP-Core Config fetched:", config);
+            return config;
+        } else {
+            console.error("No SIP-Core config found at /config/www/sip-config.json!");
+            throw new Error(`Failed to fetch sip-config.json: ${resp.statusText}`);
         }
-        console.error("No SIP-Core config found at /config/www/sip-config.json!");
-        throw new Error(`Failed to fetch sip-config.json: ${request.statusText}`);
     }
 
     playIncomingRingtone(): void {
@@ -523,7 +535,7 @@ export class SIPCore {
     }
 
     private async handleRemoteTrackEvent(e: RTCTrackEvent) {
-        let stream: MediaStream | null = null;
+        let stream: MediaStream;
         if (e.streams.length > 0) {
             console.debug(`Received remote streams amount: ${e.streams.length}. Using first stream...`);
             stream = e.streams[0];

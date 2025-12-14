@@ -1,163 +1,95 @@
-# sip-hass-card
-**A SIP client inside home assistant!**
+<br>
 
-With this card you can make and receive calls to other HA clients and other sip devices, so you can use it as for example an intercom.
+<div align="center">
+  <img src="images/dark_logo.png" width="700" alt="SIP Core Logo"/>
 
-![image](https://user-images.githubusercontent.com/32220029/149833595-204a0faa-d129-4b9b-9338-78155031b7d7.png)
+<br>
 
-The card supports video, DTMF signals, custom icons, custom names, status entities and camera entities.
+**🚀 Make and receive SIP calls directly in your Home Assistant dashboard**
+</div>
 
-![image](https://user-images.githubusercontent.com/32220029/158247719-0c568186-bee5-4490-9678-58f5d3860c51.png)
+<br>
 
-## Roadmap
-This is still work in progress, and these are the things i want to add in the near future.
- * Improve styling (hard because custom cards can't use all ha elements)
- * Include default ringtones
- * Translations
+SIP Core, part of the SIP-HASS project, is the system that powers Home Assistant cards to make and receive SIP calls using WebRTC.
+It includes official cards and popups, but also supports third-party cards.
 
-**Asterisk add-on**
-This card works with the [Asterisk add-on](https://github.com/TECH7Fox/Asterisk-add-on), which is very easy to set up, with just some clicks!
+<br>
 
-## Requirements
+<div align="center">
+
+[![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?style=for-the-badge&logo=discord&logoColor=white)](https://discordapp.com/invite/qxnDtHbwuD)
+[![SIP-HASS Docs](https://img.shields.io/badge/SIP_HASS_Docs-%233ECC5F.svg?style=for-the-badge&logo=bookstack&logoColor=white)](https://tech7fox.github.io/sip-hass-docs/)
+[![HACS Repository](https://img.shields.io/badge/HACS_Repository-%2341BDF5.svg?style=for-the-badge&logo=homeassistant&logoColor=white)](https://my.home-assistant.io/redirect/hacs_repository/?owner=TECH7Fox&repository=sip-hass-card&category=integration)
+
+</div>
+
+## ✨ Features
+
+  * 📞 Make and receive calls
+  * 🔔 (Custom) Ringtones
+  * 📹 Video calls
+  * 🔢 DTMF support
+  * 🪟 Popups for incoming calls
+  * 🚀 Auto call on load (using `?call=<number>` in the URL)
+  * 🎤 Audio device selection
+  * 🛠️ API for third-party developers to build custom cards and popups
+
+## Default Popup
+
+<p float="left">
+  <img height="300" hspace="20" alt="popup" src="images/popup.png" />
+  <img height="300" hspace="20" alt="popup_config" src="images/popup_config.png" />
+</p>
+
+- 🚪 Automatically opens on incoming calls
+- 📊 Audio Visualizer
+- ⚙️ Menu to configure audio devices
+  - 🐛 And shows debug information
+- 🎮 Custom buttons
+- 🔇 Mute mic & camera buttons
+
+## Call Card
+
+<img align="left" height="200" hspace="20" alt="call_card" src="images/call_card.png" />
+
+`custom:sip-call-card`
+ 
+- 📊 Audio Visualizer
+- 📹 Supports camera entities for video
+- 🎮 Custom buttons for quick actions
+- 🔇 Mute mic & camera buttons
+
+<br>
+<br>
+
+## Contacts Card
+
+<img align="right" height="250" hspace="20" alt="contacts_card" src="images/contacts_card.png" />
+
+`custom:sip-contacts-card`
+
+- 📞 Start calls to users/numbers
+- 👤 Option to hide your own user
+- 🎨 Custom names & icons
+- ✏️ Open field option
+- 🟢 State color with status entity
+
+<br>
+<br>
+
+## 📋 Requirements
 For this to work you will need the following:
- * A sip/pbx server. (I use the [Asterisk add-on](https://github.com/TECH7Fox/Asterisk-add-on))
- * Extension for every device. (The add-on auto-generates extensions for every person in HA)
- * HACS on your HA. (Home assistant)
+ * ☎️ A sip/pbx server (Works best with the [Asterisk add-on](https://github.com/TECH7Fox/Asterisk-add-on))
+ * 🔒 HTTPS for Home Assistant
+ * 📦 HACS for easy installation
 
-Go to https://tech7fox.github.io/sip-hass-docs/docs/card/guides/freepbx to see how to setup FreePBX for this card.
 
-## Installation
-Download using **HACS**
- 1. Go to HACS
- 2. Click on `Frontend`
- 3. Click on the 3 points in the upper right corner and click on `Custom repositories`
- 4. Paste https://github.com/TECH7Fox/HA-SIP/ into `Add custom repository URL` and by category choose Lovelace
- 5. Click on add and check if the repository is there.
- 6. You should now see SIP.js Client. Click `INSTALL`
+## 📚 Wiki
 
-## Usage
-Click on add card and scroll down to and choose `Custom: SIP Card`.
-The entire card is configurable from the editor.
+You can find the installation instructions and guides on the documentation site: <kbd>[SIP-HASS Docs](https://tech7fox.github.io/sip-hass-docs/)</kbd>
 
-### Set Ringtones
-set your ringtones to play when calling/being called.
-`/local` is your `www` folder in config. Example: `/local/ringtone.mp3` = `/config/www/ringtone.mp3`.
+## ⭐ Star History
 
-### Auto Call
-You can put `?call=<number>` behind the URL to auto call that number when the card loads. Useful for notifications.
-
-### Hide Header Button
-You can hide the "Open Call Popup" button that appears in the Home Assistant header by setting `hide_header_button: true` in your `/config/www/sip-config.json` file under `popup_config`. This is useful if you want a cleaner header, especially on mobile devices.
-
-Example:
-```json
-"popup_config": {
-    "hide_header_button": true,
-    ...
-}
-```
-
-### Ice Options
-You can set ICE options for external use. These settings are not (yet) configurable with the card editor, so you will
-need to set them in the code editor. Don't set `iceConfig` if you don't want to use ICE.
-
-Here is a example:
-
-```
-iceTimeout: 5
-iceConfig:
-  iceCandidatePoolSize: 0
-  iceTransportPolicy: all
-  iceServers:
-    - urls:
-        - stun:stun.l.google.com:19302
-        - stun:stun1.l.google.com:19302
-  rtcpMuxPolicy: require
-```
-
-### Card Configuration
-
-Everything (expect ICE) is configurable with the card editor.
-But for people that are configuring it with YAML, here is a example:
-
-```
-type: custom:sipjs-card
-server: 192.168.0.10
-port: '8089'
-video: false
-ringtone: /local/asterisk/ringtone.mp3
-button_size: '62'
-custom:
-  - name: Doorbell
-    number: '007'
-    icon: mdi:doorbell
-    camera: 'camera.doorbell'
-  - name: Jordy deskphone
-    number: '008'
-    icon: mdi:deskphone
-    camera: ''
-dtmfs:
-  - name: Door
-    signal: '1'
-    icon: mdi:door
-extensions:
-  - person: person.person1
-    name: Test person
-    extension: '101'
-    secret: 1234
-    icon: mdi:person
-    entity: binary_sensor.myphone
-    camera: ''
-  - person: person.jordy
-    name: Jordy PC
-    extension: '100'
-    secret: 1234
-    icon: mdi:monitor
-  - person: person.tablet
-    name: Tablet
-    extension: '102'
-    secret: 1234
-    icon: mdi:tablet
-state_color: false 
-ringbacktone: /local/asterisk/backtone.mp3
-auto_answer: false
-buttons:
-  - name: 'Garage Door'
-    icon: mdi:garage
-    entity: switch.garagedoor
-custom_title: ''
-hide_me: true
-iceTimeout: 3 # Default is 5 seconds
-backup_name: Tablet
-backup_extension: '200'
-backup_secret: 1234
-iceConfig: # Remove if you don't want to use ICE
-  iceCandidatePoolSize: 0
-  iceTransportPolicy: all
-  iceServers:
-    - urls:
-        - stun:stun.l.google.com:19302
-        - stun:stun1.l.google.com:19302
-  rtcpMuxPolicy: require
-```
-
-## Wiki
-You can find more information on the [SIP-HASS Docs](https://tech7fox.github.io/sip-hass-docs/).
-
-## Troubleshooting
-Most problems is because your PBX server is not configured correct, or your certificate is not accepted.
-To accept the certificate for Asterisk/FreePBX go to `https://<host>:8089/ws` and click continue.
-To see how to configure FreePBX go to the [FreePBX guide](https://tech7fox.github.io/sip-hass-docs/docs/card/guides/freepbx).
-
-Android companion app 2022.2 required for speaker + audio permissions.
-
-If you are still having problems you can make an issue or ask on the discord server. 
-
-## Development
-For development on Windows, easiest way is to use the devcontainer and run `npm run build` in the terminal. Then copy the `sipjs-card.js` file to your `www` folder.
-You can ask for help on the discord server.
-
-PR's are always welcome!
-
-## Contact
-**jordy.kuhne@gmail.com**
+<div align="center">
+<img width="600" src="https://api.star-history.com/svg?repos=TECH7Fox/sip-hass-card,TECH7Fox/asterisk-hass-addons,TECH7Fox/asterisk-hass-integration&type=date&legend=top-left" alt="Star History Chart" />
+</div>
