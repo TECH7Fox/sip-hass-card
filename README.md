@@ -50,7 +50,7 @@ It includes official cards and popups, but also supports third-party cards.
 
 ## Call Card
 
-<img align="left" height="200" hspace="60" alt="call_card" src="images/call_card.png" />
+<img align="left" height="200" hspace="40" alt="call_card" src="images/call_card.png" />
 
 `custom:sip-call-card`
  
@@ -61,11 +61,10 @@ It includes official cards and popups, but also supports third-party cards.
 
 <br>
 <br>
-<br>
 
 ## Contacts Card
 
-<img align="right" height="250" hspace="60" alt="contacts_card" src="images/contacts_card.png" />
+<img align="right" height="250" hspace="40" alt="contacts_card" src="images/contacts_card.png" />
 
 `custom:sip-contacts-card`
 
@@ -75,7 +74,6 @@ It includes official cards and popups, but also supports third-party cards.
 - ✏️ Open field option
 - 🟢 State color with status entity
 
-<br>
 <br>
 <br>
 
