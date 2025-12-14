@@ -37,8 +37,8 @@ It includes official cards and popups, but also supports third-party cards.
 ## Default Popup
 
 <p float="left">
-  <img height="350" hspace="10" alt="popup" src="images/popup.png" />
-  <img height="350" hspace="10" alt="popup_config" src="images/popup_config.png" />
+  <img height="300" hspace="10" alt="popup" src="images/popup.png" />
+  <img height="300" hspace="10" alt="popup_config" src="images/popup_config.png" />
 </p>
 
 - 🚪 Automatically opens on incoming calls
