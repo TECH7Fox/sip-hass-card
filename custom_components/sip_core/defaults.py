@@ -13,20 +13,20 @@ sip_config = {
     "outgoingRingtoneUrl": "/sip_core_files/ringback-tone.mp3",
     "incomingRingtoneUrl": "/sip_core_files/ring-tone.mp3",
     "backup_user": {
-        "ha_username": "tech7fox",
+        "ha_username": "myuser",
         "extension": "100",
-        "password": "w8woord"
+        "password": "1234"
     },
     "users": [
         {
-            "ha_username": "Jordy",
+            "ha_username": "jordy",
             "extension": "101",
-            "password": "w8woord"
+            "password": "1234"
         },
         {
             "ha_username": "alice",
             "extension": "102",
-            "password": "w8woord"
+            "password": "1234"
         }
     ],
     "sip_video": False,
@@ -54,7 +54,7 @@ sip_config = {
             }
         ],
         "extensions": {
-            "101": {
+            "008": {
                 "name": "Bob"
             },
             "8001": {
