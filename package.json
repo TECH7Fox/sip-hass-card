@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TECH7Fox/sip-hass-card.git"
+    "url": "git+https://github.com/TECH7Fox/sipcore-hass-integration.git"
   },
   "keywords": [
     "sip",
@@ -18,9 +18,9 @@
   "author": "Jordy Kuhne",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/TECH7Fox/sip-hass-card/issues"
+    "url": "https://github.com/TECH7Fox/sipcore-hass-integration/issues"
   },
-  "homepage": "https://github.com/TECH7Fox/sip-hass-card#readme",
+  "homepage": "https://github.com/TECH7Fox/sipcore-hass-integration#readme",
   "devDependencies": {
     "ts-loader": "^9.5.2",
     "tslib": "^2.3.1",

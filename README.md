@@ -1,7 +1,7 @@
 <br>
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/TECH7Fox/sip-hass-card/main/images/dark_logo.png" width="700" alt="SIP Core Logo"/>
+  <img src="https://raw.githubusercontent.com/TECH7Fox/sipcore-hass-integration/main/images/dark_logo.png" width="700" alt="SIP Core Logo"/>
 
 <br>
 
@@ -19,7 +19,7 @@ It includes official cards and popups, but also supports third-party cards.
 
 [![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?style=for-the-badge&logo=discord&logoColor=white)](https://discordapp.com/invite/qxnDtHbwuD)
 [![SIP-HASS Docs](https://img.shields.io/badge/SIP_HASS_Docs-%233ECC5F.svg?style=for-the-badge&logo=bookstack&logoColor=white)](https://tech7fox.github.io/sip-hass-docs/)
-[![HACS Repository](https://img.shields.io/badge/HACS_Repository-%2341BDF5.svg?style=for-the-badge&logo=homeassistant&logoColor=white)](https://my.home-assistant.io/redirect/hacs_repository/?owner=TECH7Fox&repository=sip-hass-card&category=integration)
+[![HACS Repository](https://img.shields.io/badge/HACS_Repository-%2341BDF5.svg?style=for-the-badge&logo=homeassistant&logoColor=white)](https://my.home-assistant.io/redirect/hacs_repository/?owner=TECH7Fox&repository=sipcore-hass-integration&category=integration)
 
 </div>
 
@@ -37,8 +37,8 @@ It includes official cards and popups, but also supports third-party cards.
 ## Default Popup
 
 <p float="left">
-  <img height="300" hspace="20" alt="popup" src="https://raw.githubusercontent.com/TECH7Fox/sip-hass-card/main/images/popup.png" />
-  <img height="300" hspace="20" alt="popup_config" src="https://raw.githubusercontent.com/TECH7Fox/sip-hass-card/main/images/popup_config.png" />
+  <img height="300" hspace="20" alt="popup" src="https://raw.githubusercontent.com/TECH7Fox/sipcore-hass-integration/main/images/popup.png" />
+  <img height="300" hspace="20" alt="popup_config" src="https://raw.githubusercontent.com/TECH7Fox/sipcore-hass-integration/main/images/popup_config.png" />
 </p>
 
 - 🚪 Automatically opens on incoming calls
@@ -50,7 +50,7 @@ It includes official cards and popups, but also supports third-party cards.
 
 ## Call Card
 
-<img align="left" height="200" hspace="20" alt="call_card" src="https://raw.githubusercontent.com/TECH7Fox/sip-hass-card/main/images/call_card.png" />
+<img align="left" height="200" hspace="20" alt="call_card" src="https://raw.githubusercontent.com/TECH7Fox/sipcore-hass-integration/main/images/call_card.png" />
 
 `custom:sip-call-card`
  
@@ -64,7 +64,7 @@ It includes official cards and popups, but also supports third-party cards.
 
 ## Contacts Card
 
-<img align="right" height="250" hspace="20" alt="contacts_card" src="https://raw.githubusercontent.com/TECH7Fox/sip-hass-card/main/images/contacts_card.png" />
+<img align="right" height="250" hspace="20" alt="contacts_card" src="https://raw.githubusercontent.com/TECH7Fox/sipcore-hass-integration/main/images/contacts_card.png" />
 
 `custom:sip-contacts-card`
 
@@ -91,5 +91,5 @@ You can find the installation instructions and guides on the documentation site:
 ## ⭐ Star History
 
 <div align="center">
-<img width="600" src="https://api.star-history.com/svg?repos=TECH7Fox/sip-hass-card,TECH7Fox/asterisk-hass-addons,TECH7Fox/asterisk-hass-integration&type=date&legend=top-left" alt="Star History Chart" />
+<img width="600" src="https://api.star-history.com/svg?repos=TECH7Fox/sipcore-hass-integration,TECH7Fox/asterisk-hass-addons,TECH7Fox/asterisk-hass-integration&type=date&legend=top-left" alt="Star History Chart" />
 </div>

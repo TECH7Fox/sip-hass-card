@@ -432,7 +432,7 @@ class SIPCallDialog extends LitElement {
                             graphic="icon"
                             hasmeta
                             @click="${() => {
-                                window.open("https://github.com/TECH7Fox/sip-hass-card", "_blank");
+                                window.open("https://github.com/TECH7Fox/sipcore-hass-integration", "_blank");
                             }}">
                             Github
                             <ha-icon slot="graphic" .icon=${"mdi:github"}></ha-icon>
