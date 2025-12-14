@@ -37,8 +37,8 @@ It includes official cards and popups, but also supports third-party cards.
 ## Default Popup
 
 <p float="left">
-  <img height="300" hspace="10" alt="popup" src="images/popup.png" />
-  <img height="300" hspace="10" alt="popup_config" src="images/popup_config.png" />
+  <img height="300" hspace="20" alt="popup" src="images/popup.png" />
+  <img height="300" hspace="20" alt="popup_config" src="images/popup_config.png" />
 </p>
 
 - 🚪 Automatically opens on incoming calls
@@ -50,7 +50,7 @@ It includes official cards and popups, but also supports third-party cards.
 
 ## Call Card
 
-<img align="left" height="200" hspace="40" alt="call_card" src="images/call_card.png" />
+<img align="left" height="200" hspace="20" alt="call_card" src="images/call_card.png" />
 
 `custom:sip-call-card`
  
@@ -64,7 +64,7 @@ It includes official cards and popups, but also supports third-party cards.
 
 ## Contacts Card
 
-<img align="right" height="250" hspace="40" alt="contacts_card" src="images/contacts_card.png" />
+<img align="right" height="250" hspace="20" alt="contacts_card" src="images/contacts_card.png" />
 
 `custom:sip-contacts-card`
 
