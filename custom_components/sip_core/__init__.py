@@ -24,7 +24,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     logger.info("Setting up SIP Core component")
     hass.data.setdefault(DOMAIN, {
         "data": config_entry.data,
-        "options": {"sip_config": sip_config},
+        "options": {"sip_config": config_entry.options.get("sip_config", sip_config)},
         "entry_id": config_entry.entry_id,
     })
     logger.info(config_entry.data)

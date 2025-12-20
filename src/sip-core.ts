@@ -284,6 +284,20 @@ export class SIPCore {
 
     async init() {
         this.config = await this.fetchConfig(this.hass);
+        window.addEventListener("location-changed", async () => {
+            console.debug("View changed, refresh config...");
+            let new_config = await this.fetchConfig(this.hass);
+            if (JSON.stringify(new_config) !== JSON.stringify(this.config)) {
+                console.info("Configuration changed, reloading SIP Core...");
+                this.ua.stop();
+                this.config = new_config;
+                await this.setupUser();
+                this.wssUrl = await this.fetchWSSUrl();
+                console.debug(`Connecting to ${this.wssUrl}...`);
+                this.ua.start();
+                this.triggerUpdate();
+            }
+        });
         this.wssUrl = await this.fetchWSSUrl();
         await this.createHassioSession();
         await this.setupAudio();
