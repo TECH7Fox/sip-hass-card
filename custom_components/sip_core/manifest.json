@@ -18,5 +18,5 @@
     "iot_class": "local_push",
     "issue_tracker": "https://github.com/TECH7Fox/sipcore-hass-integrations/issues",
     "requirements": [],
-    "version": "v5.0.1"
+    "version": "v5.0.2"
 }
