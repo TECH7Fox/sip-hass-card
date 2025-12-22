@@ -90,13 +90,13 @@ export class SIPCore {
     public user!: User;
     public config!: SIPCoreConfig;
 
-    private heartBeatHandle: number | null = null;
+    private heartBeatHandle: ReturnType<typeof setInterval> | null = null;
     private heartBeatIntervalMs: number = 30000;
 
-    private callTimerHandle: number | null = null;
+    private callTimerHandle: ReturnType<typeof setInterval> | null = null;
 
     private wssUrl!: string;
-    private iceCandidateTimeout: number | null = null;
+    private iceCandidateTimeout: ReturnType<typeof setTimeout> | null = null;
 
     public remoteAudioStream: MediaStream | null = null;
     public remoteVideoStream: MediaStream | null = null;
