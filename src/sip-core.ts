@@ -351,6 +351,7 @@ export class SIPCore {
 
     playIncomingRingtone(): void {
         if (this.incomingAudio) {
+            this.incomingAudio.src = this.config.incomingRingtoneUrl;
             this.incomingAudio.play().catch((error) => {
                 console.error("Incoming ringtone failed:", error);
             });
@@ -361,11 +362,14 @@ export class SIPCore {
         if (this.incomingAudio) {
             this.incomingAudio.pause();
             this.incomingAudio.currentTime = 0;
+            this.incomingAudio.src = "";
+            this.incomingAudio.load();
         }
     }
 
     playOutgoingTone(): void {
         if (this.outgoingAudio) {
+            this.outgoingAudio.src = this.config.outgoingRingtoneUrl;
             this.outgoingAudio.play().catch((error) => {
                 console.error("Incoming ringtone failed:", error);
             });
@@ -376,6 +380,8 @@ export class SIPCore {
         if (this.outgoingAudio) {
             this.outgoingAudio.pause();
             this.outgoingAudio.currentTime = 0;
+            this.outgoingAudio.src = "";
+            this.outgoingAudio.load();
         }
     }
 
