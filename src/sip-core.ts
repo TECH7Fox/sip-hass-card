@@ -371,7 +371,7 @@ export class SIPCore {
         if (this.outgoingAudio) {
             this.outgoingAudio.src = this.config.outgoingRingtoneUrl;
             this.outgoingAudio.play().catch((error) => {
-                console.error("Incoming ringtone failed:", error);
+                console.error("Outgoing ringtone failed:", error);
             });
         }
     }
