@@ -319,12 +319,21 @@ export class SIPCore {
     }
 
     private async setupUser(): Promise<void> {
-        try {
-            const persons = await this.hass.callWS({ type: "person/list" });
-            const currentUsername = persons.storage.find((person: any) => person.user_id === this.hass.user.id).id;
-            this.user = this.config.users.find((user) => user.ha_username === currentUsername) || this.config.backup_user;
-        } catch (error) {
-            console.error("Error fetching persons from Home Assistant:", error);
+        const currentUserId = this.hass.user.id;
+        const currentUserName = this.hass.user.name;
+
+        // 1. Check exact match by User ID
+        let matchedUser = this.config.users.find((user) => user.ha_username === currentUserId);
+
+        // 2. Check match by User Name (if no ID match)
+        if (!matchedUser) {
+            matchedUser = this.config.users.find((user) => user.ha_username === currentUserName);
+        }
+
+        if (matchedUser) {
+            this.user = matchedUser;
+        } else {
+            console.warn(`No matching SIP user found for Home Assistant user: ${currentUserName} (${currentUserId}). Using backup user.`);
             this.user = this.config.backup_user;
         }
         console.debug(`Selected user: ${this.user.ha_username} (${this.user.extension})`);
