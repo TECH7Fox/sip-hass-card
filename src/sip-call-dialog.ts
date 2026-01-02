@@ -195,6 +195,7 @@ class SIPCallDialog extends LitElement {
                 videoElement.pause();
             }
         }
+        this.updateButtonState();
     };
 
     connectedCallback() {
@@ -619,6 +620,25 @@ class SIPCallDialog extends LitElement {
                 console.debug("View changed, setting up button again...");
                 this.setupButton();
             });
+        }
+        this.updateButtonState();
+    }
+
+    private updateButtonState() {
+        const homeAssistant = document.getElementsByTagName("home-assistant")[0];
+        const panel = homeAssistant?.shadowRoot
+            ?.querySelector("home-assistant-main")
+            ?.shadowRoot?.querySelector("ha-panel-lovelace");
+
+        const actionItems = panel?.shadowRoot?.querySelector("hui-root")?.shadowRoot?.querySelector(".action-items");
+        const callButton = actionItems?.querySelector("#sipcore-call-button") as HTMLElement;
+
+        if (callButton) {
+            if (sipCore.registered) {
+                callButton.style.color = "";
+            } else {
+                callButton.style.color = "var(--label-badge-red)";
+            }
         }
     }
 }
