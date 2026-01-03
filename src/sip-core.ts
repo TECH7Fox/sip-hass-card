@@ -90,13 +90,13 @@ export class SIPCore {
     public user!: User;
     public config!: SIPCoreConfig;
 
-    private heartBeatHandle: number | null = null;
+    private heartBeatHandle: ReturnType<typeof setInterval> | null = null;
     private heartBeatIntervalMs: number = 30000;
 
-    private callTimerHandle: number | null = null;
+    private callTimerHandle: ReturnType<typeof setInterval> | null = null;
 
     private wssUrl!: string;
-    private iceCandidateTimeout: number | null = null;
+    private iceCandidateTimeout: ReturnType<typeof setTimeout> | null = null;
 
     public remoteAudioStream: MediaStream | null = null;
     public remoteVideoStream: MediaStream | null = null;
@@ -351,6 +351,7 @@ export class SIPCore {
 
     playIncomingRingtone(): void {
         if (this.incomingAudio) {
+            this.incomingAudio.src = this.config.incomingRingtoneUrl;
             this.incomingAudio.play().catch((error) => {
                 console.error("Incoming ringtone failed:", error);
             });
@@ -361,13 +362,16 @@ export class SIPCore {
         if (this.incomingAudio) {
             this.incomingAudio.pause();
             this.incomingAudio.currentTime = 0;
+            this.incomingAudio.src = "";
+            this.incomingAudio.load();
         }
     }
 
     playOutgoingTone(): void {
         if (this.outgoingAudio) {
+            this.outgoingAudio.src = this.config.outgoingRingtoneUrl;
             this.outgoingAudio.play().catch((error) => {
-                console.error("Incoming ringtone failed:", error);
+                console.error("Outgoing ringtone failed:", error);
             });
         }
     }
@@ -376,6 +380,8 @@ export class SIPCore {
         if (this.outgoingAudio) {
             this.outgoingAudio.pause();
             this.outgoingAudio.currentTime = 0;
+            this.outgoingAudio.src = "";
+            this.outgoingAudio.load();
         }
     }
 
